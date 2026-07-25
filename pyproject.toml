@@ -1,0 +1,21 @@
+[project]
+name = "lm-tui"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "redappr", email = "jordanpfife@gmail.com" }
+]
+requires-python = ">=3.11"
+dependencies = [
+    "httpx>=0.28.1",
+    "pydantic>=2.13.4",
+    "textual>=8.2.8",
+]
+
+[project.scripts]
+lm-tui = "lm_tui:main"
+
+[build-system]
+requires = ["uv_build>=0.11.32,<0.12.0"]
+build-backend = "uv_build"
