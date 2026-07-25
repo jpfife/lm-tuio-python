@@ -1,7 +1,7 @@
 [project]
 name = "lm-tui"
 version = "0.1.0"
-description = "Add your description here"
+description = "TUI application for monitoring and interfacing with LM Studio server endpoints on the local network."
 readme = "README.md"
 authors = [
     { name = "redappr", email = "jordanpfife@gmail.com" }
@@ -24,3 +24,7 @@ build-backend = "uv_build"
 dev = [
     "pytest>=9.1.1",
 ]
+
+[tool.pyright]
+venvPath = '.'
+venv = '.venv'

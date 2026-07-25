@@ -1,0 +1,42 @@
+import httpx
+from pydantic import ValidationError
+from lm_tui.models import ModelInfo, ModelListResponse
+
+
+# NOTE: Using LM Studio Native v1 REST API endpoints (/api/v1/[api_action] for robust server functionality. 
+#       OpenAI compatible endpoints (/v1/[api_action]) are primarily for inference only.
+
+API_TIMEOUT: float = 2.0
+
+api_action: dict[str, str] = {
+    'models': '/api/v1/models',
+    'load': '/api/v1/models/load',
+    'unload': '/api/v1/models/unload',
+    'download': '/api/v1/models/download',
+    'progress': '/api/v1/models/download/status'
+}
+
+async def fetch_available_models(ip: str, port: int, timeout: float = API_TIMEOUT) \
+        -> tuple[list[ModelInfo] | None, str | None]:
+    '''
+    Calls LM Studio /api/v1/models API to list installed models, does not describe model load state
+    Returns tuple: (List of ModelInfo objects, err)
+    '''
+    url: str = f"http://{ip}:{port}{api_action['models']}"
+
+    async with httpx.AsyncClient() as client:
+        try:
+            response: httpx.Response = await client.get(url, timeout=timeout)
+            response.raise_for_status()
+            raw_json: dict = response.json()
+            validated_data: ModelListResponse = ModelListResponse.model_validate(raw_json)
+            return validated_data.models, None
+        
+        except httpx.HTTPStatusError as e:
+            return None, f"API returned error code: {e.response.status_code}"
+        except httpx.RequestError as e:
+            return None, f"Network request failed: {e}"
+        except ValidationError as e:
+            return None, f"Unexpected API response format: {e}"
+        except Exception as e:
+            return None, f"Unknown error fetching models: {e}"
