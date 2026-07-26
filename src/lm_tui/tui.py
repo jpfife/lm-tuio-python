@@ -1,15 +1,36 @@
 from textual.app import App, ComposeResult
 from textual.widgets import Header, Footer, DataTable
+from textual.widgets._header import HeaderIcon
+from enum import StrEnum
 from lm_tui.api import fetch_available_models, check_server_status
 from lm_tui.models import ModelInfo, QuantizationInfo
 
 
-PING_INTERVAL: float = 2.0
-CONNECT_STATUS: dict[str, str] = {
-    'green': "[green] ● ",
-    'yellow': "[yellow] ● ",
-    'red': "[red] ● "
+# Connection status indicator enums and consts.
+class Connection(StrEnum):
+    GREEN = 'green'
+    YELLOW = 'yellow'
+    RED = 'red'
+    GRAY = 'gray'
+
+CONNECT_STATUS: dict[str, tuple[str, str]] = {
+    Connection.GREEN: (" ●   Connected", 'lightgreen'),
+    Connection.YELLOW: (" ●   Connecting...", 'yellow'),
+    Connection.RED: (" ●   Disconnected. Retrying...", 'tomato'),
+    Connection.GRAY: (" ●   Unknown. Retrying...", 'lightgray')
 }
+
+PING_INTERVAL: float = 2.0
+
+# Subtitle consts
+class Subtitle(StrEnum):
+    GET_MODELS = ' Available Models'
+    LOAD = ' Load Model'
+    UNLOAD = ' Unload Model'
+    DOWNLOAD = ' Download Model'
+    DL_STATUS = ' Download Status'
+    API_ERROR = ' API Error:'
+
 
 class LMStudioApp(App):
     '''Main Textual application for LM Studio TUI.'''
@@ -17,18 +38,30 @@ class LMStudioApp(App):
         ('q', 'quit', "[quit]"),
         ('r', 'refresh_models', "[refresh list]")
     ]
+    
+    CSS = """
+        HeaderIcon {
+            width: auto;
+        }
+
+        HeaderTitle {
+            content-align: center middle;
+            text-align: center;
+            height: 100%;
+        }
+    """
 
     # Accept target IP and port from CLI on load.
     def __init__(self, ip: str, port: int):
         super().__init__()
         self.target_ip: str = ip
         self.target_port: int = port
+        self.title = f"LM TUIO - LM Studio Dashboard " + \
+                f"[{self.target_ip}:{self.target_port}]"
 
 
     def compose(self) -> ComposeResult:
-        '''Yields widgets to draw on screen.'''
-        self.header = Header(show_clock=True)
-        yield self.header
+        yield Header(show_clock=True, time_format='%H:%M')
         yield Footer()
         yield DataTable(id='models_table')
 
@@ -45,23 +78,24 @@ class LMStudioApp(App):
         )
         table.cursor_type = 'row'
 
-        self.title = f"LM Studio Dashboard - {self.target_ip}:{self.target_port}"
-        self.sub_title = " Connecting..."
-        self.header.icon = CONNECT_STATUS['yellow']
+        self.sub_title = " LM TUIO"
+        self.action_set_status(Connection.YELLOW)
 
         await self.action_refresh_models()
         self.set_interval(PING_INTERVAL, self.update_connection_status)
 
-    async def update_connection_status(self) -> None:
-        '''Update Header UI with connection status at PING_INTERVAL'''
-        is_connected: bool = await check_server_status(self.target_ip, self.target_port)
+        header = self.query_one(Header)
+        header.tall = True
 
-        if is_connected:
-            self.header.icon = CONNECT_STATUS['green']
-            self.sub_title = " Connected - Available Models"
+    # ========== ACTIONS ==========
+
+    def action_set_status(self, status: str) -> None:
+        '''Dynamic HeaderIcon update based on connection to LM Studio server.'''
+        icon_widget = self.query_one('HeaderIcon', expect_type=HeaderIcon)
+        if status in Connection:
+            icon_widget.icon, icon_widget.styles.color = CONNECT_STATUS[status]
         else:
-            self.header.icon = CONNECT_STATUS['red']
-            self.sub_title = " Disconnected. Retrying..."
+            icon_widget.icon, icon_widget.styles.color = CONNECT_STATUS[Connection.GRAY]
 
 
     async def action_refresh_models(self) -> None:
@@ -69,8 +103,7 @@ class LMStudioApp(App):
         table = self.query_one(DataTable)
         table.clear()
         
-        self.title = f"LM Studio Dashboard - {self.target_ip}:{self.target_port}"
-        self.sub_title = " Fetching..."
+        self.sub_title = Subtitle.GET_MODELS + " - Fetching..."
 
         models: list[ModelInfo] | None
         err: str | None
@@ -78,12 +111,12 @@ class LMStudioApp(App):
         
         if err:
             self.sub_title = f" API Error: {err}"
-            self.header.icon = CONNECT_STATUS['red']
+            self.action_set_status(Connection.RED)
             return
 
         if models:
-            self.header.icon = CONNECT_STATUS['green']
-            self.sub_title = " Connected - Available Models"
+            self.action_set_status(Connection.GREEN)
+            self.sub_title = Subtitle.GET_MODELS
             for model in models:
                 assert isinstance(model, ModelInfo)
                 arch: str = model.architecture or "Unknown"     # Handle optional field
@@ -97,3 +130,16 @@ class LMStudioApp(App):
                     quant,
                     model.key
                 )
+
+
+    # ========== STATE UPDATES ==========
+
+    async def update_connection_status(self) -> None:
+        '''Update Header UI with connection status at PING_INTERVAL'''
+        is_connected: bool = await check_server_status(self.target_ip, self.target_port)
+        if is_connected:
+            self.action_set_status(Connection.GREEN)
+        else:
+            self.action_set_status(Connection.RED)
+
+
