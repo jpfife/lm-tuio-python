@@ -40,3 +40,14 @@ async def fetch_available_models(ip: str, port: int, timeout: float = API_TIMEOU
             return None, f"Unexpected API response format: {e}"
         except Exception as e:
             return None, f"Unknown error fetching models: {e}"
+
+async def check_server_status(ip: str, port: int, timeout: float = API_TIMEOUT) -> bool:
+    '''Lightweight http ping to LM Studio server.'''
+    url: str = f"http://{ip}:{port}{api_action['models']}"
+
+    async with httpx.AsyncClient() as client:
+        try:
+            response: httpx.Response = await client.head(url, timeout=timeout)
+            return response.status_code == 200
+        except Exception:
+            return False

@@ -1,9 +1,15 @@
 from textual.app import App, ComposeResult
 from textual.widgets import Header, Footer, DataTable
-from textual.coordinate import Coordinate
-from lm_tui.api import fetch_available_models
+from lm_tui.api import fetch_available_models, check_server_status
 from lm_tui.models import ModelInfo, QuantizationInfo
 
+
+PING_INTERVAL: float = 2.0
+CONNECT_STATUS: dict[str, str] = {
+    'green': "[green] ● ",
+    'yellow': "[yellow] ● ",
+    'red': "[red] ● "
+}
 
 class LMStudioApp(App):
     '''Main Textual application for LM Studio TUI.'''
@@ -21,7 +27,8 @@ class LMStudioApp(App):
 
     def compose(self) -> ComposeResult:
         '''Yields widgets to draw on screen.'''
-        yield Header(show_clock=True)
+        self.header = Header(show_clock=True)
+        yield self.header
         yield Footer()
         yield DataTable(id='models_table')
 
@@ -37,7 +44,24 @@ class LMStudioApp(App):
             "API Key"
         )
         table.cursor_type = 'row'
+
+        self.title = f"LM Studio Dashboard - {self.target_ip}:{self.target_port}"
+        self.sub_title = " Connecting..."
+        self.header.icon = CONNECT_STATUS['yellow']
+
         await self.action_refresh_models()
+        self.set_interval(PING_INTERVAL, self.update_connection_status)
+
+    async def update_connection_status(self) -> None:
+        '''Update Header UI with connection status at PING_INTERVAL'''
+        is_connected: bool = await check_server_status(self.target_ip, self.target_port)
+
+        if is_connected:
+            self.header.icon = CONNECT_STATUS['green']
+            self.sub_title = " Connected - Available Models"
+        else:
+            self.header.icon = CONNECT_STATUS['red']
+            self.sub_title = " Disconnected. Retrying..."
 
 
     async def action_refresh_models(self) -> None:
@@ -46,18 +70,20 @@ class LMStudioApp(App):
         table.clear()
         
         self.title = f"LM Studio Dashboard - {self.target_ip}:{self.target_port}"
-        self.sub_title = "Fetching..."
+        self.sub_title = " Fetching..."
 
         models: list[ModelInfo] | None
         err: str | None
         models, err = await fetch_available_models(self.target_ip, self.target_port)
         
         if err:
-            self.sub_title = f"Error: {err}"
+            self.sub_title = f" API Error: {err}"
+            self.header.icon = CONNECT_STATUS['red']
             return
 
         if models:
-            self.sub_title = "Available Models"
+            self.header.icon = CONNECT_STATUS['green']
+            self.sub_title = " Connected - Available Models"
             for model in models:
                 assert isinstance(model, ModelInfo)
                 arch: str = model.architecture or "Unknown"     # Handle optional field
