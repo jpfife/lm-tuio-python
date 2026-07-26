@@ -1,0 +1,76 @@
+/* ========= Type Selectors ========= */
+HeaderIcon {
+    width: auto;
+}
+
+HeaderTitle {
+    content-align: center middle;
+    text-align: center;
+    height: 100%;
+}
+
+
+/* ========= ID Selectors (id='widget_instance') ========= */
+/*#models_table {
+/*    height: 100%;
+/*    border: solid green;
+/*}
+
+/*#main_menu {
+/*    width: 30;
+/*}
+
+
+/* ========= Class Selectors ========= */
+/* .warning-btn { */
+/*     background: yellow; */
+/*     color: black; */
+/* } */
+/**/
+/* .hidden-item { */
+/*     display: none; */
+/* } */
+
+
+/* /* ========= Widget States ========= */
+/*     background: $accent; */
+/* } */
+/**/
+/* Button:active { */
+/*     tint: white 20%; */
+/* } */
+/**/
+/* Input:focus { */
+/*     border: tall $secondary; */
+/* } */
+
+
+/* /* ========= Combinators (Hierarchy ========= */
+/* /* DESCENDANT: Targets any Button that lives anywhere inside #main_menu */
+/* #main_menu Button { */
+/*     width: 100%; */
+/* } */
+/**/
+/* DIRECT CHILD: Targets a Button only if it is a direct child of #main_menu */
+/* #main_menu > Button { */
+/*     margin-top: 1; */
+/* } */
+/**/
+/* /* MULTIPLE: Targets both DataTables AND ListViews with the same rule */
+/* DataTable, ListView { */
+/*     scrollbar-color: gray; */
+/* } */
+
+
+/* /* ========= Variables ========= */
+/* /* Define custom variables at the root level */
+/*  Screen { */
+/*     --my-custom-red: tomato; */
+/*     --default-padding: 1; */
+/* } */
+/**/
+/* /* Use them later with the $ symbol (Textual syntax) or var() function */
+/* .error-text { */
+/*     color: $my-custom-red; */
+/*     padding: $default-padding; */
+/* } */
