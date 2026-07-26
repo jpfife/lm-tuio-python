@@ -38,19 +38,9 @@ class LMStudioApp(App):
         ('q', 'quit', "[quit]"),
         ('r', 'refresh_models', "[refresh list]")
     ]
+
+    CSS_PATH = 'styles.tcss'
     
-    CSS = """
-        HeaderIcon {
-            width: auto;
-        }
-
-        HeaderTitle {
-            content-align: center middle;
-            text-align: center;
-            height: 100%;
-        }
-    """
-
     # Accept target IP and port from CLI on load.
     def __init__(self, ip: str, port: int):
         super().__init__()
