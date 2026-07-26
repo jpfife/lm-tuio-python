@@ -2,8 +2,8 @@ from textual.app import App, ComposeResult
 from textual.widgets import Header, Footer, DataTable
 from textual.widgets._header import HeaderIcon
 from enum import StrEnum
-from lm_tui.api import fetch_available_models, check_server_status
-from lm_tui.models import ModelInfo, QuantizationInfo
+from lm_tuio.api import fetch_available_models, check_server_status
+from lm_tuio.models import ModelInfo, QuantizationInfo
 
 
 # Connection status indicator enums and consts.

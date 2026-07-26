@@ -1,6 +1,6 @@
 import httpx
 from pydantic import ValidationError
-from lm_tui.models import ModelInfo, ModelListResponse
+from lm_tuio.models import ModelInfo, ModelListResponse
 
 
 # NOTE: Using LM Studio Native v1 REST API endpoints (/api/v1/[api_action] for robust server functionality. 

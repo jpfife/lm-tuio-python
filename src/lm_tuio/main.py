@@ -1,9 +1,9 @@
 import sys
 import asyncio
-from lm_tui.config import parse_arguments, AppConfig
-from lm_tui.scanner import scan_targets
-from lm_tui.api import fetch_available_models
-from lm_tui.tui import LMStudioApp
+from lm_tuio.config import parse_arguments, AppConfig
+from lm_tuio.scanner import scan_targets
+from lm_tuio.api import fetch_available_models
+from lm_tuio.tui import LMStudioApp
 
 
 async def execute_scan(config: AppConfig) -> None:
