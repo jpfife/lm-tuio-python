@@ -1,16 +1,47 @@
 /* ========= Type Selectors ========= */
-HeaderIcon {
-    width: auto;
+Screen {
+    layout: vertical;
 }
 
-HeaderTitle {
-    content-align: center middle;
-    text-align: center;
-    height: 100%;
-}
+/* HeaderIcon { */
+/*     width: auto; */
+/* } */
+/**/
+/* HeaderTitle { */
+/*     content-align: center middle; */
+/*     text-align: center; */
+/*     height: 100%; */
+/* } */
 
 
 /* ========= ID Selectors (id='widget_instance') ========= */
+#header-zone {
+    height: 5;
+    margin-bottom: 1;
+}
+
+#logo-title {
+    border: none;
+    width: 2fr;
+}
+
+#main-zone {
+    height: 1fr;
+}
+
+#loaded-models {
+    width: 25%;
+}
+
+#downloaded-models {
+    width: 30%;
+}
+
+#context-pane {
+    width: 45%;
+}
+
+
 /*#models_table {
 /*    height: 100%;
 /*    border: solid green;
@@ -22,6 +53,12 @@ HeaderTitle {
 
 
 /* ========= Class Selectors ========= */
+.box {
+    border: solid $secondary;
+    content-align: center middle;
+    height: 100%;
+}
+
 /* .warning-btn { */
 /*     background: yellow; */
 /*     color: black; */
@@ -45,7 +82,12 @@ HeaderTitle {
 /* } */
 
 
-/* /* ========= Combinators (Hierarchy ========= */
+/* /* ========= Combinators (Hierarchy) ========= */
+#header-zone>Static {
+    width: 1fr;
+}
+
+
 /* /* DESCENDANT: Targets any Button that lives anywhere inside #main_menu */
 /* #main_menu Button { */
 /*     width: 100%; */
