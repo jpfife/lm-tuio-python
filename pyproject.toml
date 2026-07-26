@@ -1,7 +1,7 @@
 [project]
-name = "lm-tui"
+name = "lm-tuio-python"
 version = "0.1.0"
-description = "TUI application for monitoring and interfacing with LM Studio server endpoints on the local network."
+description = "Remote LM Studio management TUI."
 readme = "README.md"
 authors = [
     { name = "redappr", email = "jordanpfife@gmail.com" }
@@ -14,7 +14,7 @@ dependencies = [
 ]
 
 [project.scripts]
-lm-tui = "lm_tui:main"
+lm-tuio = "lm_tuio.main:main"
 
 [build-system]
 requires = ["uv_build>=0.11.32,<0.12.0"]
@@ -28,3 +28,6 @@ dev = [
 [tool.pyright]
 venvPath = '.'
 venv = '.venv'
+
+[tool.uv.build-backend]
+module-name = 'lm_tuio'
