@@ -1,10 +1,12 @@
 import argparse
-import ipaddress
 from dataclasses import dataclass
+import ipaddress
+
 
 @dataclass
 class AppConfig:
-    '''For autocomplete and type safety.'''
+    """For autocomplete and type safety."""
+
     target: str
     port: int
     is_network: bool
@@ -23,26 +25,38 @@ def validate_ip_net(target: str) -> tuple[str | None, str | None]:
         network_obj: ipaddress.IPv4Network = ipaddress.IPv4Network(target, strict=False)
         return str(network_obj), None
     except ValueError:
-        pass    # Check if single IP
+        pass  # Check if single IP
 
     try:
         ip_obj: ipaddress.IPv4Address = ipaddress.IPv4Address(target)
         return str(ip_obj), None
     except ValueError:
-        return None, f"Invalid IP or network format: '{target}'\nSee --help for usage information."
+        return (
+            None,
+            f"Invalid IP or network format: '{target}'\nSee --help for usage information.",
+        )
 
 
-def parse_arguments(args_list: list[str] | None = None) -> tuple[AppConfig | None, str | None]:
-    '''Returns tuple: (AppConfig, err)'''
+def parse_arguments(
+    args_list: list[str] | None = None,
+) -> tuple[AppConfig | None, str | None]:
+    """Returns tuple: (AppConfig, err)"""
     parser: argparse.ArgumentParser = argparse.ArgumentParser(
-            description="LM Studio server detection and TUI interface."
+        description="LM Studio server detection and TUI interface."
     )
 
     # Positional args
-    parser.add_argument("target_ip", nargs="?", type=str, help="Target IP address or subnet")
+    parser.add_argument(
+        "target_ip", nargs="?", type=str, help="Target IP address or subnet"
+    )
     parser.add_argument("target_port", nargs="?", type=int, help="Target port")
     # Flags
-    parser.add_argument("-n", "--network", type=str, help="Target network subnet (default = 192.168.1.0/24)")
+    parser.add_argument(
+        "-n",
+        "--network",
+        type=str,
+        help="Target network subnet (default = 192.168.1.0/24)",
+    )
     parser.add_argument("-p", "--port", type=int, help="Target port")
 
     parsed_args: dict[str, str | int | None] = vars(parser.parse_args(args_list))
@@ -73,10 +87,6 @@ def parse_arguments(args_list: list[str] | None = None) -> tuple[AppConfig | Non
     if err is not None:
         return None, err
 
-    config: AppConfig = AppConfig(
-            valid_target,
-            scan_port,
-            is_network_scan
-    )
+    config: AppConfig = AppConfig(valid_target, scan_port, is_network_scan)
 
     return config, None
