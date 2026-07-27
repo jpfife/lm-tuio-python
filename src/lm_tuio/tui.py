@@ -20,7 +20,7 @@ CONNECT_STATUS: dict[str, tuple[str, str]] = {
     Connection.GRAY: (" ●   Unknown. Retrying...", 'lightgray')
 }
 
-PING_INTERVAL: float = 2.0
+PING_INTERVAL: float = 5.0
 
 # Subtitle consts
 class Subtitle(StrEnum):
