@@ -26,19 +26,19 @@ Screen {
 
 #logo-title {
     border: none;
-    width: 30%;
-    content-align: center middle;
+    width: 40%;
+    content-align: center top;
     text-align: center;
 }
 
 #conn-status {
     border: none;
-    content-align: left middle;
+    content-align: left bottom;
     width: 20%;
 }
 
 #action-log {
-    width: 50%;
+    width: 40%;
 }
 
 /* Main app widgets */
