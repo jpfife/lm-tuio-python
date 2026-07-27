@@ -1,16 +1,66 @@
 /* ========= Type Selectors ========= */
-HeaderIcon {
-    width: auto;
+Screen {
+    layout: vertical;
 }
 
-HeaderTitle {
-    content-align: center middle;
-    text-align: center;
-    height: 100%;
-}
+/* HeaderIcon { */
+/*     width: auto; */
+/* } */
+/**/
+/* HeaderTitle { */
+/*     content-align: center middle; */
+/*     text-align: center; */
+/*     height: 100%; */
+/* } */
 
 
 /* ========= ID Selectors (id='widget_instance') ========= */
+
+/* Header zone widgets */
+
+#header-zone {
+    height: 7;
+    /* margin-bottom: 1; */
+    margin: 1 3 1 3;
+}
+
+#logo-title {
+    border: none;
+    width: 30%;
+    content-align: center middle;
+    text-align: center;
+}
+
+#conn-status {
+    border: none;
+    content-align: left middle;
+    width: 20%;
+}
+
+#action-log {
+    width: 50%;
+}
+
+/* Main app widgets */
+
+#main-zone {
+    height: 1fr;
+    margin: 0 3 1 3;
+}
+
+#loaded-models {
+    width: 25%;
+}
+
+#downloaded-models {
+    width: 25%;
+}
+
+#context-pane {
+    width: 50%;
+}
+
+
 /*#models_table {
 /*    height: 100%;
 /*    border: solid green;
@@ -22,6 +72,12 @@ HeaderTitle {
 
 
 /* ========= Class Selectors ========= */
+.box {
+    border: solid $secondary;
+    content-align: center middle;
+    height: 100%;
+}
+
 /* .warning-btn { */
 /*     background: yellow; */
 /*     color: black; */
@@ -33,6 +89,7 @@ HeaderTitle {
 
 
 /* /* ========= Widget States ========= */
+
 /*     background: $accent; */
 /* } */
 /**/
@@ -45,7 +102,12 @@ HeaderTitle {
 /* } */
 
 
-/* /* ========= Combinators (Hierarchy ========= */
+/* /* ========= Combinators (Hierarchy) ========= */
+/* #header-zone>Static { */
+/*     margin: 1 2 1 2; */
+/* } */
+
+
 /* /* DESCENDANT: Targets any Button that lives anywhere inside #main_menu */
 /* #main_menu Button { */
 /*     width: 100%; */
