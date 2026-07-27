@@ -3,7 +3,7 @@ from textual.screen import Screen
 from textual.containers import Horizontal
 from textual.widgets import Static, Footer
 
-from lm_tuio.components import ActionLog, ConnectionStatus, DownloadedModels, Title, LoadedModels
+from lm_tuio.components import ActionLog, ConnectionStatus, ContextPane, DownloadedModels, Title, LoadedModels
 
 class DashboardScreen(Screen):
     '''Primary dashboard.'''
@@ -44,6 +44,12 @@ class DashboardScreen(Screen):
             id='downloaded-models',
             classes='box'
         )
+        self.contextpane_widget: ContextPane = ContextPane(
+            # TODO: Set relevant values
+            name='Dynamic Context Pane',
+            id='context-pane',
+            classes='box'
+        )
 
         # Top row telemetry and logging
         with Horizontal(id='header-zone'):
@@ -55,7 +61,7 @@ class DashboardScreen(Screen):
         with Horizontal(id='main-zone'):
             yield self.loadedmodels_widget
             yield self.downloadedmodels_widget
-            yield Static('Dynamic Context Pane', id='context-pane', classes='box')
+            yield self.contextpane_widget
 
         # Bottom row hotkeys bar
         yield Footer()
