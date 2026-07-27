@@ -6,12 +6,13 @@ Periodically requests HTTP HEAD response using ../api.py server check function.
 from enum import StrEnum
 
 from textual import work
+from textual.reactive import reactive
 from textual.widgets import Static
 
 from lm_tuio.api import check_server_status
 
 
-# Connection status indicator enums and consts.
+# Connection status indicator enums
 class Connection(StrEnum):
     GREEN = "green"
     YELLOW = "yellow"
@@ -19,11 +20,18 @@ class Connection(StrEnum):
     GRAY = "gray"
 
 
+# Easy set connection status icon color (W3C, hex, etc.)
+GREEN_ICON: str = "green"
+YELLOW_ICON: str = "yellow"
+RED_ICON: str = "tomato"
+GRAY_ICON: str = "lightgray"
+
+
 CONNECT_STATUS: dict[str, str] = {
-    Connection.GREEN: ("[green]●[/green]  Connected"),
-    Connection.YELLOW: ("[yellow]●[/yellow]  Connecting..."),
-    Connection.RED: ("[tomato]●[/tomato]  Disconnected. Retrying..."),
-    Connection.GRAY: ("[lightgray]●[/lightgray]  Unknown. Retrying..."),
+    Connection.GREEN: (f"[{GREEN_ICON}]●[/{GREEN_ICON}]  Connected"),
+    Connection.YELLOW: (f"[{YELLOW_ICON}]●[/{YELLOW_ICON}]  Connecting..."),
+    Connection.RED: (f"[{RED_ICON}]●[/{RED_ICON}]  Disconnected. Retrying..."),
+    Connection.GRAY: (f"[{GRAY_ICON}]●[/{GRAY_ICON}]  Unknown. Retrying..."),
 }
 
 PING_INTERVAL: float = 2.0
@@ -34,32 +42,29 @@ PING_INTERVAL: float = 2.0
 class ConnectionStatus(Static):
     """Main dashboard widget to asynchronously poll LMS API connectivity and display status."""
 
+    status: reactive[str] = reactive(Connection.YELLOW)
+    server_ip: reactive[str] = reactive("192.168.1.100")
+    server_port: reactive[int] = reactive(1234)
+
     def on_mount(self) -> None:
-        self.server_ip: str = "192.168.1.100"
-        self.server_port: int = 1234
-        self.action_set_status(Connection.YELLOW)
         self.set_interval(PING_INTERVAL, self.update_connection_status)
+
+    def render(self) -> str:
+        status_text: str = CONNECT_STATUS.get(
+            self.status, CONNECT_STATUS[Connection.GRAY]
+        )
+        server_display: str = f"\n\nServer:  {self.server_ip}:{self.server_port}"
+        return status_text + server_display
 
     @work(exclusive=True)
     async def update_connection_status(self) -> None:
-        """Update Header UI with connection status at PING_INTERVAL"""
+        """Check server API status and update reactive state"""
         is_connected: bool = await check_server_status(
             self.server_ip, self.server_port, PING_INTERVAL
         )
         if is_connected:
-            self.action_set_status(Connection.GREEN)
+            self.status = Connection.GREEN
         else:
-            self.action_set_status(Connection.RED)
+            self.status = Connection.RED
 
     # ========== ACTIONS ==========
-
-    def action_set_status(self, status: str) -> None:
-        """Dynamic HeaderIcon update based on connection to LM Studio server."""
-        text: str
-        if status in Connection:
-            text = CONNECT_STATUS[status]
-        else:
-            text = CONNECT_STATUS[Connection.GRAY]
-
-        # self.styles.color = color
-        self.update(f"{text}\n\nServer:  {self.server_ip}:{self.server_port}")
