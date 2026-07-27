@@ -1,3 +1,5 @@
+"""Logo display and title widget for primary dashboard screen."""
+
 from textual.widgets import Static
 
 logo: str = r"""
@@ -11,6 +13,7 @@ logo: str = r"""
 
 
 class Title(Static):
-    '''Logo wigdet for primary dashboard.'''
+    """Logo wigdet for primary dashboard."""
+
     def on_mount(self) -> None:
         self.update(logo)

@@ -1,10 +1,14 @@
+"""Deprecated: DO NOT USE
+
+Proof of concept entry point for initial draft screen and API response.
+"""
+
 import sys
-import asyncio
-from lm_tuio.config import parse_arguments, AppConfig
+
+from lm_tuio.config import AppConfig, parse_arguments
 from lm_tuio.scanner import scan_targets
-from lm_tuio.api import fetch_available_models
 from lm_tuio.tui import LMStudioApp
-from lm_tuio.screens.dashboard import DashboardScreen
+# from lm_tuio.screens.dashboard import DashboardScreen
 
 
 async def execute_scan(config: AppConfig) -> None:
@@ -42,6 +46,7 @@ async def execute_scan(config: AppConfig) -> None:
 #         print("Scan cancelled by user.")
 #         sys.exit(2)
 
+
 def main() -> None:
     config: AppConfig | None
     err: str | None
@@ -51,11 +56,12 @@ def main() -> None:
         print(f"Configuration error: {err}")
         sys.exit(1)
 
-    ip: str = config.target.split('/')[0]
+    ip: str = config.target.split("/")[0]
     port: int = config.port
 
     app = LMStudioApp(ip, port)
     app.run()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()
