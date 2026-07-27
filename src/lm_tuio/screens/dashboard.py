@@ -3,7 +3,7 @@ from textual.screen import Screen
 from textual.containers import Horizontal
 from textual.widgets import Static, Footer
 
-from lm_tuio.components import ActionLog, ConnectionStatus, Title
+from lm_tuio.components import ActionLog, ConnectionStatus, Title, LoadedModels
 
 class DashboardScreen(Screen):
     '''Primary dashboard.'''
@@ -17,9 +17,9 @@ class DashboardScreen(Screen):
     def compose(self) -> ComposeResult:
         # Set widget instances
         self.connection_widget: ConnectionStatus = ConnectionStatus(
-                'Connectivity Status',
-                id='conn-status',
-                classes='box'
+            'Connectivity Status',
+            id='conn-status',
+            classes='box'
         )
         self.title_widget: Title = Title(
             'LM TUIO Logo\nLM Studio Dashboard',
@@ -27,8 +27,15 @@ class DashboardScreen(Screen):
             classes='box'
         )
         self.actionlog_widget: ActionLog = ActionLog(
+            # TODO: Set relevant values
             name='Action Log',
             id='action-log',
+            classes='box'
+        )
+        self.loadedmodels_widget: LoadedModels = LoadedModels(
+            # TODO: Set relevant values
+            name='Actively Loaded Models',
+            id='loaded-models',
             classes='box'
         )
 
