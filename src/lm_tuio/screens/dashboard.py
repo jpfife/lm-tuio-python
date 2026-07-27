@@ -3,7 +3,7 @@ from textual.screen import Screen
 from textual.containers import Horizontal
 from textual.widgets import Static, Footer
 
-from lm_tuio.components import ConnectionStatus, Title
+from lm_tuio.components import ActionLog, ConnectionStatus, Title
 
 class DashboardScreen(Screen):
     '''Primary dashboard.'''
@@ -26,12 +26,17 @@ class DashboardScreen(Screen):
             id='logo-title',
             classes='box'
         )
+        self.actionlog_widget: ActionLog = ActionLog(
+            name='Action Log',
+            id='action-log',
+            classes='box'
+        )
 
         # Top row telemetry and logging
         with Horizontal(id='header-zone'):
             yield self.connection_widget
             yield self.title_widget
-            yield Static('Current Actions / Log', id='action-log', classes='box')
+            yield self.actionlog_widget
 
         # Middle row for main application content
         with Horizontal(id='main-zone'):
