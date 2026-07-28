@@ -15,10 +15,12 @@ from typing import Any
 class AppConfig:
     """Standardize network type requirements."""
 
-    target: str
+    target: str  # IPv4 only
     port: int
-    scan_subnet: str
+    scan_subnet: str  # in CIDR notation
     is_network: bool
+
+    NOTIFY_TIMEOUT: float = 2.0
 
     @classmethod
     def load(
