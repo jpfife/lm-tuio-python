@@ -21,17 +21,17 @@ class Connection(StrEnum):
 
 
 # Easy set connection status icon color (W3C, hex, etc.)
-GREEN_ICON: str = "green"
+GREEN_ICON: str = "mediumseagreen"
 YELLOW_ICON: str = "yellow"
 RED_ICON: str = "tomato"
 GRAY_ICON: str = "lightgray"
 
 
 CONNECT_STATUS: dict[str, str] = {
-    Connection.GREEN: (f"[{GREEN_ICON}]●[/{GREEN_ICON}]  Connected"),
-    Connection.YELLOW: (f"[{YELLOW_ICON}]●[/{YELLOW_ICON}]  Connecting..."),
-    Connection.RED: (f"[{RED_ICON}]●[/{RED_ICON}]  Disconnected. Retrying..."),
-    Connection.GRAY: (f"[{GRAY_ICON}]●[/{GRAY_ICON}]  Unknown. Retrying..."),
+    Connection.GREEN: (f"[{GREEN_ICON}]●[/{GREEN_ICON}]  [i]Connected"),
+    Connection.YELLOW: (f"[{YELLOW_ICON}]●[/{YELLOW_ICON}]  [i]Checking endpoint..."),
+    Connection.RED: (f"[{RED_ICON}]●[/{RED_ICON}]  [i]No response. Retrying..."),
+    Connection.GRAY: (f"[{GRAY_ICON}]●[/{GRAY_ICON}]  [i]Unknown. Retrying..."),
 }
 
 PING_INTERVAL: float = 2.0
@@ -66,5 +66,9 @@ class ConnectionStatus(Static):
             self.status = Connection.GREEN
         else:
             self.status = Connection.RED
+
+    def reset_status(self) -> None:
+        """Force yellow status when switching servers"""
+        self.status = Connection.YELLOW
 
     # ========== ACTIONS ==========

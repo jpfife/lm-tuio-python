@@ -11,7 +11,7 @@ from lm_tuio.models import ModelInfo, ModelListResponse
 # NOTE: Using LM Studio Native v1 REST API endpoints (/api/v1/[api_action]) for more robust server functionality.
 #       OpenAI compatible endpoints (/v1/[api_action]) are primarily for inference.
 
-API_TIMEOUT: float = 5.0
+API_TIMEOUT: float = 2.0
 
 api_action: dict[str, str] = {
     "models": "/api/v1/models",
