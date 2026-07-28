@@ -10,15 +10,17 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+import tomli_w
+
 
 @dataclass
 class AppConfig:
     """Standardize network type requirements."""
 
-    target: str  # IPv4 only
-    port: int
-    scan_subnet: str  # in CIDR notation
-    is_network: bool
+    target: str = "127.0.0.1"  # IPv4 only
+    port: int = 1234
+    scan_subnet: str = "192.168.1.0/24"  # in CIDR notation
+    is_network: bool = False
 
     NOTIFY_TIMEOUT: float = 2.0
 
