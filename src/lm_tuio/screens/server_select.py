@@ -186,18 +186,20 @@ class ServerSelectionModal(ModalScreen[tuple[str, int] | None]):
                 self.notify(
                     "Invalid network target.\nExpected: IP:Port (e.g., 192.168.1.10:1234)",
                     severity="error",
+                    timeout=AppConfig.NOTIFY_TIMEOUT,
                 )
                 return
 
             assert valid_ip is not None
             ip = ip[: ip.find("/")] if "/" in ip else ip
-            self.dismiss((ip, port))
+            self.dismiss((ip, port))  # Return new server config
 
         except (ValueError, AssertionError):
             self.notify(
                 """Invalid network target.
                 Use format IP:Port or hostname:Port""",
                 severity="error",
+                timeout=AppConfig.NOTIFY_TIMEOUT,
             )
 
     @on(Button.Pressed, "#cancel-btn")
@@ -208,8 +210,8 @@ class ServerSelectionModal(ModalScreen[tuple[str, int] | None]):
     @on(Button.Pressed, "#scan-btn")
     def run_network_scan(self) -> None:
         """Placeholder for scanner integration."""
-        target_net = self.scan_widget.value
-        target_port = self.scan_port_widget.value
+        target_net = self.scan_widget.value.strip()
+        target_port = self.scan_port_widget.value.strip()
         self.exectute_network_scan(target_net, target_port)
 
     @on(OptionList.OptionSelected, "#active-servers-list")
