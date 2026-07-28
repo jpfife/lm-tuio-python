@@ -17,7 +17,7 @@ class LMTuioApp(App):
     def on_mount(self) -> None:
         config, err = AppConfig.load()
         if err:
-            self.notify(err, severity="warning")
+            self.notify(err, severity="warning", timeout=AppConfig.NOTIFY_TIMEOUT)
 
         dashboard: DashboardScreen = DashboardScreen()
         self.push_screen(dashboard)

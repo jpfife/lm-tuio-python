@@ -116,6 +116,7 @@ class DashboardScreen(Screen):
     def action_retry_connection(self) -> None:
         """Triggered by '*' hotkey"""
         self.notify("Retesting connection to server...", timeout=3.0)
+        self.connection_widget.reset_status()
         self.connection_widget.update_connection_status()
 
     # ========= EVENTS ==========
