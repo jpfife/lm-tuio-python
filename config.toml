@@ -4,3 +4,6 @@ default_port = 1234
 
 [network]
 default_scan_subnet = '192.168.1.0/24'
+
+[notification]
+timeout_interval = 2.0
