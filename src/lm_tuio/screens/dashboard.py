@@ -17,6 +17,7 @@ from lm_tuio.components import (
     LoadedModels,
     Title,
 )
+from lm_tuio.config import AppConfig
 from lm_tuio.screens.server_select import ServerSelectionModal
 
 
@@ -93,9 +94,11 @@ class DashboardScreen(Screen):
 
     def action_change_server(self) -> None:
         """Triggered by 'c' hotkey"""
-        loaded_ip: str = self.connection_widget.server_ip
-        loaded_port: int = self.connection_widget.server_port
-        loaded_subnet: str = "192.168.1.0/24"  # TODO: load from app config
+        net_config: AppConfig = AppConfig()
+        net_config.load()
+        loaded_ip: str = net_config.target
+        loaded_port: int = net_config.port
+        loaded_subnet: str = net_config.scan_subnet
 
         def apply_new_server(ip_conf: tuple[str, int] | None) -> None:
             if not ip_conf:
@@ -104,7 +107,9 @@ class DashboardScreen(Screen):
             ip, port = ip_conf
             self.connection_widget.server_ip = ip
             self.connection_widget.server_port = port
-            self.notify(f"Connecting to {ip}:{port}...", timeout=1)
+            self.notify(
+                f"Connecting to {ip}:{port}...", timeout=AppConfig.NOTIFY_TIMEOUT
+            )
             self.connection_widget.reset_status()
             self.connection_widget.update_connection_status()
 
@@ -115,7 +120,9 @@ class DashboardScreen(Screen):
 
     def action_retry_connection(self) -> None:
         """Triggered by '*' hotkey"""
-        self.notify("Retesting connection to server...", timeout=3.0)
+        self.notify(
+            "Retesting connection to server...", timeout=AppConfig.NOTIFY_TIMEOUT
+        )
         self.connection_widget.reset_status()
         self.connection_widget.update_connection_status()
 

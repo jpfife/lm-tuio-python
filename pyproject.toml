@@ -3,14 +3,13 @@ name = "lm-tuio-python"
 version = "0.1.0"
 description = "Remote LM Studio management TUI."
 readme = "README.md"
-authors = [
-    { name = "redappr", email = "jordanpfife@gmail.com" }
-]
-requires-python = ">=3.11"
+authors = [{ name = "redappr", email = "jordanpfife@gmail.com" }]
+requires-python = ">=3.13"
 dependencies = [
     "httpx>=0.28.1",
     "pydantic>=2.13.4",
     "textual>=8.2.8",
+    "tomli-w>=1.2.0",
 ]
 
 [project.scripts]
@@ -21,10 +20,7 @@ requires = ["uv_build>=0.11.32,<0.12.0"]
 build-backend = "uv_build"
 
 [dependency-groups]
-dev = [
-    "pytest>=9.1.1",
-    "textual-dev>=1.8.0",
-]
+dev = ["pytest>=9.1.1", "textual-dev>=1.8.0"]
 
 [tool.pyright]
 venvPath = '.'
