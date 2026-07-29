@@ -7,23 +7,26 @@ Spawns TUI if script flags not passed.
 from textual.app import App
 
 from lm_tuio.config import AppConfig
-from lm_tuio.events import ServerEndpointUpdated
 from lm_tuio.screens.dashboard import DashboardScreen
 
 
 class LMTuioApp(App):
     CSS_PATH = "styles.tcss"
+    config: AppConfig
 
     def on_mount(self) -> None:
-        config, err = AppConfig.load()
+        loaded_config, err = AppConfig.load()
+        self.config = loaded_config if loaded_config else AppConfig()
+
         if err:
-            self.notify(err, severity="warning", timeout=AppConfig.NOTIFY_TIMEOUT)
+            self.notify(
+                f"Warning: Error occurred while loading configuration: {err}",
+                severity="warning",
+                timeout=AppConfig.NOTIFY_TIMEOUT,
+            )
 
         dashboard: DashboardScreen = DashboardScreen()
         self.push_screen(dashboard)
-
-        if config:
-            dashboard.post_message(ServerEndpointUpdated(config.target, config.port))
 
 
 def main():
