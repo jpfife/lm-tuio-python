@@ -1,15 +1,10 @@
-/* ========= Type Selectors ========= */
+/* =========================================
+   GLOBAL LAYOUT / CLASSES
+   ========================================= */
 Screen {
     layout: vertical;
-    /* border: $primary; */
     outline: double $primary;
     padding: 0 1 1 1;
-}
-
-ServerSelectionModal {
-    align: center middle;
-    background: rgba(0, 0, 0, 0.5);
-    padding: 0 0 0 0;
 }
 
 Button {
@@ -18,21 +13,30 @@ Button {
     height: 1;
 }
 
-/* HeaderIcon { */
-/*     width: auto; */
-/* } */
-/**/
-/* HeaderTitle { */
-/*     content-align: center middle; */
-/*     text-align: center; */
-/*     height: 100%; */
-/* } */
+/* =========================================
+   UTILITY CLASSES
+   ========================================= */
+.box {
+    border-top: round $secondary 60%;
+    border-right: round $secondary 60%;
+    content-align: center middle;
+    height: 100%;
+    border-title-align: left;
+}
 
+.section-title {
+    text-style: bold;
+    color: $accent;
+    margin-top: 1;
+}
 
-/* ========= ID Selectors (id='widget_instance') ========= */
+.hidden {
+    display: none;
+}
 
-/* Header zone widgets */
-
+/* =========================================
+   HEADER ZONE
+   ========================================= */
 #header-zone {
     height: 7;
     margin: 1 1 1 1;
@@ -59,7 +63,7 @@ Button {
     padding: 1;
     content-align: left middle;
     width: 1fr;
-    min_width: 35;
+    min-width: 35;
     margin-right: 2;
 }
 
@@ -71,21 +75,15 @@ Button {
     border-title-style: italic;
 }
 
-/* Main app widgets */
-
+/* =========================================
+   MAIN APP ZONE
+   ========================================= */
 #main-zone {
     height: 1fr;
     margin: 1 1 1 1;
 }
 
-#loaded-models {
-    width: 1fr;
-    border-title-align: left;
-    border-title-color: $primary;
-    border-title-background: rgba(0, 0, 0, 0);
-    border-title-style: italic;
-}
-
+#loaded-models,
 #downloaded-models {
     width: 1fr;
     border-title-align: left;
@@ -95,15 +93,52 @@ Button {
 }
 
 #context-pane {
-    /* background: black; */
     width: 2fr;
     border-title-align: left;
     border-title-color: $primary;
     border-title-background: rgba(0, 0, 0, 0);
     border-title-style: italic;
+    padding: 1 2;
 }
 
-/* Server Selction Modal */
+/* DataTable List Styling */
+DataTable {
+    background: transparent;
+    border: none;
+    width: 100%;
+    height: 100%;
+}
+
+DataTable>.datatable--header {
+    background: $surface;
+    color: $primary;
+    text-style: bold;
+}
+
+DataTable>.datatable--cursor {
+    background: $secondary;
+    color: $background;
+}
+
+/* =========================================
+   FOOTER / SEARCH BAR
+   ========================================= */
+#vim-search-bar {
+    dock: bottom;
+    width: 100%;
+    border: none;
+    background: $surface;
+    color: $text;
+}
+
+/* =========================================
+   MODAL - SERVER SELECTION
+   ========================================= */
+ServerSelectionModal {
+    align: center middle;
+    background: rgba(0, 0, 0, 0.5);
+    padding: 0;
+}
 
 #modal-container {
     width: 45%;
@@ -123,8 +158,6 @@ Button {
 #active-server-sidebar,
 #cached-ips-sidebar {
     height: 1fr;
-    /* border: round $secondary; */
-    /* background: black; */
 }
 
 #active-servers-list,
@@ -133,7 +166,6 @@ Button {
     border: none;
     padding: 1;
     background: rgba(0, 0, 0, 0.25);
-    /* outline: round $secondary; */
 }
 
 #main-action-area {
@@ -141,66 +173,9 @@ Button {
     padding: 2 1 -1 3;
 }
 
-#server-section {
-    height: 1fr;
-}
-
+#server-section,
 #scan-section {
     height: 1fr;
-}
-
-/* #manual-ip-input, */
-/* #scan-input {} */
-/* #scan-port-input { */
-/*     width: 10px; */
-/*     min-width: 10px; */
-/*     max-width: 10px; */
-/* } */
-
-#connect-btn,
-#default-connect-btn {
-    margin: 0 1 1 0;
-}
-
-#scan-btn,
-#default-network-btn {
-    margin: 0 1 1 0;
-}
-
-#cancel-btn,
-#bottom-btn-group {
-    align: center middle;
-    margin: 1 2 1 0;
-}
-
-/* #botton-btn-group { */
-/*     align: right bottom; */
-/* } */
-
-/* ========= Class Selectors ========= */
-.box {
-    border-top: round $secondary 60%;
-    border-right: round $secondary 60%;
-    content-align: center middle;
-    height: 100%;
-    border-title-align: left;
-}
-
-.section-title {
-    text-style: bold;
-    color: $accent;
-    /* margin-bottom: 1; */
-    margin-top: 1;
-}
-
-/* .input-group { */
-/*     height: 3; */
-/*     margin-bottom: 2; */
-/* } */
-
-.button-group {
-    height: 3;
-    margin-top: 2;
 }
 
 .server-select-input-field {
@@ -215,51 +190,20 @@ Button {
     border-subtitle-style: italic;
 }
 
-/* /* ========= Widget States ========= */
+#connect-btn,
+#default-connect-btn,
+#scan-btn,
+#default-network-btn {
+    margin: 0 1 1 0;
+}
 
-/*     background: $accent; */
-/* } */
-/**/
-/* Button:active { */
-/*     tint: white 20%; */
-/* } */
-/**/
-/* Input:focus { */
-/*     border: tall $secondary; */
-/* } */
+#cancel-btn,
+#bottom-btn-group {
+    align: center middle;
+    margin: 1 2 1 0;
+}
 
-
-/* /* ========= Combinators (Hierarchy) ========= */
-/* #header-zone>Static { */
-/*     margin: 1 2 1 2; */
-/* } */
-
-
-/* /* DESCENDANT: Targets any Button that lives anywhere inside #main_menu */
-/* #main_menu Button { */
-/*     width: 100%; */
-/* } */
-/**/
-/* DIRECT CHILD: Targets a Button only if it is a direct child of #main_menu */
-/* #main_menu > Button { */
-/*     margin-top: 1; */
-/* } */
-/**/
-/* /* MULTIPLE: Targets both DataTables AND ListViews with the same rule */
-/* DataTable, ListView { */
-/*     scrollbar-color: gray; */
-/* } */
-
-
-/* /* ========= Variables ========= */
-/* /* Define custom variables at the root level */
-/*  Screen { */
-/*     --my-custom-red: tomato; */
-/*     --default-padding: 1; */
-/* } */
-/**/
-/* /* Use them later with the $ symbol (Textual syntax) or var() function */
-/* .error-text { */
-/*     color: $my-custom-red; */
-/*     padding: $default-padding; */
-/* } */
+.button-group {
+    height: 3;
+    margin-top: 2;
+}
