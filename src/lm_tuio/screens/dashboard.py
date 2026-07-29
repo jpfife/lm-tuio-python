@@ -25,7 +25,7 @@ class DashboardScreen(Screen):
     """Primary application dashboard."""
 
     BINDINGS = [
-        ("q", "quit", "[quit]"),
+        ("q,escape", "quit", "[quit]"),
         ("c", "change_server", "[change server]"),
         ("r", "refresh_models", "[refresh models]"),
         ("*", "retry_connection"),

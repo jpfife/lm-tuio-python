@@ -1,9 +1,9 @@
 [server]
-default_ip = '127.0.0.1'
+default_ip = "192.168.1.100"
 default_port = 1234
 
 [network]
-default_scan_subnet = '192.168.1.0/24'
+default_scan_subnet = "192.168.1.0/24"
 
-[notification]
-timeout_interval = 2.0
+[app]
+notify_timeout = 2.0
