@@ -7,7 +7,7 @@ Update _build_toml_config and _parse_toml helper methods when adding tables to c
 import argparse
 import ipaddress
 import tomllib
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
@@ -16,12 +16,15 @@ import tomlkit
 
 @dataclass
 class AppConfig:
-    """Standardize network type requirements."""
+    """Master app configuration dataclass."""
 
     target: str = "127.0.0.1"  # IPv4 only
     port: int = 1234
     scan_subnet: str = "192.168.1.0/24"  # in CIDR notation
     is_network: bool = False
+    cached_ips: list[str] = field(default_factory=list)
+    MAX_CACHED_IPS: int = 10
+
     NOTIFY_TIMEOUT: float = 2.0
     config_path: Path = Path("config.toml")
 
@@ -58,6 +61,9 @@ class AppConfig:
             "target": cls.target,
             "port": cls.port,
             "scan_subnet": cls.scan_subnet,
+            "cached_ips": [],
+            "max_cached_ips": cls.MAX_CACHED_IPS,
+            "notify_timeout": cls.NOTIFY_TIMEOUT,
         }
         logs: list[str] = []
 
@@ -98,8 +104,9 @@ class AppConfig:
             port=config_data["port"],
             scan_subnet=valid_network,
             is_network=is_network_scan,
+            cached_ips=config_data.get("cached_ips", []),
+            MAX_CACHED_IPS=config_data["max_cached_ips"],
             NOTIFY_TIMEOUT=config_data["notify_timeout"],
-            config_path=conf_path,
         )
 
         return config, status_msg
@@ -116,7 +123,10 @@ class AppConfig:
         # Map onto AppConfig dataclass
         doc["server"]["default_ip"] = self.target
         doc["server"]["default_port"] = self.port
+        doc["server"]["cached_ips"] = self.cached_ips
         doc["network"]["default_scan_subnet"] = self.scan_subnet
+
+        doc["app"]["max_cached_ips"] = self.MAX_CACHED_IPS
         doc["app"]["notify_timeout"] = self.NOTIFY_TIMEOUT
 
     # NOTE: Update _parse_toml helper method when adding tables to config.toml !!
@@ -135,10 +145,16 @@ class AppConfig:
                     updates["target"] = server_toml["default_ip"]
                 if "default_port" in server_toml:
                     updates["port"] = server_toml["default_port"]
+                if "cached_ips" in server_toml:
+                    updates["cached_ips"] = server_toml["cached_ips"]
+
                 if "default_scan_subnet" in network_toml:
                     updates["scan_subnet"] = network_toml["default_scan_subnet"]
+
                 if "notify_timeout" in app_toml:
                     updates["notify_timeout"] = app_toml["notify_timeout"]
+                if "max_cached_ips" in app_toml:
+                    updates["max_cached_ips"] = app_toml["max_cached_ips"]
 
             return updates, None
         except Exception as err:
