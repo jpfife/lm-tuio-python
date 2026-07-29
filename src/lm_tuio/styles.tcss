@@ -3,9 +3,19 @@ Screen {
     layout: vertical;
     /* border: $primary; */
     outline: double $primary;
-    padding-bottom: 1;
-    padding-right: 1;
-    padding-left: 1;
+    padding: 0 1 1 1;
+}
+
+ServerSelectionModal {
+    align: center middle;
+    background: rgba(0, 0, 0, 0.5);
+    padding: 0 0 0 0;
+}
+
+Button {
+    border: none;
+    width: 16;
+    height: 1;
 }
 
 /* HeaderIcon { */
@@ -29,8 +39,13 @@ Screen {
 }
 
 #logo-title {
-    border: none;
-    width: auto;
+    border: round $secondary 2%;
+    background: rgba(0, 0, 0, 0.1);
+    border-subtitle-align: right;
+    border-subtitle-color: $primary;
+    border-subtitle-background: rgba(0, 0, 0, 0);
+    border-subtitle-style: italic;
+    width: 1fr;
     min-width: 38;
     margin-right: 2;
     content-align: center top;
@@ -39,16 +54,21 @@ Screen {
 }
 
 #conn-status {
-    border: round $secondary;
+    text-style: bold;
+    border: none;
     padding: 1;
     content-align: left middle;
-    width: auto;
-    margin-right: 4;
+    width: 1fr;
+    min_width: 35;
+    margin-right: 2;
 }
 
 #action-log {
-    width: 1fr;
+    width: 2fr;
     border-title-align: left;
+    border-title-color: $primary;
+    border-title-background: rgba(0, 0, 0, 0);
+    border-title-style: italic;
 }
 
 /* Main app widgets */
@@ -59,45 +79,141 @@ Screen {
 }
 
 #loaded-models {
-    width: 25%;
+    width: 1fr;
+    border-title-align: left;
+    border-title-color: $primary;
+    border-title-background: rgba(0, 0, 0, 0);
+    border-title-style: italic;
 }
 
 #downloaded-models {
-    width: 25%;
+    width: 1fr;
+    border-title-align: left;
+    border-title-color: $primary;
+    border-title-background: rgba(0, 0, 0, 0);
+    border-title-style: italic;
 }
 
 #context-pane {
-    width: 50%;
+    /* background: black; */
+    width: 2fr;
+    border-title-align: left;
+    border-title-color: $primary;
+    border-title-background: rgba(0, 0, 0, 0);
+    border-title-style: italic;
 }
 
+/* Server Selction Modal */
 
-/*#models_table {
-/*    height: 100%;
-/*    border: solid green;
-/*}
+#modal-container {
+    width: 45%;
+    height: 70%;
+    background: $surface;
+    border: thick $primary;
+    padding: 0 1 0 1;
+}
 
-/*#main_menu {
-/*    width: 30;
-/*}
+#sidebar {
+    width: 45%;
+    height: 100%;
+    border-right: solid $primary-background;
+    padding: 0 1 1 1;
+}
 
+#active-server-sidebar,
+#cached-ips-sidebar {
+    height: 1fr;
+    /* border: round $secondary; */
+    /* background: black; */
+}
+
+#active-servers-list,
+#cached-ips-list {
+    height: 1fr;
+    border: none;
+    padding: 1;
+    background: rgba(0, 0, 0, 0.25);
+    /* outline: round $secondary; */
+}
+
+#main-action-area {
+    width: 55%;
+    padding: 2 1 -1 3;
+}
+
+#server-section {
+    height: 1fr;
+}
+
+#scan-section {
+    height: 1fr;
+}
+
+/* #manual-ip-input, */
+/* #scan-input {} */
+/* #scan-port-input { */
+/*     width: 10px; */
+/*     min-width: 10px; */
+/*     max-width: 10px; */
+/* } */
+
+#connect-btn,
+#default-connect-btn {
+    margin: 0 1 1 0;
+}
+
+#scan-btn,
+#default-network-btn {
+    margin: 0 1 1 0;
+}
+
+#cancel-btn,
+#bottom-btn-group {
+    align: center middle;
+    margin: 1 2 1 0;
+}
+
+/* #botton-btn-group { */
+/*     align: right bottom; */
+/* } */
 
 /* ========= Class Selectors ========= */
 .box {
-    border: round $secondary;
+    border-top: round $secondary 60%;
+    border-right: round $secondary 60%;
     content-align: center middle;
     height: 100%;
     border-title-align: left;
 }
 
-/* .warning-btn { */
-/*     background: yellow; */
-/*     color: black; */
-/* } */
-/**/
-/* .hidden-item { */
-/*     display: none; */
+.section-title {
+    text-style: bold;
+    color: $accent;
+    /* margin-bottom: 1; */
+    margin-top: 1;
+}
+
+/* .input-group { */
+/*     height: 3; */
+/*     margin-bottom: 2; */
 /* } */
 
+.button-group {
+    height: 3;
+    margin-top: 2;
+}
+
+.server-select-input-field {
+    width: auto;
+    min-width: 32;
+    margin: 0 0 1 0;
+    background: rgba(0, 0, 0, 0.25);
+    border: round $secondary 2%;
+    border-subtitle-align: right;
+    border-subtitle-color: $secondary;
+    border-subtitle-background: rgba(0, 0, 0, 0);
+    border-subtitle-style: italic;
+}
 
 /* /* ========= Widget States ========= */
 
