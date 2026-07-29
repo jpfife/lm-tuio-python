@@ -9,6 +9,7 @@ from textual import work
 from textual.reactive import reactive
 from textual.widgets import Static
 
+from lm_tuio.config import AppConfig
 from lm_tuio.api import check_server_status
 
 
@@ -47,6 +48,13 @@ class ConnectionStatus(Static):
     server_port: reactive[int] = reactive(1234)
 
     def on_mount(self) -> None:
+        app_config = getattr(self.app, "config", None)
+        if app_config:
+            assert isinstance(app_config, AppConfig)
+            self.server_ip = app_config.target
+            self.server_port = app_config.port
+        else:
+            self.notify("Could not load config.toml.", severity="warning")
         self.set_interval(PING_INTERVAL, self.update_connection_status)
 
     def render(self) -> str:
