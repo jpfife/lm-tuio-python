@@ -9,7 +9,7 @@ dependencies = [
     "httpx>=0.28.1",
     "pydantic>=2.13.4",
     "textual>=8.2.8",
-    "tomli-w>=1.2.0",
+    "tomlkit>=0.15.1",
 ]
 
 [project.scripts]

@@ -7,11 +7,11 @@ Pulls defaults from config.toml.
 
 from textual import on, work
 from textual.app import ComposeResult
-from textual.containers import Horizontal, HorizontalScroll, Vertical, VerticalScroll
+from textual.containers import Horizontal, Vertical, VerticalScroll
 from textual.screen import ModalScreen
 from textual.widgets import Button, Input, Label, OptionList
 
-from lm_tuio.config import validate_ip_net, AppConfig
+from lm_tuio.config import AppConfig, validate_ip_net
 from lm_tuio.scanner import scan_targets
 
 
@@ -22,15 +22,30 @@ class ServerSelectionModal(ModalScreen[tuple[str, int] | None]):
         ("q,escape", "quit", "[quit]"),
     ]
 
+    current_ip: str
+    current_port: int
+    default_subnet: str
+
     def __init__(self, current_ip: str, current_port: int, default_subnet: str) -> None:
         super().__init__()
-        self.current_ip: str = current_ip
-        self.current_port: int = current_port
-        self.default_subnet: str = default_subnet
+        app_config: AppConfig | None = getattr(self.app, "config", None)
+        if not app_config:
+            loaded_config, config_err = AppConfig().load()
+            assert isinstance(config_err, str)
+            self.notify(
+                config_err, severity="warning", timeout=AppConfig.NOTIFY_TIMEOUT
+            )
+        else:
+            loaded_config, config_err = app_config.load()
+
+        assert isinstance(loaded_config, AppConfig)
+        self.current_ip = loaded_config.target
+        self.current_port = loaded_config.port
+        self.default_subnet = loaded_config.scan_subnet
 
     def compose(self) -> ComposeResult:
         self.input_widget: Input = Input(
-            value=f"{self.current_ip.split('/', 1)[0]}:{self.current_port}",
+            value=f"{self.current_ip}:{self.current_port}",
             placeholder="IP|hostname:[Port], default LMS port:1234",
             id="manual-ip-input",
             classes="server-select-input-field",
@@ -56,14 +71,10 @@ class ServerSelectionModal(ModalScreen[tuple[str, int] | None]):
             with Vertical(id="sidebar"):
                 yield Label("Active Servers", classes="section-title")
                 with VerticalScroll(id="active-server-sidebar"):
-                    yield OptionList(
-                        "192.168.1.100:1234",
-                        "10.0.0.5:8080",
-                        id="active-servers-list",
-                    )  # TODO: Populate vals from active scan
+                    yield OptionList(id="active-servers-list")
                 yield Label("Cached IPs", classes="section-title")
                 with VerticalScroll(id="cached-ips-sidebar"):
-                    yield OptionList("127.0.0.1:1234", id="cached-ips-list")
+                    yield OptionList(id="cached-ips-list")
 
             # Right main area
             with Vertical(id="main-action-area"):
@@ -96,7 +107,10 @@ class ServerSelectionModal(ModalScreen[tuple[str, int] | None]):
     async def exectute_network_scan(
         self, target_network: str, target_port: int | str
     ) -> None:
-        """Async network scan. Updates Active Servers list on SelectServer modal."""
+        """Async network scan. Updates Active Servers list on SelectServer modal.
+
+        Args: target_network: str, target_port: int | str
+        """
         active_list: OptionList = self.query_one("#active-servers-list", OptionList)
         active_list.clear_options()
         valid_net, err = validate_ip_net(target_network)
@@ -144,20 +158,21 @@ class ServerSelectionModal(ModalScreen[tuple[str, int] | None]):
             scan_subnet=valid_net,
             is_network=True,
         )
+        self.current_port = scan_config.port
 
-        hosts, scan_err = await scan_targets(scan_config)
+        servers, scan_err = await scan_targets(scan_config)
         active_list.clear_options()
 
         if scan_err:
             self.notify(scan_err, severity="warning", timeout=AppConfig.NOTIFY_TIMEOUT)
             active_list.add_option("No servers found.")
-        elif hosts:
+        elif servers:
             self.notify(
-                f"Found {len(hosts)} active server(s).",
+                f"Found {len(servers)} active server(s).",
                 severity="information",
                 timeout=AppConfig.NOTIFY_TIMEOUT,
             )
-            options = [f"{host}:{self.current_port}" for host in hosts]
+            options = [f"{server}:{self.current_port}" for server in servers]
             active_list.add_options(options)
             active_list.disabled = False
         else:
@@ -166,67 +181,184 @@ class ServerSelectionModal(ModalScreen[tuple[str, int] | None]):
             )
 
     # ========== BUTTON HANDLERS ==========
+    @staticmethod
+    def _validate_connection_input(
+        raw_input: str, is_subnet: bool = False
+    ) -> tuple[str, int, str] | tuple[None, None, str]:
+        """Parses raw connection field input and returns tuple IP[str], Port[int] and response, or error."""
+        ip: str
+        port_str: str
+
+        if ":" in raw_input:
+            ip, port_str = raw_input.strip().split(":", 1)
+            try:
+                port = int(port_str)
+                assert 1 <= port <= 65535
+            except ValueError:
+                return None, None, "Invalid port: Port must be a number"
+            except AssertionError:
+                return None, None, "Invalid port: Port must be between 1 - 65535"
+        else:
+            ip = raw_input.strip()
+            port = AppConfig.port
+
+        try:
+            valid_ip, err = validate_ip_net(ip)
+            if (err is not None) and is_subnet:
+                return (
+                    None,
+                    None,
+                    f"Invalid network scan config: {valid_ip}, {port}\nExpected: IP/[CIDR] and valid port.",
+                )
+            elif (err is not None) and not is_subnet:
+                return (
+                    None,
+                    None,
+                    f"Invalid network target {ip}:{port}.\nExpected: IP:Port (e.g., 192.168.1.10:1234)",
+                )
+
+            assert valid_ip is not None
+            if is_subnet:
+                return (
+                    valid_ip,
+                    port,
+                    f"Valid network config: {valid_ip} scan on port {port}",
+                )
+            ip = ip[: ip.find("/")] if "/" in ip else ip
+            return ip, port, f"Valid address: {ip}:{port}"
+
+        except (AssertionError, ValueError):
+            return (
+                None,
+                None,
+                f"Invalid network target {ip}:{port}.\nExpected: IP:Port (e.g., 192.168.1.10:1234)",
+            )
 
     @on(Button.Pressed, "#connect-btn")
     def connect_to_new_server(self) -> None:
-        """Parses and validates manual input, emits update event."""
-        target = self.input_widget.value.strip()
+        """Parses and validates manual input"""
 
-        try:
-            if ":" in target:
-                ip, port_str = target.split(":", 1)
-                port = int(port_str)
-                assert 1 <= port <= 65535
-            else:
-                ip = target
-                port = 1234
+        target: str = self.input_widget.value.strip()
+        ip, port, response = self._validate_connection_input(target, is_subnet=False)
+        self.notify(response, severity="information", timeout=AppConfig.NOTIFY_TIMEOUT)
 
-            valid_ip, err = validate_ip_net(ip)
-            if err is not None:
-                self.notify(
-                    "Invalid network target.\nExpected: IP:Port (e.g., 192.168.1.10:1234)",
-                    severity="error",
-                    timeout=AppConfig.NOTIFY_TIMEOUT,
-                )
-                return
-
-            assert valid_ip is not None
-            ip = ip[: ip.find("/")] if "/" in ip else ip
-            self.dismiss((ip, port))  # Return new server config
-
-        except (ValueError, AssertionError):
+        if (ip and port) is not None:
+            assert isinstance(ip, str)
+            assert isinstance(port, int)
+            self.dismiss((ip, port))
+        else:
             self.notify(
-                """Invalid network target.
-                Use format IP:Port or hostname:Port""",
+                "Error validating network enpoint.",
                 severity="error",
                 timeout=AppConfig.NOTIFY_TIMEOUT,
             )
 
-    @on(Button.Pressed, "#cancel-btn")
-    def cancel_modal(self) -> None:
-        """Closes the modal without making changes."""
-        self.dismiss()
+    @on(Button.Pressed, "#default-connect-btn")
+    def set_default_connection(self) -> None:
+        """Saves manual connect target to config.toml"""
+        target: str = self.input_widget.value.strip()
+        ip, port, response = self._validate_connection_input(target, is_subnet=False)
+        self.notify(response, severity="information", timeout=AppConfig.NOTIFY_TIMEOUT)
+
+        if (ip and port) is not None:
+            assert isinstance(ip, str)
+            assert isinstance(port, int)
+
+        else:
+            self.notify(
+                "Error validating network enpoint.",
+                severity="error",
+                timeout=AppConfig.NOTIFY_TIMEOUT,
+            )
+            return
+
+        app_config: AppConfig | None = getattr(self.app, "config", None)
+
+        if isinstance(app_config, AppConfig):
+            app_config.target, app_config.port = ip, port
+            save_msg = app_config.save()
+            self.notify(
+                save_msg,
+                severity="information",
+                timeout=AppConfig.NOTIFY_TIMEOUT,
+            )
+        else:
+            self.notify(
+                "Error: Configuration not found.",
+                severity="error",
+                timeout=AppConfig.NOTIFY_TIMEOUT,
+            )
 
     @on(Button.Pressed, "#scan-btn")
     def run_network_scan(self) -> None:
-        """Placeholder for scanner integration."""
+        """Provides list of all servers responding on subnet to HTTP Head request on selected port."""
         target_net = self.scan_widget.value.strip()
         target_port = self.scan_port_widget.value.strip()
         self.exectute_network_scan(target_net, target_port)
 
-    @on(OptionList.OptionSelected, "#active-servers-list")
-    def select_scanned_server(self, event: OptionList.OptionSelected) -> None:
+    @on(Button.Pressed, "#default-network-btn")
+    def update_default_network(self) -> None:
+        """Placeholder for TOML configuration writing."""
+        target_net: str = self.scan_widget.value.strip()
+        target_port: str = self.scan_port_widget.value.strip()
+        raw_ip_str: str = f"{target_net}:{target_port}"
+
+        ip_net, port, response = self._validate_connection_input(
+            raw_ip_str, is_subnet=True
+        )
+        self.notify(response, severity="information", timeout=AppConfig.NOTIFY_TIMEOUT)
+
+        if (ip_net and port) is not None:
+            assert isinstance(ip_net, str)
+            assert isinstance(port, int)
+
+        else:
+            self.notify(
+                "Error validating network enpoint.",
+                severity="error",
+                timeout=AppConfig.NOTIFY_TIMEOUT,
+            )
+            return
+
+        app_config: AppConfig | None = getattr(self.app, "config", None)
+
+        if isinstance(app_config, AppConfig):
+            app_config.scan_subnet, app_config.port = ip_net, port
+            save_msg = app_config.save()
+            self.notify(
+                save_msg,
+                severity="information",
+                timeout=AppConfig.NOTIFY_TIMEOUT,
+            )
+        else:
+            self.notify(
+                "Error: Configuration not found.",
+                severity="error",
+                timeout=AppConfig.NOTIFY_TIMEOUT,
+            )
+
+        self.notify(f"Default network set to {ip_net}")
+
+    @on(OptionList.OptionHighlighted, "#active-servers-list")
+    def select_scanned_server(self, event: OptionList.OptionHighlighted) -> None:
+        """Copies currently selected server into Server Connection input field."""
         if event.option_list.disabled:
             return
         selected_endpoint: str = str(event.option.prompt)
         self.input_widget.value = selected_endpoint
 
-    @on(Button.Pressed, "#set-default-net-btn")
-    def update_default_network(self) -> None:
-        """Placeholder for TOML configuration writing."""
-        target_net = self.scan_widget.value
-        self.notify(f"Default network set to {target_net}")
-        # TODO: Wire to config writer
+    @on(OptionList.OptionHighlighted, "#cached-ips-list")
+    def select_cached_server(self, event: OptionList.OptionHighlighted) -> None:
+        """Copies currently selected cached server into Server Connection input field."""
+        if event.option_list.disabled:
+            return
+        selected_endpoint: str = str(event.option.prompt)
+        self.input_widget.value = selected_endpoint
+
+    @on(Button.Pressed, "#cancel-btn")
+    def cancel_modal(self) -> None:
+        """Closes the modal without making changes"""
+        self.dismiss()
 
     # ======= ACTIONS =======
 
