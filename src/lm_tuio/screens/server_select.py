@@ -75,6 +75,7 @@ class ServerSelectionModal(ModalScreen[tuple[str, int] | None]):
                 yield Label("Cached IPs", classes="section-title")
                 with VerticalScroll(id="cached-ips-sidebar"):
                     yield OptionList(id="cached-ips-list")
+                    yield Button("Clear Cache", id="clear-cache-btn", variant="warning")
 
             # Right main area
             with Vertical(id="main-action-area"):
@@ -101,6 +102,13 @@ class ServerSelectionModal(ModalScreen[tuple[str, int] | None]):
                     yield Button("Cancel (q)", id="cancel-btn", variant="error")
 
     def on_mount(self) -> None:
+        """Populate cached IPs and conduct default network scan."""
+
+        app_config = getattr(self.app, "config", None)
+        if isinstance(app_config, AppConfig) and app_config.cached_ips:
+            cache_list: OptionList = self.query_one("#cached-ips-list", OptionList)
+            cache_list.add_options(app_config.cached_ips)
+
         self.exectute_network_scan(self.default_subnet, self.current_port)
 
     @work(exclusive=True)
@@ -180,7 +188,6 @@ class ServerSelectionModal(ModalScreen[tuple[str, int] | None]):
                 "Found 0 server endpoints on network.", timeout=AppConfig.NOTIFY_TIMEOUT
             )
 
-    # ========== BUTTON HANDLERS ==========
     @staticmethod
     def _validate_connection_input(
         raw_input: str, is_subnet: bool = False
@@ -234,9 +241,11 @@ class ServerSelectionModal(ModalScreen[tuple[str, int] | None]):
                 f"Invalid network target {ip}:{port}.\nExpected: IP:Port (e.g., 192.168.1.10:1234)",
             )
 
+    # ========== BUTTON HANDLERS ==========
+
     @on(Button.Pressed, "#connect-btn")
     def connect_to_new_server(self) -> None:
-        """Parses and validates manual input"""
+        """Parses and validates manual input; updates IP cache on submission."""
 
         target: str = self.input_widget.value.strip()
         ip, port, response = self._validate_connection_input(target, is_subnet=False)
@@ -245,6 +254,19 @@ class ServerSelectionModal(ModalScreen[tuple[str, int] | None]):
         if (ip and port) is not None:
             assert isinstance(ip, str)
             assert isinstance(port, int)
+            endpoint_str: str = f"{ip}:{port}"
+
+            app_config = getattr(self.app, "config", None)
+            if isinstance(app_config, AppConfig):
+                if endpoint_str in app_config.cached_ips:
+                    self.dismiss((ip, port))
+                    return
+                app_config.cached_ips.insert(0, endpoint_str)
+                app_config.cached_ips = app_config.cached_ips[
+                    : app_config.MAX_CACHED_IPS
+                ]
+                app_config.save()
+
             self.dismiss((ip, port))
         else:
             self.notify(
@@ -354,6 +376,18 @@ class ServerSelectionModal(ModalScreen[tuple[str, int] | None]):
             return
         selected_endpoint: str = str(event.option.prompt)
         self.input_widget.value = selected_endpoint
+
+    @on(Button.Pressed, "#clear-cache-btn")
+    def clear_ip_cache(self) -> None:
+        """Clears IP cache list and updates saved config."""
+        app_config = getattr(self.app, "config", None)
+        if isinstance(app_config, AppConfig):
+            app_config.cached_ips.clear()
+            app_config.save()
+
+            cache_list = self.query_one("#cached-ips-list", OptionList)
+            cache_list.clear_options()
+            self.notify("Cache cleared.", severity="information")
 
     @on(Button.Pressed, "#cancel-btn")
     def cancel_modal(self) -> None:

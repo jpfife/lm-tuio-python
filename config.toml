@@ -1,9 +1,11 @@
 [server]
 default_ip = "192.168.1.100"
 default_port = 1234
+cached_ips = []
 
 [network]
 default_scan_subnet = "192.168.1.0/24"
 
 [app]
 notify_timeout = 2.0
+max_cached_ips = 10
