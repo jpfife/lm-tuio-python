@@ -39,7 +39,6 @@ PING_INTERVAL: float = 2.0
 
 
 # TODO: Connect to config parser for CLI input
-# TODO: Take input from change server screen
 class ConnectionStatus(Static):
     """Main dashboard widget to asynchronously poll LMS API connectivity and display status."""
 
