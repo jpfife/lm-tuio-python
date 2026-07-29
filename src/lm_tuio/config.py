@@ -5,10 +5,10 @@ Update _build_toml_config and _parse_toml helper methods when adding tables to c
 """
 
 import argparse
+from dataclasses import MISSING, dataclass, field, fields
 import ipaddress
-import tomllib
-from dataclasses import dataclass, field
 from pathlib import Path
+import tomllib
 from typing import Any
 
 import tomlkit
@@ -18,19 +18,37 @@ import tomlkit
 class AppConfig:
     """Master app configuration dataclass."""
 
-    target: str = "127.0.0.1"  # IPv4 only
-    port: int = 1234
-    scan_subnet: str = "192.168.1.0/24"  # in CIDR notation
-    is_network: bool = False
-    cached_ips: list[str] = field(default_factory=list)
-    MAX_CACHED_IPS: int = 10
+    # Map for config.toml
+    # SERVER
+    target: str = field(
+        default="127.0.0.1", metadata={"table": "server", "key": "default_ip"}
+    )
+    port: int = field(default=1234, metadata={"table": "server", "key": "default_port"})
+    cached_ips: list[str] = field(
+        default_factory=list, metadata={"table": "server", "key": "cached_ips"}
+    )
 
-    NOTIFY_TIMEOUT: float = 2.0
+    # NETWORK
+    scan_subnet: str = field(
+        default="192.168.1.0/24",
+        metadata={"table": "network", "key": "default_scan_subnet"},
+    )
+
+    # APP
+    NOTIFY_TIMEOUT: float = field(
+        default=2.0, metadata={"table": "app", "key": "notify_timeout"}
+    )
+    MAX_CACHED_IPS: int = field(
+        default=10, metadata={"table": "app", "key": "max_cached_ips"}
+    )
+
+    # Internal vars, no TOML map
+    is_network: bool = False
     config_path: Path = Path("config.toml")
 
     # NOTE: Using tomlkit to preserve structure, don't use tomllib functions for saving
     def save(self) -> str:
-        """Saves current state data to config_path, returns result string"""
+        """Saves current state data to config_path, returns response string"""
         try:
             if self.config_path.exists():
                 with open(self.config_path, "r", encoding="utf-8") as file:
@@ -57,14 +75,13 @@ class AppConfig:
         conf_path: Path = Path(custom_path) if custom_path else cls.config_path
 
         # Defaults
-        config_data: dict[str, Any] = {
-            "target": cls.target,
-            "port": cls.port,
-            "scan_subnet": cls.scan_subnet,
-            "cached_ips": [],
-            "max_cached_ips": cls.MAX_CACHED_IPS,
-            "notify_timeout": cls.NOTIFY_TIMEOUT,
-        }
+        config_data: dict[str, Any] = {}
+        for fld in fields(cls):
+            if fld.default is not MISSING:
+                config_data[fld.name] = fld.default
+            elif fld.default_factory is not MISSING:
+                config_data[fld.name] = fld.default_factory()
+
         logs: list[str] = []
 
         # Override defaults with config.toml
@@ -94,42 +111,42 @@ class AppConfig:
 
         assert isinstance(valid_target, str)
         assert isinstance(valid_network, str)
-        is_network_scan = "/32" not in valid_target
+        config_data["is_network"] = "/32" not in valid_target
+        config_data["scan_subnet"] = valid_network
+        config_data["config_path"] = conf_path
 
         # Compile non-fatal logs
         status_msg = "\n".join(logs) if logs else None
 
+        # NOTE: Add class attributes separate from dataclass fields
         config = cls(
-            target=config_data["target"],
-            port=config_data["port"],
-            scan_subnet=valid_network,
-            is_network=is_network_scan,
-            cached_ips=config_data.get("cached_ips", []),
-            MAX_CACHED_IPS=config_data["max_cached_ips"],
-            NOTIFY_TIMEOUT=config_data["notify_timeout"],
+            **config_data,
         )
 
         return config, status_msg
 
-    # NOTE: Update _build_toml_config helper method when adding tables to config.toml !!
     def _build_toml_config(self, doc: tomlkit.TOMLDocument) -> None:
-        """Initializes config TOML tables and maps current state."""
+        """Dynamically builds TOML structure based on dataclass metadata."""
+        logs: list[str] = []
 
-        # Check for/add root config tables
-        for table in ["server", "network", "app"]:
-            if table not in doc:
-                doc.add(table, tomlkit.table())
+        # Map fields from dataclass
+        for fld in fields(self):
+            table_name = fld.metadata.get("table")
+            try:
+                assert isinstance(table_name, str)
+                if table_name not in doc:
+                    doc.add(table_name, tomlkit.table())
+            except AssertionError as err:
+                logs.append(f"{err}")
 
-        # Map onto AppConfig dataclass
-        doc["server"]["default_ip"] = self.target
-        doc["server"]["default_port"] = self.port
-        doc["server"]["cached_ips"] = self.cached_ips
-        doc["network"]["default_scan_subnet"] = self.scan_subnet
+        # Map dataclass to TOML config doc
+        for fld in fields(self):
+            table_name = fld.metadata.get("table")
+            key_name = fld.metadata.get("key")
 
-        doc["app"]["max_cached_ips"] = self.MAX_CACHED_IPS
-        doc["app"]["notify_timeout"] = self.NOTIFY_TIMEOUT
+            if table_name and key_name:
+                doc[table_name][key_name] = getattr(self, fld.name)
 
-    # NOTE: Update _parse_toml helper method when adding tables to config.toml !!
     @staticmethod
     def _parse_toml(conf_path: Path) -> tuple[dict[str, Any], str | None]:
         """Reads TOML and returns a dictionary of valid updates."""
@@ -137,26 +154,17 @@ class AppConfig:
         try:
             with open(conf_path, "rb") as file:
                 toml_data: dict[str, Any] = tomllib.load(file)
-                server_toml: dict[str, Any] = toml_data.get("server", {})
-                network_toml: dict[str, Any] = toml_data.get("network", {})
-                app_toml: dict[str, Any] = toml_data.get("app", {})
 
-                if "default_ip" in server_toml:
-                    updates["target"] = server_toml["default_ip"]
-                if "default_port" in server_toml:
-                    updates["port"] = server_toml["default_port"]
-                if "cached_ips" in server_toml:
-                    updates["cached_ips"] = server_toml["cached_ips"]
+                for fld in fields(AppConfig):
+                    table_name = fld.metadata.get("table")
+                    key_name = fld.metadata.get("key")
 
-                if "default_scan_subnet" in network_toml:
-                    updates["scan_subnet"] = network_toml["default_scan_subnet"]
-
-                if "notify_timeout" in app_toml:
-                    updates["notify_timeout"] = app_toml["notify_timeout"]
-                if "max_cached_ips" in app_toml:
-                    updates["max_cached_ips"] = app_toml["max_cached_ips"]
-
+                    if table_name and key_name:
+                        table_data = toml_data.get(table_name, {})
+                        if key_name in table_data:
+                            updates[fld.name] = table_data[key_name]
             return updates, None
+
         except Exception as err:
             return updates, f"Error reading config.toml: {err}"
 
