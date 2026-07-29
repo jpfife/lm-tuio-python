@@ -1,7 +1,7 @@
 [server]
 default_ip = "192.168.1.100"
-default_port = 1234
-cached_ips = []
+default_port = 1235
+cached_ips = ["192.168.1.100:1235", "192.168.1.100:1234"]
 
 [network]
 default_scan_subnet = "192.168.1.0/24"
