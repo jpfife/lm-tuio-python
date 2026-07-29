@@ -7,9 +7,9 @@ Pulls defaults from config.toml.
 
 from textual import on, work
 from textual.app import ComposeResult
-from textual.containers import Horizontal, Vertical, VerticalScroll
+from textual.containers import Horizontal, Vertical
 from textual.screen import ModalScreen
-from textual.widgets import Button, Input, Label, OptionList
+from textual.widgets import Button, Footer, Input, Label, OptionList
 
 from lm_tuio.config import AppConfig, validate_ip_net
 from lm_tuio.scanner import scan_targets
@@ -19,6 +19,11 @@ class ServerSelectionModal(ModalScreen[tuple[str, int] | None]):
     """Modal to select, scan, and set active LMS API endpoints."""
 
     BINDINGS = [
+        ("q,escape", "quit", "[quit]"),
+        ("c", "connect_input_submit", "[connect]"),
+        ("s", "scan_network", "[scan]"),
+        ("S", "save_defaults", "[save defaults]"),
+        ("x", "clear_cache", "[clear cache]"),
         ("q,escape", "quit", "[quit]"),
     ]
 
@@ -70,12 +75,10 @@ class ServerSelectionModal(ModalScreen[tuple[str, int] | None]):
             # Left sidebar
             with Vertical(id="sidebar"):
                 yield Label("Active Servers", classes="section-title")
-                with VerticalScroll(id="active-server-sidebar"):
-                    yield OptionList(id="active-servers-list")
+                yield OptionList(id="active-servers-list")
                 yield Label("Cached IPs", classes="section-title")
-                with VerticalScroll(id="cached-ips-sidebar"):
-                    yield OptionList(id="cached-ips-list")
-                    yield Button("Clear Cache", id="clear-cache-btn", variant="warning")
+                yield OptionList(id="cached-ips-list")
+                yield Button("Clear Cache", id="clear-cache-btn", variant="warning")
 
             # Right main area
             with Vertical(id="main-action-area"):
@@ -100,6 +103,8 @@ class ServerSelectionModal(ModalScreen[tuple[str, int] | None]):
 
                 with Vertical(id="bottom-btn-group", classes="button-group"):
                     yield Button("Cancel (q)", id="cancel-btn", variant="error")
+
+            yield Footer()
 
     def on_mount(self) -> None:
         """Populate cached IPs and conduct default network scan."""
@@ -243,6 +248,9 @@ class ServerSelectionModal(ModalScreen[tuple[str, int] | None]):
 
     # ========== BUTTON HANDLERS ==========
 
+    @on(OptionList.OptionSelected, "#cached-ips-list")
+    @on(OptionList.OptionSelected, "#active-servers-list")
+    @on(Input.Submitted, "#manual-ip-input")
     @on(Button.Pressed, "#connect-btn")
     def connect_to_new_server(self) -> None:
         """Parses and validates manual input; updates IP cache on submission."""
@@ -311,6 +319,8 @@ class ServerSelectionModal(ModalScreen[tuple[str, int] | None]):
                 timeout=AppConfig.NOTIFY_TIMEOUT,
             )
 
+    @on(Input.Submitted, "#scan-port-input")
+    @on(Input.Submitted, "#scan-input")
     @on(Button.Pressed, "#scan-btn")
     def run_network_scan(self) -> None:
         """Provides list of all servers responding on subnet to HTTP Head request on selected port."""
@@ -319,7 +329,7 @@ class ServerSelectionModal(ModalScreen[tuple[str, int] | None]):
         self.exectute_network_scan(target_net, target_port)
 
     @on(Button.Pressed, "#default-network-btn")
-    def update_default_network(self) -> None:
+    def set_default_network(self) -> None:
         """Placeholder for TOML configuration writing."""
         target_net: str = self.scan_widget.value.strip()
         target_port: str = self.scan_port_widget.value.strip()
@@ -395,7 +405,23 @@ class ServerSelectionModal(ModalScreen[tuple[str, int] | None]):
         self.dismiss()
 
     # ======= ACTIONS =======
+    def action_connect_input_submit(self) -> None:
+        """Default 'c' hotkey"""
+        self.connect_to_new_server()
+
+    def action_scan_network(self) -> None:
+        """Default 's' hotkey"""
+        self.run_network_scan()
+
+    def action_save_defaults(self) -> None:
+        """Default 'S' hotkey"""
+        self.set_default_connection()
+        self.set_default_network()
+
+    def action_clear_cache(self) -> None:
+        """Default 'x' hotkey"""
+        self.clear_ip_cache()
 
     def action_quit(self) -> None:
-        """Triggered by 'q' hotkey"""
+        """Default 'q' hotkey"""
         self.dismiss()

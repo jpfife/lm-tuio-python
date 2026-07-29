@@ -142,7 +142,7 @@ ServerSelectionModal {
 
 #modal-container {
     width: 45%;
-    height: 70%;
+    height: 75%;
     background: $surface;
     border: thick $primary;
     padding: 0 1 0 1;
