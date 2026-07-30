@@ -3,12 +3,12 @@
 Container for interactive and display components.
 """
 
-from pydantic import networks
 from textual import on, work
 from textual.app import ComposeResult
 from textual.containers import Horizontal
+from textual.reactive import reactive
 from textual.screen import Screen
-from textual.widgets import Input, Footer
+from textual.widgets import Footer, Input
 
 from lm_tuio.api import fetch_available_models
 from lm_tuio.components import (
@@ -20,8 +20,8 @@ from lm_tuio.components import (
     Title,
 )
 from lm_tuio.config import AppConfig
-from lm_tuio.screens.server_select import ServerSelectionModal
 from lm_tuio.events import ModelSelected, ServerConnected, ServerEndpointUpdated
+from lm_tuio.screens.server_select import ServerSelectionModal
 
 
 class DashboardScreen(Screen):
@@ -34,8 +34,11 @@ class DashboardScreen(Screen):
         ("c", "change_server", "[change server]"),
         ("r", "refresh_models", "[refresh models]"),
         ("/", "filter", "[filter]"),
+        ("escape,ctrl+left_square_bracket", "clear_search", "[clr search]"),
         ("*", "retry_connection"),
     ]
+
+    filter_str: reactive[str] = reactive("")
 
     def compose(self) -> ComposeResult:
         # Set widget instances
@@ -85,6 +88,8 @@ class DashboardScreen(Screen):
         )
         self.search_bar.border_title = self.search_bar.name
 
+        self.main_footer: Footer = Footer(id="main-footer", classes="footers")
+
         # Top row telemetry and logging
         with Horizontal(id="header-zone"):
             yield self.connection_widget
@@ -98,14 +103,14 @@ class DashboardScreen(Screen):
             yield self.contextpane_widget
 
         # Bottom row hotkeys bar
-        yield Footer(id="main-footer", classes="footers")
+        yield self.main_footer
         yield self.search_bar
 
     def clear_fetched_data(self) -> None:
         """Clears all data dependent on connected server"""
         self.downloadedmodels_widget.clear_model_list()
         self.contextpane_widget.update_model_context(None)
-        # TODO: Add loaded models clear
+        # TODO: Add loaded models table clear
 
     @work(exclusive=True)
     async def fetch_load_models(self, ip: str, port: int) -> None:
@@ -126,15 +131,24 @@ class DashboardScreen(Screen):
         self.downloadedmodels_widget.dl_models_table.focus()
         self.notify(f"Found {len(models)} models")
 
+    # ======= REACTIVE WATCHERS =======
+    def watch_filter_str(self, new_filter: str) -> None:
+        self.downloadedmodels_widget.apply_filter(new_filter)
+        # TODO: Add loaded models table filter
+
     # ========== ACTIONS ==========
 
     def action_filter(self) -> None:
         """Default hotkey '/' to filter display lists"""
-        footer = self.query_one("#main-footer", Footer)
-
-        footer.display = False
+        self.main_footer.display = False
         self.search_bar.display = True
+        self.search_bar.value = self.filter_str
         self.search_bar.focus()
+
+    def action_clear_search(self) -> None:
+        """Default hotkey 'Esc' to clear filter"""
+        self.filter_str = ""
+        self._hide_search_bar()
 
     def action_quit(self) -> None:
         """Default hotkey 'q' to quit application"""
@@ -168,7 +182,7 @@ class DashboardScreen(Screen):
     # ========= EVENTS ==========
 
     @on(ServerConnected)
-    def handle_server_connection(self, event: ServerConnected) -> None:
+    def handle_server_connected(self, event: ServerConnected) -> None:
         """Trigger fetch models on successful server connection"""
         self.fetch_load_models(event.ip, event.port)
 
@@ -180,3 +194,25 @@ class DashboardScreen(Screen):
     @on(ModelSelected)
     def update_context_display(self, event: ModelSelected) -> None:
         self.contextpane_widget.update_model_context(event.model)
+
+    @on(Input.Submitted, "#search-bar")
+    def apply_search(self, event: Input.Submitted) -> None:
+        """Filters active widget DataTable"""
+        self._hide_search_bar()
+        self.downloadedmodels_widget.dl_models_table.focus()
+
+    @on(Input.Changed, "#search-bar")
+    def real_time_search(self, event: Input.Changed) -> None:
+        """Real-time text filtering"""
+        self.filter_str = event.value
+
+    def on_key(self, event) -> None:
+        """Esc key listener for filter search"""
+        if self.search_bar.display and event.key == "escape":
+            self._hide_search_bar()
+            self.downloadedmodels_widget.focus()
+
+    def _hide_search_bar(self) -> None:
+        """Helper to swap main footer back"""
+        self.search_bar.display = False
+        self.main_footer.display = True

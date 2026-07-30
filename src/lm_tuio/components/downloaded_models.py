@@ -50,8 +50,11 @@ class DownloadedModels(Static):
 
     def apply_filter(self, search_str: str) -> None:
         """Filter table on search_str"""
-        self.dl_models_table.clear()
+        table = self.dl_models_table
+        table.clear()
+
         term: str = search_str.lower()
+
         for model in self._all_models.values():
             if model.quantization is not None:
                 if term in (
@@ -59,18 +62,24 @@ class DownloadedModels(Static):
                     or model.publisher.lower()
                     or model.quantization.name.lower()
                 ):
-                    self.dl_models_table.add_row(
+                    table.add_row(
                         model.display_name,
                         format_bytes(model.size_bytes),
                         key=model.key,
                     )
+
             else:
                 if term in (model.display_name.lower() or model.publisher.lower()):
-                    self.dl_models_table.add_row(
+                    table.add_row(
                         model.display_name,
                         format_bytes(model.size_bytes),
                         key=model.key,
                     )
+
+        if table.row_count > 0:
+            table.move_cursor(row=0)
+        else:
+            self.post_message(ModelSelected(None))
 
     @on(DataTable.RowHighlighted)
     def on_dl_table_row_highlighted(self, event: DataTable.RowHighlighted) -> None:
