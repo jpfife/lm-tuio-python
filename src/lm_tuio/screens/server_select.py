@@ -22,7 +22,7 @@ class ServerSelectionModal(ModalScreen[tuple[str, int] | None]):
         ("q,escape", "quit", "[quit]"),
         ("c", "connect_input_submit", "[connect]"),
         ("s", "scan_network", "[scan]"),
-        ("S", "save_defaults", "[save defaults]"),
+        ("ctrl+s", "save_defaults", "[save defaults]"),
         ("x", "clear_cache", "[clear cache]"),
         ("q,escape", "quit", "[quit]"),
     ]
@@ -31,22 +31,38 @@ class ServerSelectionModal(ModalScreen[tuple[str, int] | None]):
     current_port: int
     default_subnet: str
 
-    def __init__(self, current_ip: str, current_port: int, default_subnet: str) -> None:
-        super().__init__()
+    def __init__(
+        self, ip: str = "", port: int = 0, subnet: str = "", *args, **kwargs
+    ) -> None:
+        if ip and port and subnet:
+            self.current_ip = ip
+            self.current_port = port
+            self.default_subnet = subnet
+            super().__init__(*args, **kwargs)
+            return
+
         app_config: AppConfig | None = getattr(self.app, "config", None)
         if not app_config:
             loaded_config, config_err = AppConfig().load()
-            assert isinstance(config_err, str)
-            self.notify(
-                config_err, severity="warning", timeout=AppConfig.NOTIFY_TIMEOUT
-            )
+            if config_err:
+                self.notify(
+                    config_err, severity="warning", timeout=AppConfig.NOTIFY_TIMEOUT
+                )
+            else:
+                self.notify(
+                    "Error: Could not resolve configuration",
+                    severity="warning",
+                    timeout=AppConfig.NOTIFY_TIMEOUT,
+                )
         else:
             loaded_config, config_err = app_config.load()
 
         assert isinstance(loaded_config, AppConfig)
-        self.current_ip = loaded_config.target
-        self.current_port = loaded_config.port
-        self.default_subnet = loaded_config.scan_subnet
+        self.current_ip = ip if ip else loaded_config.target
+        self.current_port = port if port else loaded_config.port
+        self.default_subnet = subnet if subnet else loaded_config.scan_subnet
+
+        super().__init__(*args, **kwargs)
 
     def compose(self) -> ComposeResult:
         self.input_widget: Input = Input(

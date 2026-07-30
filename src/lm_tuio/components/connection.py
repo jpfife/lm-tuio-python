@@ -9,8 +9,8 @@ from textual import work
 from textual.reactive import reactive
 from textual.widgets import Static
 
-from lm_tuio.config import AppConfig
 from lm_tuio.api import check_server_status
+from lm_tuio.config import AppConfig
 from lm_tuio.events import ServerConnected
 
 
@@ -79,6 +79,18 @@ class ConnectionStatus(Static):
             self.status = Connection.GREEN
         else:
             self.status = Connection.RED
+
+    def apply_new_server(self, ip_conf: tuple[str, int] | None) -> None:
+        """Updates ConnectionStatus display widget with passed net config"""
+        if not ip_conf:
+            return
+
+        ip, port = ip_conf
+        self.server_ip = ip
+        self.server_port = port
+        self.notify(f"Connecting to {ip}:{port}...", timeout=AppConfig.NOTIFY_TIMEOUT)
+        self.reset_status()
+        self.update_connection_status()
 
     def reset_status(self) -> None:
         """Force yellow status when switching servers"""
