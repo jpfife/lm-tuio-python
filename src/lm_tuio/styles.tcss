@@ -85,7 +85,7 @@ Button {
 
 #loaded-models,
 #downloaded-models {
-    width: 1fr;
+    width: 30%;
     border-title-align: left;
     border-title-color: $primary;
     border-title-background: rgba(0, 0, 0, 0);
@@ -93,7 +93,7 @@ Button {
 }
 
 #context-pane {
-    width: 2fr;
+    width: 40%;
     border-title-align: left;
     border-title-color: $primary;
     border-title-background: rgba(0, 0, 0, 0);

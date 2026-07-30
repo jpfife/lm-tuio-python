@@ -1,5 +1,6 @@
 """DataTable widget for dashboard displaying all models downloaded on server."""
 
+from textual import on
 from textual.app import ComposeResult
 from textual.widgets import DataTable, Static
 
@@ -9,12 +10,15 @@ from lm_tuio.models import ModelInfo
 
 def format_bytes(size: int) -> str:
     """Converts bytes to MB or GB for model listing"""
+    TB: int = 1024**4
     GB: int = 1024**3
     MB: int = 1024**2
 
-    if size >= 1024**3:
-        return f"{size} / {GB}"
-    return f"{size} / {MB}"
+    if size >= TB:
+        return f"{size / TB:.2f} GB"
+    elif size >= GB:
+        return f"{size / GB:.2f} GB"
+    return f"{size / MB:.2f} MB"
 
 
 class DownloadedModels(Static):
@@ -33,10 +37,16 @@ class DownloadedModels(Static):
     def on_mount(self) -> None:
         self.dl_models_table.add_columns("Name", "Size")
 
+    def clear_model_list(self) -> None:
+        """Clear model list display"""
+        self._all_models.clear()
+        self.dl_models_table.clear()
+
     def load_models(self, models: list[ModelInfo]) -> None:
         """Populate downloaded models dataset"""
+        self.clear_model_list()
         self._all_models = {m.key: m for m in models}
-        # self.apply_filter("")
+        self.apply_filter("")
 
     def apply_filter(self, search_str: str) -> None:
         """Filter table on search_str"""
@@ -62,6 +72,7 @@ class DownloadedModels(Static):
                         key=model.key,
                     )
 
+    @on(DataTable.RowHighlighted)
     def on_dl_table_row_highlighted(self, event: DataTable.RowHighlighted) -> None:
         """Pass model key for Context Pane model details display"""
         key = event.row_key.value

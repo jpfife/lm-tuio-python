@@ -3,12 +3,14 @@
 Container for interactive and display components.
 """
 
-from textual import on
+from pydantic import networks
+from textual import on, work
 from textual.app import ComposeResult
 from textual.containers import Horizontal
 from textual.screen import Screen
 from textual.widgets import Input, Footer
 
+from lm_tuio.api import fetch_available_models
 from lm_tuio.components import (
     ActionLog,
     ConnectionStatus,
@@ -19,13 +21,16 @@ from lm_tuio.components import (
 )
 from lm_tuio.config import AppConfig
 from lm_tuio.screens.server_select import ServerSelectionModal
+from lm_tuio.events import ModelSelected, ServerConnected, ServerEndpointUpdated
 
 
 class DashboardScreen(Screen):
     """Primary application dashboard."""
 
+    AUTO_FOCUS = "#downloaded_models"
+
     BINDINGS = [
-        ("q,escape", "quit", "[quit]"),
+        ("q", "quit", "[quit]"),
         ("c", "change_server", "[change server]"),
         ("r", "refresh_models", "[refresh models]"),
         ("/", "filter", "[filter]"),
@@ -40,7 +45,7 @@ class DashboardScreen(Screen):
         self.connection_widget.border_title = self.connection_widget.name
 
         self.title_widget: Title = Title(
-            "LM Studio Dashboard", id="logo-title", classes="box"
+            name="LM Studio Dashboard", id="logo-title", classes="box"
         )
         self.title_widget.border_subtitle = self.title_widget.name
 
@@ -73,7 +78,7 @@ class DashboardScreen(Screen):
         self.contextpane_widget.border_title = self.contextpane_widget.name
 
         self.search_bar: Input = Input(
-            "Set list filter, ESC to cancel",
+            placeholder="Set list filter, ESC to cancel",
             name="Filter",
             id="search-bar",
             classes="footers hidden",
@@ -96,10 +101,40 @@ class DashboardScreen(Screen):
         yield Footer(id="main-footer", classes="footers")
         yield self.search_bar
 
+    def clear_fetched_data(self) -> None:
+        """Clears all data dependent on connected server"""
+        self.downloadedmodels_widget.clear_model_list()
+        self.contextpane_widget.update_model_context(None)
+        # TODO: Add loaded models clear
+
+    @work(exclusive=True)
+    async def fetch_load_models(self, ip: str, port: int) -> None:
+        """Fetch models from LMS API endpoint and populate UI"""
+        self.downloadedmodels_widget.clear_model_list()
+        models, err = await fetch_available_models(ip, port)
+
+        if err:
+            self.notify(
+                f"Failed to fetch models: {err}",
+                severity="error",
+                timeout=AppConfig.NOTIFY_TIMEOUT,
+            )
+            return
+
+        assert models
+        self.downloadedmodels_widget.load_models(models)
+        self.downloadedmodels_widget.dl_models_table.focus()
+        self.notify(f"Found {len(models)} models")
+
     # ========== ACTIONS ==========
 
     def action_filter(self) -> None:
         """Default hotkey '/' to filter display lists"""
+        footer = self.query_one("#main-footer", Footer)
+
+        footer.display = False
+        self.search_bar.display = True
+        self.search_bar.focus()
 
     def action_quit(self) -> None:
         """Default hotkey 'q' to quit application"""
@@ -107,8 +142,19 @@ class DashboardScreen(Screen):
 
     def action_change_server(self) -> None:
         """Default hotkey 'c' to connect to server"""
-        self.app.push_screen(
-            ServerSelectionModal(), callback=self.connection_widget.apply_new_server
+
+        # Track if endpoint actually changes
+        def is_same_server(net_config: tuple[str, int] | None) -> None:
+            if net_config:
+                self.connection_widget.apply_new_server(net_config)
+                ip, port = net_config
+                self.post_message(ServerEndpointUpdated(ip, port))
+
+        self.app.push_screen(ServerSelectionModal(), callback=is_same_server)
+
+    def action_refresh_models(self) -> None:
+        self.fetch_load_models(
+            self.connection_widget.server_ip, self.connection_widget.server_port
         )
 
     def action_retry_connection(self) -> None:
@@ -120,3 +166,17 @@ class DashboardScreen(Screen):
         self.connection_widget.update_connection_status()
 
     # ========= EVENTS ==========
+
+    @on(ServerConnected)
+    def handle_server_connection(self, event: ServerConnected) -> None:
+        """Trigger fetch models on successful server connection"""
+        self.fetch_load_models(event.ip, event.port)
+
+    @on(ServerEndpointUpdated)
+    def handle_server_changed(self) -> None:
+        """Clears models when server changes, only fetch models on successful connection"""
+        self.clear_fetched_data()
+
+    @on(ModelSelected)
+    def update_context_display(self, event: ModelSelected) -> None:
+        self.contextpane_widget.update_model_context(event.model)
