@@ -10,17 +10,10 @@ from textual.reactive import reactive
 from textual.screen import Screen
 from textual.widgets import Footer, Input
 
+from lm_tuio import events, models as md
 from lm_tuio.api import fetch_available_models
-from lm_tuio.components import (
-    ActionLog,
-    ConnectionStatus,
-    ContextPane,
-    DownloadedModels,
-    LoadedModels,
-    Title,
-)
+from lm_tuio.components import ActionLog, ConnectionStatus, ContextPane, Title
 from lm_tuio.config import AppConfig
-from lm_tuio.events import ModelSelected, ServerConnected, ServerEndpointUpdated
 from lm_tuio.screens.server_select import ServerSelectionModal
 
 
@@ -59,14 +52,16 @@ class DashboardScreen(Screen):
         )
         self.actionlog_widget.border_title = self.actionlog_widget.name
 
-        self.loadedmodels_widget: LoadedModels = LoadedModels(
+        self.loadedmodels_widget: md.LoadedModels = md.LoadedModels(
+            post_highlighted_model_callback=events.ModelSelected,
             name="Actively Loaded Models",
             id="loaded-models",
             classes="box",
         )
         self.loadedmodels_widget.border_title = self.loadedmodels_widget.name
 
-        self.downloadedmodels_widget: DownloadedModels = DownloadedModels(
+        self.downloadedmodels_widget: md.DownloadedModels = md.DownloadedModels(
+            post_highlighted_model_callback=events.ModelSelected,
             name="Downloaded Models",
             id="downloaded-models",
             classes="box",
@@ -109,6 +104,7 @@ class DashboardScreen(Screen):
     def clear_fetched_data(self) -> None:
         """Clears all data dependent on connected server"""
         self.downloadedmodels_widget.clear_model_list()
+        self.downloadedmodels_widget.refresh_table()
         self.contextpane_widget.update_model_context(None)
         # TODO: Add loaded models table clear
 
@@ -116,6 +112,7 @@ class DashboardScreen(Screen):
     async def fetch_load_models(self, ip: str, port: int) -> None:
         """Fetch models from LMS API endpoint and populate UI"""
         self.downloadedmodels_widget.clear_model_list()
+        self.downloadedmodels_widget.refresh_table()
         models, err = await fetch_available_models(ip, port)
 
         if err:
@@ -128,7 +125,7 @@ class DashboardScreen(Screen):
 
         assert models
         self.downloadedmodels_widget.load_models(models)
-        self.downloadedmodels_widget.dl_models_table.focus()
+        self.downloadedmodels_widget.table.focus()
         self.notify(f"Found {len(models)} models")
 
     # ======= REACTIVE WATCHERS =======
@@ -162,7 +159,7 @@ class DashboardScreen(Screen):
             if net_config:
                 self.connection_widget.apply_new_server(net_config)
                 ip, port = net_config
-                self.post_message(ServerEndpointUpdated(ip, port))
+                self.post_message(events.ServerEndpointUpdated(ip, port))
 
         self.app.push_screen(ServerSelectionModal(), callback=is_same_server)
 
@@ -181,25 +178,25 @@ class DashboardScreen(Screen):
 
     # ========= EVENTS ==========
 
-    @on(ServerConnected)
-    def handle_server_connected(self, event: ServerConnected) -> None:
+    @on(events.ServerConnected)
+    def handle_server_connected(self, event: events.ServerConnected) -> None:
         """Trigger fetch models on successful server connection"""
         self.fetch_load_models(event.ip, event.port)
 
-    @on(ServerEndpointUpdated)
+    @on(events.ServerEndpointUpdated)
     def handle_server_changed(self) -> None:
         """Clears models when server changes, only fetch models on successful connection"""
         self.clear_fetched_data()
 
-    @on(ModelSelected)
-    def update_context_display(self, event: ModelSelected) -> None:
+    @on(events.ModelSelected)
+    def update_context_display(self, event: events.ModelSelected) -> None:
         self.contextpane_widget.update_model_context(event.model)
 
     @on(Input.Submitted, "#search-bar")
-    def apply_search(self, event: Input.Submitted) -> None:
+    def apply_search(self) -> None:
         """Filters active widget DataTable"""
         self._hide_search_bar()
-        self.downloadedmodels_widget.dl_models_table.focus()
+        self.downloadedmodels_widget.table.focus()
 
     @on(Input.Changed, "#search-bar")
     def real_time_search(self, event: Input.Changed) -> None:
@@ -208,9 +205,11 @@ class DashboardScreen(Screen):
 
     def on_key(self, event) -> None:
         """Esc key listener for filter search"""
-        if self.search_bar.display and event.key == "escape":
+        if self.search_bar.display and (
+            event.key == "escape" or event.key == "ctrl+left_square_bracket"
+        ):
             self._hide_search_bar()
-            self.downloadedmodels_widget.focus()
+            self.downloadedmodels_widget.table.focus()
 
     def _hide_search_bar(self) -> None:
         """Helper to swap main footer back"""

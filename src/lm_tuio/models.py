@@ -1,16 +1,15 @@
-"""Establishes data structures for LMS Native v1 REST API GET Models response.
+"""Establishes data structures for LMS Native v1 REST API GET Models response and display.
 
 Optional JSON fields from API response may be 'None'.
 """
 
+from _collections_abc import Callable
 from enum import StrEnum
 
 from pydantic import BaseModel
 from textual import on
 from textual.app import ComposeResult
 from textual.widgets import DataTable, Static
-
-from lm_tuio.events import ModelSelected
 
 
 def format_bytes(size: int) -> str:
@@ -24,6 +23,9 @@ def format_bytes(size: int) -> str:
     elif size >= GB:
         return f"{size / GB:.2f} GB"
     return f"{size / MB:.2f} MB"
+
+
+# ======= DATA STRUCTS ========
 
 
 class QuantizationInfo(BaseModel):
@@ -54,6 +56,9 @@ class ModelListResponse(BaseModel):
     models: list[ModelInfo]
 
 
+# ======= MODEL TABLE CLASSES =======
+
+
 class BaseModelTable(Static):
     """Base class for model display tables (Loaded/Downloaded models)"""
 
@@ -66,7 +71,13 @@ class BaseModelTable(Static):
         NAME = "name"
         SIZE = "size"
 
-    def __init__(self, table_id: str, *args, **kwargs) -> None:
+    def __init__(
+        self,
+        table_id: str,
+        post_highlighted_model_callback: Callable[[ModelInfo | None]],
+        *args,
+        **kwargs,
+    ) -> None:
         super().__init__(*args, **kwargs)
         self.table_id = table_id
         self.table: DataTable = DataTable(cursor_type="row", id=self.table_id)
@@ -75,17 +86,22 @@ class BaseModelTable(Static):
         self.current_sort: str = "name"
         self.sort_reverse: bool = False
 
+        # Post message callback for event bus
+        self.post_highlighted_model = post_highlighted_model_callback
+
     def compose(self) -> ComposeResult:
         yield self.table
 
     def on_mount(self) -> None:
         self.table.add_columns("Name", "Size")
 
+    def clear_model_list(self) -> None:
+        self._all_models.clear()
+
     def load_models(self, models: list[ModelInfo]) -> None:
         """Populate downloaded models dataset"""
-        # self.clear_model_list()
+        self.clear_model_list()
         self._all_models = {m.key: m for m in models}
-        # self.apply_filter("")
         self.refresh_table()
 
     def apply_filter(self, search_term: str) -> None:
@@ -121,7 +137,9 @@ class BaseModelTable(Static):
         if self.table.row_count > 0:
             self.table.move_cursor(row=0)
         else:
-            self.post_message(ModelSelected(None))
+            self.post_highlighted_model(None)
+
+    # ======= ACTIONS =======
 
     def action_sort_on_name(self) -> None:
         """Sort model table by display name, or reverse sort if already sorted on name."""
@@ -145,9 +163,11 @@ class BaseModelTable(Static):
     def handle_row_highlight(self, event: DataTable.RowHighlighted) -> None:
         """Fires when navigating through table."""
         key = event.row_key.value
+
         assert key
         model = self._all_models.get(key)
-        self.post_message(ModelSelected(model))
+
+        self.post_message(self.post_highlighted_model(model))
 
 
 # Model DataTable implementations
@@ -156,12 +176,12 @@ class BaseModelTable(Static):
 class DownloadedModels(BaseModelTable):
     """Widget displaying all downloaded models available on the server."""
 
-    def __init__(self, *args, **kwargs) -> None:
-        super().__init__(table_id="dl-models-table", *args, **kwargs)
+    def __init__(self, **kwargs) -> None:
+        super().__init__(table_id="dl-models-table", **kwargs)
 
 
 class LoadedModels(BaseModelTable):
     """Widget displaying currently loaded models for immediate use."""
 
-    def __init__(self, *args, **kwargs) -> None:
-        super().__init__(table_id="loaded-models-table", *args, **kwargs)
+    def __init__(self, **kwargs) -> None:
+        super().__init__(table_id="loaded-models-table", **kwargs)
