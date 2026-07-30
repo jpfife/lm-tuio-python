@@ -4,7 +4,7 @@ from textual.app import ComposeResult
 from textual.containers import Vertical
 from textual.widgets import Label, Static
 
-from lm_tuio.models import ModelInfo
+from lm_tuio.models import ModelInfo, format_bytes
 
 
 class ContextPane(Static):
@@ -25,7 +25,7 @@ class ContextPane(Static):
             "Architecture", id="ctx-arch", classes="ctx-titles hidden"
         )
         self.ctx_context: Label = Label(
-            "Context", id="ctx-context", classes="ctx-titles hidden"
+            "Max Context", id="ctx-max-context", classes="ctx-titles hidden"
         )
         self.ctx_quant: Label = Label(
             "Quantization", id="ctx-quant", classes="ctx-titles hidden"
@@ -42,7 +42,7 @@ class ContextPane(Static):
             "", id="ctx-arch_val", classes="ctx-values hidden"
         )
         self.ctx_context_val: Label = Label(
-            "", id="ctx-context_val", classes="ctx-values hidden"
+            "", id="ctx-max-context_val", classes="ctx-values hidden"
         )
         self.ctx_quant_val: Label = Label(
             "", id="ctx-quant_val", classes="ctx-values hidden"
@@ -91,7 +91,7 @@ class ContextPane(Static):
         self.ctx_name_val.update(f"{model.display_name}")
         self.ctx_publisher_val.update(f"{model.publisher}")
         self.ctx_arch_val.update(f"{model.architecture}")
-        self.ctx_context_val.update(f"{model.max_context_length}")
+        self.ctx_context_val.update(f"{format_bytes(model.max_context_length)}")
 
         quant = f"{model.quantization.bits_per_weight}" if model.quantization else None
         if quant:

@@ -17,12 +17,15 @@ def format_bytes(size: int) -> str:
     TB: int = 1024**4
     GB: int = 1024**3
     MB: int = 1024**2
+    KB: int = 1024
 
     if size >= TB:
-        return f"{size / TB:.2f} GB"
+        return f"{size / TB:.2f} TB"
     elif size >= GB:
         return f"{size / GB:.2f} GB"
-    return f"{size / MB:.2f} MB"
+    elif size >= MB:
+        return f"{size / MB:.2f} MB"
+    return f"{int(size / KB)}K"
 
 
 # ======= DATA STRUCTS ========
