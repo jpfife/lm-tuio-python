@@ -3,20 +3,16 @@
 Container for interactive and display components.
 """
 
-from textual import on
+from textual import on, work
 from textual.app import ComposeResult
 from textual.containers import Horizontal
+from textual.reactive import reactive
 from textual.screen import Screen
-from textual.widgets import Footer
+from textual.widgets import Footer, Input
 
-from lm_tuio.components import (
-    ActionLog,
-    ConnectionStatus,
-    ContextPane,
-    DownloadedModels,
-    LoadedModels,
-    Title,
-)
+from lm_tuio import events, models as md
+from lm_tuio.api import fetch_available_models
+from lm_tuio.components import ActionLog, ConnectionStatus, ContextPane, Title
 from lm_tuio.config import AppConfig
 from lm_tuio.screens.server_select import ServerSelectionModal
 
@@ -24,52 +20,70 @@ from lm_tuio.screens.server_select import ServerSelectionModal
 class DashboardScreen(Screen):
     """Primary application dashboard."""
 
+    AUTO_FOCUS = "#downloaded_models"
+
     BINDINGS = [
-        ("q,escape", "quit", "[quit]"),
+        ("q", "quit", "[quit]"),
         ("c", "change_server", "[change server]"),
         ("r", "refresh_models", "[refresh models]"),
+        ("/", "filter", "[filter]"),
+        ("escape,ctrl+left_square_bracket", "clear_search", "[clr search]"),
         ("*", "retry_connection"),
     ]
 
-    # TODO: Set relevant values
+    filter_str: reactive[str] = reactive("")
+
     def compose(self) -> ComposeResult:
         # Set widget instances
         self.connection_widget: ConnectionStatus = ConnectionStatus(
-            "Connectivity Status", id="conn-status", classes="box"
+            "Connection Status", id="conn-status", classes="box"
         )
+        self.connection_widget.border_title = self.connection_widget.name
 
         self.title_widget: Title = Title(
-            "LM TUIO Logo\nLM Studio Dashboard", id="logo-title", classes="box"
+            name="LM Studio Dashboard", id="logo-title", classes="box"
         )
-        self.title_widget.border_subtitle = "LM Studio Dashboard"
+        self.title_widget.border_subtitle = self.title_widget.name
 
         self.actionlog_widget: ActionLog = ActionLog(
-            name="Action Log",
+            name="Actions / Logs",
             id="action-log",
             classes="box",
         )
-        self.actionlog_widget.border_title = "Log / Actions"
+        self.actionlog_widget.border_title = self.actionlog_widget.name
 
-        self.loadedmodels_widget: LoadedModels = LoadedModels(
+        self.loadedmodels_widget: md.LoadedModels = md.LoadedModels(
+            post_highlighted_model_callback=events.ModelSelected,
             name="Actively Loaded Models",
             id="loaded-models",
             classes="box",
         )
-        self.loadedmodels_widget.border_title = "Loaded Models"
+        self.loadedmodels_widget.border_title = self.loadedmodels_widget.name
 
-        self.downloadedmodels_widget: DownloadedModels = DownloadedModels(
+        self.downloadedmodels_widget: md.DownloadedModels = md.DownloadedModels(
+            post_highlighted_model_callback=events.ModelSelected,
             name="Downloaded Models",
             id="downloaded-models",
             classes="box",
         )
-        self.downloadedmodels_widget.border_title = "Downloaded Models"
+        self.downloadedmodels_widget.border_title = self.downloadedmodels_widget.name
 
         self.contextpane_widget: ContextPane = ContextPane(
-            name="Dynamic Context Pane",
+            name="Details",
             id="context-pane",
             classes="box",
         )
-        self.contextpane_widget.border_title = "Details"
+        self.contextpane_widget.border_title = self.contextpane_widget.name
+
+        self.search_bar: Input = Input(
+            placeholder="Set list filter, ESC to cancel",
+            name="Filter",
+            id="search-bar",
+            classes="footers hidden",
+        )
+        self.search_bar.border_title = self.search_bar.name
+
+        self.main_footer: Footer = Footer(id="main-footer", classes="footers")
 
         # Top row telemetry and logging
         with Horizontal(id="header-zone"):
@@ -84,42 +98,78 @@ class DashboardScreen(Screen):
             yield self.contextpane_widget
 
         # Bottom row hotkeys bar
-        yield Footer()
+        yield self.main_footer
+        yield self.search_bar
+
+    def clear_fetched_data(self) -> None:
+        """Clears all data dependent on connected server"""
+        self.downloadedmodels_widget.clear_model_list()
+        self.downloadedmodels_widget.refresh_table()
+        self.contextpane_widget.update_model_context(None)
+        # TODO: Add loaded models table clear
+
+    @work(exclusive=True)
+    async def fetch_load_models(self, ip: str, port: int) -> None:
+        """Fetch models from LMS API endpoint and populate UI"""
+        self.downloadedmodels_widget.clear_model_list()
+        self.downloadedmodels_widget.refresh_table()
+        models, err = await fetch_available_models(ip, port)
+
+        if err:
+            self.notify(
+                f"Failed to fetch models: {err}",
+                severity="error",
+                timeout=AppConfig.NOTIFY_TIMEOUT,
+            )
+            return
+
+        assert models
+        self.downloadedmodels_widget.load_models(models)
+        self.downloadedmodels_widget.table.focus()
+        self.notify(f"Found {len(models)} models")
+
+    # ======= REACTIVE WATCHERS =======
+    def watch_filter_str(self, new_filter: str) -> None:
+        self.downloadedmodels_widget.apply_filter(new_filter)
+        # TODO: Add loaded models table filter
 
     # ========== ACTIONS ==========
 
+    def action_filter(self) -> None:
+        """Default hotkey '/' to filter display lists"""
+        self.main_footer.display = False
+        self.search_bar.display = True
+        self.search_bar.value = self.filter_str
+        self.search_bar.focus()
+
+    def action_clear_search(self) -> None:
+        """Default hotkey 'Esc' to clear filter"""
+        self.filter_str = ""
+        self._hide_search_bar()
+
     def action_quit(self) -> None:
-        """Triggered by 'q' hotkey"""
+        """Default hotkey 'q' to quit application"""
         self.app.exit()
 
     def action_change_server(self) -> None:
-        """Triggered by 'c' hotkey"""
-        net_config: AppConfig = AppConfig()
-        net_config.load()
-        loaded_ip: str = net_config.target
-        loaded_port: int = net_config.port
-        loaded_subnet: str = net_config.scan_subnet
+        """Default hotkey 'c' to connect to server"""
 
-        def apply_new_server(ip_conf: tuple[str, int] | None) -> None:
-            if not ip_conf:
-                return
+        # Track if endpoint actually changes
+        def is_same_server(net_config: tuple[str, int] | None) -> None:
+            if net_config:
+                self.connection_widget.apply_new_server(net_config)
+                ip, port = net_config
+                self.post_message(events.ServerEndpointUpdated(ip, port))
 
-            ip, port = ip_conf
-            self.connection_widget.server_ip = ip
-            self.connection_widget.server_port = port
-            self.notify(
-                f"Connecting to {ip}:{port}...", timeout=AppConfig.NOTIFY_TIMEOUT
-            )
-            self.connection_widget.reset_status()
-            self.connection_widget.update_connection_status()
+        self.app.push_screen(ServerSelectionModal(), callback=is_same_server)
 
-        self.app.push_screen(
-            ServerSelectionModal(loaded_ip, loaded_port, loaded_subnet),
-            callback=apply_new_server,
+    def action_refresh_models(self) -> None:
+        self.fetch_load_models(
+            self.connection_widget.server_ip, self.connection_widget.server_port
         )
 
     def action_retry_connection(self) -> None:
-        """Triggered by '*' hotkey"""
+        """Default hotkey '*' to retest connection to API endpoint"""
         self.notify(
             "Retesting connection to server...", timeout=AppConfig.NOTIFY_TIMEOUT
         )
@@ -128,4 +178,40 @@ class DashboardScreen(Screen):
 
     # ========= EVENTS ==========
 
-    # TODO: Add handler for downloadedmodels_widget to refresh list
+    @on(events.ServerConnected)
+    def handle_server_connected(self, event: events.ServerConnected) -> None:
+        """Trigger fetch models on successful server connection"""
+        self.fetch_load_models(event.ip, event.port)
+
+    @on(events.ServerEndpointUpdated)
+    def handle_server_changed(self) -> None:
+        """Clears models when server changes, only fetch models on successful connection"""
+        self.clear_fetched_data()
+
+    @on(events.ModelSelected)
+    def update_context_display(self, event: events.ModelSelected) -> None:
+        self.contextpane_widget.update_model_context(event.model)
+
+    @on(Input.Submitted, "#search-bar")
+    def apply_search(self) -> None:
+        """Filters active widget DataTable"""
+        self._hide_search_bar()
+        self.downloadedmodels_widget.table.focus()
+
+    @on(Input.Changed, "#search-bar")
+    def real_time_search(self, event: Input.Changed) -> None:
+        """Real-time text filtering"""
+        self.filter_str = event.value
+
+    def on_key(self, event) -> None:
+        """Esc key listener for filter search"""
+        if self.search_bar.display and (
+            event.key == "escape" or event.key == "ctrl+left_square_bracket"
+        ):
+            self._hide_search_bar()
+            self.downloadedmodels_widget.table.focus()
+
+    def _hide_search_bar(self) -> None:
+        """Helper to swap main footer back"""
+        self.search_bar.display = False
+        self.main_footer.display = True

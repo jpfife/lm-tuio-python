@@ -52,7 +52,7 @@ async def fetch_available_models(
 
 
 async def check_server_status(ip: str, port: int, timeout: float = API_TIMEOUT) -> bool:
-    """Lightweight http ping to LM Studio server."""
+    """Lightweight http ping to LMS server endpoint"""
     server_url: str = f"http://{ip}:{port}{api_action['models']}"
 
     async with httpx.AsyncClient() as client:
