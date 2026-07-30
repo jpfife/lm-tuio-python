@@ -11,6 +11,7 @@ from textual.widgets import Static
 
 from lm_tuio.config import AppConfig
 from lm_tuio.api import check_server_status
+from lm_tuio.events import ServerConnected
 
 
 # Connection status indicator enums
@@ -38,13 +39,15 @@ CONNECT_STATUS: dict[str, str] = {
 PING_INTERVAL: float = 2.0
 
 
-# TODO: Connect to config parser for CLI input
 class ConnectionStatus(Static):
     """Main dashboard widget to asynchronously poll LMS API connectivity and display status."""
 
     status: reactive[str] = reactive(Connection.YELLOW)
-    server_ip: reactive[str] = reactive("192.168.1.100")
+    server_ip: reactive[str] = reactive("192.168.1.1")
     server_port: reactive[int] = reactive(1234)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
     def on_mount(self) -> None:
         app_config = getattr(self.app, "config", None)
@@ -70,6 +73,9 @@ class ConnectionStatus(Static):
             self.server_ip, self.server_port, PING_INTERVAL
         )
         if is_connected:
+            # Check if previously connected
+            if self.status != Connection.GREEN:
+                self.post_message(ServerConnected(self.server_ip, self.server_port))
             self.status = Connection.GREEN
         else:
             self.status = Connection.RED

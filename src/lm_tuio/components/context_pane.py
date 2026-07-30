@@ -10,23 +10,45 @@ from lm_tuio.models import ModelInfo
 class ContextPane(Static):
     """Dynamic details pane for selected dashboard information."""
 
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
         # Initialize static labels
         self.ctx_placeholder: Label = Label(
             "Select model to view details.", id="ctx-placeholder"
         )
-        self.ctx_name: Label = Label("Model", id="ctx-name")
-        self.ctx_publisher: Label = Label("Publisher", id="ctx-publisher")
-        self.ctx_arch: Label = Label("Architecture", id="ctx-arch")
-        self.ctx_context: Label = Label("Context", id="ctx-context")
-        self.ctx_quant: Label = Label("Quantization", id="ctx-quant")
+        self.ctx_name: Label = Label(
+            "Model", id="ctx-name", classes="ctx-titles hidden"
+        )
+        self.ctx_publisher: Label = Label(
+            "Publisher", id="ctx-publisher", classes="ctx-titles hidden"
+        )
+        self.ctx_arch: Label = Label(
+            "Architecture", id="ctx-arch", classes="ctx-titles hidden"
+        )
+        self.ctx_context: Label = Label(
+            "Context", id="ctx-context", classes="ctx-titles hidden"
+        )
+        self.ctx_quant: Label = Label(
+            "Quantization", id="ctx-quant", classes="ctx-titles hidden"
+        )
 
         # Initialize dynamic content labels
-        self.ctx_name_val: Label = Label("", id="ctx-name_val")
-        self.ctx_publisher_val: Label = Label("", id="ctx-publisher_val")
-        self.ctx_arch_val: Label = Label("", id="ctx-arch_val")
-        self.ctx_context_val: Label = Label("", id="ctx-context_val")
-        self.ctx_quant_val: Label = Label("", id="ctx-quant_val")
+        self.ctx_name_val: Label = Label(
+            "", id="ctx-name_val", classes="ctx-values hidden"
+        )
+        self.ctx_publisher_val: Label = Label(
+            "", id="ctx-publisher_val", classes="ctx-values hidden"
+        )
+        self.ctx_arch_val: Label = Label(
+            "", id="ctx-arch_val", classes="ctx-values hidden"
+        )
+        self.ctx_context_val: Label = Label(
+            "", id="ctx-context_val", classes="ctx-values hidden"
+        )
+        self.ctx_quant_val: Label = Label(
+            "", id="ctx-quant_val", classes="ctx-values hidden"
+        )
+
+        super().__init__(*args, **kwargs)
 
     def compose(self) -> ComposeResult:
         with Vertical():

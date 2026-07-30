@@ -20,11 +20,12 @@ def format_bytes(size: int) -> str:
 class DownloadedModels(Static):
     """Widget to display all available models from the API endpoint"""
 
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
         self._all_models: dict[str, ModelInfo] = {}
         self.dl_models_table: DataTable = DataTable(
-            cursor_type="row", id="#dl-models-table"
+            cursor_type="row", id="dl-models-table"
         )
+        super().__init__(*args, **kwargs)
 
     def compose(self) -> ComposeResult:
         yield self.dl_models_table

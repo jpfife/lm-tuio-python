@@ -31,7 +31,6 @@ class DashboardScreen(Screen):
         ("*", "retry_connection"),
     ]
 
-    # TODO: Set relevant values
     def compose(self) -> ComposeResult:
         # Set widget instances
         self.connection_widget: ConnectionStatus = ConnectionStatus(
@@ -56,6 +55,7 @@ class DashboardScreen(Screen):
             classes="box",
         )
         self.loadedmodels_widget.border_title = "Loaded Models"
+        # self.loadedmodels_widget.border_title = self.loadedmodels_widget.name # TESTING:
 
         self.downloadedmodels_widget: DownloadedModels = DownloadedModels(
             name="Downloaded Models",
