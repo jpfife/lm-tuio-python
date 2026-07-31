@@ -23,11 +23,11 @@ class DashboardScreen(Screen):
     AUTO_FOCUS = "#downloaded_models"
 
     BINDINGS = [
-        ("q", "quit", "[quit]"),
-        ("c", "change_server", "[change server]"),
-        ("r", "refresh_models", "[refresh models]"),
-        ("/", "filter", "[filter]"),
-        ("escape,ctrl+left_square_bracket", "clear_search", "[clr search]"),
+        ("q", "quit", "<quit>"),
+        ("c", "change_server", "<change server>"),
+        ("r", "refresh_models", "<refresh models>"),
+        ("/", "filter", "<filter>"),
+        ("escape,ctrl+left_square_bracket", "clear_filter", "<clr filter>"),
         ("*", "retry_connection"),
     ]
 
@@ -142,7 +142,7 @@ class DashboardScreen(Screen):
         self.search_bar.value = self.filter_str
         self.search_bar.focus()
 
-    def action_clear_search(self) -> None:
+    def action_clear_filter(self) -> None:
         """Default hotkey 'Esc' to clear filter"""
         self.filter_str = ""
         self._hide_search_bar()

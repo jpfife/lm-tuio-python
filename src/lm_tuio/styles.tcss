@@ -14,7 +14,7 @@ Button {
 }
 
 /* =========================================
-   UTILITY CLASSES
+   CLASSES
    ========================================= */
 .box {
     border-top: round $secondary 60%;
@@ -34,6 +34,16 @@ Button {
     display: none;
 }
 
+.ctx-titles {
+    text-style: bold;
+    color: $accent;
+    margin-top: 1;
+}
+
+.ctx-horizontal-group {
+    height: auto;
+}
+
 /* =========================================
    HEADER ZONE
    ========================================= */
@@ -42,37 +52,41 @@ Button {
     margin: 1 1 1 1;
 }
 
-#logo-title {
-    border: round $secondary 2%;
-    background: rgba(0, 0, 0, 0.1);
-    border-subtitle-align: right;
-    border-subtitle-color: $primary;
-    border-subtitle-background: rgba(0, 0, 0, 0);
-    border-subtitle-style: italic;
-    width: 1fr;
-    min-width: 38;
-    margin-right: 2;
-    content-align: center top;
-    text-align: center;
-    color: $primary;
-}
-
 #conn-status {
     text-style: bold;
     border: none;
     padding: 1;
     content-align: left middle;
-    width: 1fr;
-    min-width: 35;
+    width: auto;
+    min-width: 30;
+    max-width: 40;
     margin-right: 2;
 }
 
+#logo-title {
+    border: round $secondary 2%;
+    /* background: rgba(0, 0, 0, 0.1); */
+    border-subtitle-align: right;
+    border-subtitle-color: $primary;
+    border-subtitle-background: rgba(0, 0, 0, 0);
+    border-subtitle-style: italic;
+    width: 30%;
+    min-width: 38;
+    margin-right: 4;
+    content-align: left top;
+    text-align: left;
+    color: $primary;
+}
+
 #action-log {
-    width: 2fr;
+    width: 50%;
     border-title-align: left;
     border-title-color: $primary;
     border-title-background: rgba(0, 0, 0, 0);
     border-title-style: italic;
+    border-right: none;
+    margin: 1 5 0 0;
+    background: transparent;
 }
 
 /* =========================================
@@ -85,7 +99,8 @@ Button {
 
 #loaded-models,
 #downloaded-models {
-    width: 30%;
+    /* width: 30%; */
+    width: 1fr;
     border-title-align: left;
     border-title-color: $primary;
     border-title-background: rgba(0, 0, 0, 0);
@@ -93,12 +108,37 @@ Button {
 }
 
 #context-pane {
-    width: 40%;
+    /* width: 40%; */
+    width: 1fr;
     border-title-align: left;
     border-title-color: $primary;
     border-title-background: rgba(0, 0, 0, 0);
     border-title-style: italic;
     padding: 1 2;
+}
+
+#ctx-details-pane {
+    height: 100%;
+}
+
+.ctx-horizontal-group,
+.ctx-horizontal-group>Vertical,
+.ctx-horizontal-group>Vertical>Label {
+    height: auto;
+}
+
+#ctx-separator {
+    border-top: ascii $secondary;
+    border-title-align: center;
+    border-title-style: italic;
+    border-title-color: $accent;
+    height: 1;
+    margin: 1 0 1 0;
+}
+
+#ctx-placeholder {
+    text-style: bold italic;
+    color: $primary;
 }
 
 /* DataTable List Styling */
@@ -120,13 +160,17 @@ DataTable>.datatable--cursor {
     color: $background;
 }
 
+Horizontal>Label {
+    height: auto;
+}
+
 /* =========================================
    FOOTER / SEARCH BAR
    ========================================= */
-#vim-search-bar {
+#search-bar {
     dock: bottom;
     width: 100%;
-    border: none;
+    border: round $primary;
     background: $surface;
     color: $text;
 }
@@ -165,7 +209,7 @@ ServerSelectionModal {
     height: 1fr;
     border: none;
     padding: 1;
-    background: rgba(0, 0, 0, 0.25);
+    background: rgba(0, 0, 0, 0.30);
 }
 
 #main-action-area {
@@ -182,10 +226,10 @@ ServerSelectionModal {
     width: auto;
     min-width: 32;
     margin: 0 0 1 0;
-    background: rgba(0, 0, 0, 0.25);
-    border: round $secondary 2%;
+    /* background: rgba(0, 0, 0, 0.25); */
+    border: round $secondary 80%;
     border-subtitle-align: right;
-    border-subtitle-color: $secondary;
+    border-subtitle-color: $accent-darken-2;
     border-subtitle-background: rgba(0, 0, 0, 0);
     border-subtitle-style: italic;
 }
