@@ -20,12 +20,12 @@ class ServerSelectionModal(ModalScreen[tuple[str, int] | None]):
     """Modal to select, scan, and set active LMS API endpoints."""
 
     BINDINGS = [
-        ("q,escape", "quit", "[quit]"),
-        ("c", "connect_input_submit", "[connect]"),
-        ("s", "scan_network", "[scan]"),
-        ("ctrl+s", "save_defaults", "[save defaults]"),
-        ("x", "clear_cache", "[clear cache]"),
-        ("q,escape", "quit", "[quit]"),
+        ("q,escape", "quit", "<close>"),
+        ("c", "connect_input_submit", "<connect>"),
+        ("s", "scan_network", "<scan>"),
+        ("ctrl+s", "save_defaults", "<save defaults>"),
+        ("x", "clear_cache", "<clear cache>"),
+        ("q,escape", "quit", "<quit>"),
     ]
 
     current_ip: str
@@ -35,6 +35,7 @@ class ServerSelectionModal(ModalScreen[tuple[str, int] | None]):
     def __init__(
         self, ip: str = "", port: int = 0, subnet: str = "", *args, **kwargs
     ) -> None:
+        # Don't load config if all args are passed in
         if ip and port and subnet:
             self.current_ip = ip
             self.current_port = port
@@ -43,6 +44,7 @@ class ServerSelectionModal(ModalScreen[tuple[str, int] | None]):
             return
 
         app_config: AppConfig | None = getattr(self.app, "config", None)
+        # Load config from config.toml if found, otherwise default AppConfig
         if not app_config:
             loaded_config, config_err = AppConfig().load()
             if config_err:
@@ -58,6 +60,7 @@ class ServerSelectionModal(ModalScreen[tuple[str, int] | None]):
         else:
             loaded_config, config_err = app_config.load()
 
+        # Override defaults if args are passed
         assert isinstance(loaded_config, AppConfig)
         self.current_ip = ip if ip else loaded_config.target
         self.current_port = port if port else loaded_config.port
@@ -68,7 +71,7 @@ class ServerSelectionModal(ModalScreen[tuple[str, int] | None]):
     def compose(self) -> ComposeResult:
         self.input_widget: Input = Input(
             value=f"{self.current_ip}:{self.current_port}",
-            placeholder="IP|hostname:[Port], default LMS port:1234",
+            placeholder="IP:[Port]",
             id="manual-ip-input",
             classes="server-select-input-field",
         )
