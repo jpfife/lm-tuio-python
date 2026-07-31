@@ -66,8 +66,8 @@ class BaseModelTable(Static):
     """Base class for model display tables (Loaded/Downloaded models)"""
 
     BINDINGS = [
-        ("n", "sort_on_name", "[sort name]"),
-        ("s", "sort_on_size", "[sort size]"),
+        ("n", "sort_on_name", "<sort name>"),
+        ("s", "sort_on_size", "<sort size>"),
     ]
 
     class SortType(StrEnum):
@@ -121,6 +121,8 @@ class BaseModelTable(Static):
             for m in self._all_models.values()
             if self.current_filter in m.display_name.lower()
             or self.current_filter in m.publisher.lower()
+            or self.current_filter in m.key.lower()
+            or (m.quantization and self.current_filter in m.quantization.name.lower())
         ]
 
         if self.current_sort == self.SortType.NAME:
