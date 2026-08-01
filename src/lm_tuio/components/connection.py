@@ -36,7 +36,7 @@ CONNECT_STATUS: dict[str, str] = {
     Connection.GRAY: (f"[{GRAY_ICON}]●[/{GRAY_ICON}]  [i]Unknown. Retrying..."),
 }
 
-PING_INTERVAL: float = 2.0
+PING_INTERVAL: float = 5.0
 
 
 class ConnectionStatus(Static):
@@ -57,6 +57,12 @@ class ConnectionStatus(Static):
             self.server_port = app_config.port
         else:
             self.notify("Could not load config.toml.", severity="warning")
+            default_config = AppConfig().load()
+            assert isinstance(default_config, AppConfig)
+            self.server_ip = default_config.target
+            self.server_port = default_config.port
+
+        self.update_connection_status()
         self.set_interval(PING_INTERVAL, self.update_connection_status)
 
     def render(self) -> str:
