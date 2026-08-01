@@ -57,7 +57,7 @@ Button {
     border: none;
     padding: 1;
     content-align: left middle;
-    width: auto;
+    width: 20%;
     min-width: 30;
     max-width: 40;
     margin-right: 2;
@@ -70,7 +70,7 @@ Button {
     border-subtitle-color: $primary;
     border-subtitle-background: rgba(0, 0, 0, 0);
     border-subtitle-style: italic;
-    width: 30%;
+    width: 25%;
     min-width: 38;
     margin-right: 4;
     content-align: left top;
@@ -79,13 +79,13 @@ Button {
 }
 
 #action-log {
-    width: 50%;
+    width: 1fr;
     border-title-align: left;
     border-title-color: $primary;
     border-title-background: rgba(0, 0, 0, 0);
     border-title-style: italic;
     border-right: none;
-    margin: 1 5 0 0;
+    margin: 1 2 0 3;
     background: transparent;
 }
 

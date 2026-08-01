@@ -105,8 +105,9 @@ class DashboardScreen(Screen):
         """Clears all data dependent on connected server"""
         self.downloadedmodels_widget.clear_model_list()
         self.downloadedmodels_widget.refresh_table()
+        self.loadedmodels_widget.clear_model_list()
+        # self.loadedmodels_widget.refresh_table() # TODO:
         self.contextpane_widget.update_model_context(None)
-        # TODO: Add loaded models table clear
 
     @work(exclusive=True)
     async def fetch_load_models(self, ip: str, port: int) -> None:

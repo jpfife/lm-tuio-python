@@ -2,13 +2,13 @@
 
 from textual.app import ComposeResult
 from textual.containers import Horizontal, Vertical
-from textual.widgets import DataTable, Label, Static
+from textual.widgets import Label, Static
 
 from lm_tuio.models import (
     ModelInfo,
+    ModelInstanceTable,
     estimate_context_cache_memory,
     format_bytes,
-    ModelInstanceTable,
 )
 
 
@@ -36,18 +36,6 @@ class ContextPane(Static):
             "Quantization", id="ctx-quant", classes="ctx-titles hidden"
         )
 
-        # Initialize static labels, loaded model details (bottom) section
-        self.ctx_num_loaded_insts: Label = Label(
-            "Loaded Instances:",
-            id="ctx-num-loaded-insts",
-            classes="ctx-titles hidden",
-        )
-        self.ctx_total_memory: Label = Label(
-            "Total Memory (Est):",
-            id="ctx-total-memory",
-            classes="ctx-titles hidden",
-        )
-
         # Initialize dynamic content labels, base model details (top) section
         self.ctx_name_val: Label = Label(
             "", id="ctx-name_val", classes="ctx-values hidden"
@@ -65,12 +53,32 @@ class ContextPane(Static):
             "", id="ctx-quant_val", classes="ctx-values hidden"
         )
 
+        # Initialize static labels, loaded model details (bottom) section
+        self.ctx_num_loaded_insts: Label = Label(
+            "Loaded Instances:",
+            id="ctx-num-loaded-insts",
+            classes="ctx-titles hidden",
+        )
+        self.ctx_total_memory: Label = Label(
+            "Total Memory (Est):",
+            id="ctx-total-memory",
+            classes="ctx-titles hidden",
+        )
+        self.ctx_kv_memory: Label = Label(
+            "With KV Cache Context (~):",
+            id="ctx-kv-memory",
+            classes="ctx-titles hidden",
+        )
+
         # Initialize dynamic content value labels, loaded model(s) details (bottom) section
         self.ctx_num_loaded_insts_val: Label = Label(
             "", id="ctx-num-loaded-insts-val", classes="ctx-values hidden"
         )
         self.ctx_total_memory_val: Label = Label(
             "", id="ctx-total-memory-val", classes="ctx-values hidden"
+        )
+        self.ctx_kv_memory_val: Label = Label(
+            "", id="ctx-kv-memory-val", classes="ctx-values hidden"
         )
 
         self.ctx_insts_table: ModelInstanceTable = ModelInstanceTable(
@@ -110,14 +118,17 @@ class ContextPane(Static):
             yield Horizontal(id="ctx-separator")
 
             # Model loaded instances information, bottom section
-            with Horizontal():
-                with Vertical():
-                    yield self.ctx_num_loaded_insts
-                    yield self.ctx_num_loaded_insts_val
+            yield self.ctx_num_loaded_insts
+            yield self.ctx_num_loaded_insts_val
 
+            with Horizontal():
                 with Vertical():
                     yield self.ctx_total_memory
                     yield self.ctx_total_memory_val
+
+                with Vertical():
+                    yield self.ctx_kv_memory
+                    yield self.ctx_kv_memory_val
 
             with Horizontal(
                 id="ctx-loaded-insts-details", classes="ctx-horizontal-group"
@@ -167,14 +178,13 @@ class ContextPane(Static):
 
             self.ctx_insts_table.add_row(ids_str, ctx_str)
 
-        memory_str: str = (
-            f"{format_bytes(size_bytes)} (Models)\n\nWith KV Cache context:"
-        )
-        memory_str += f"\nKV Q16\t~ {format_bytes(context_bytes + size_bytes)}"
-        memory_str += f"\nKV Q8\t~ {format_bytes((context_bytes // 2) + size_bytes)}"
-        memory_str += f"\nKV Q4\t~ {format_bytes((context_bytes // 4) + size_bytes)}"
+        memory_str: str = f"{format_bytes(size_bytes)} (Models)"
+        kv_mem_str: str = f"KV Q16 - {format_bytes(context_bytes + size_bytes)}\n"
+        kv_mem_str += f"KV Q8  - {format_bytes((context_bytes // 2) + size_bytes)}\n"
+        kv_mem_str += f"KV Q4  - {format_bytes((context_bytes // 4) + size_bytes)}"
 
         self.ctx_total_memory_val.update(memory_str)
+        self.ctx_kv_memory_val.update(kv_mem_str)
 
     def update_model_context(self, model: ModelInfo | None) -> None:
         """Update context value fields based on highlighted model"""
@@ -195,6 +205,7 @@ class ContextPane(Static):
 
         if not model.loaded_instances:
             self.ctx_total_memory_val.update("")
+            self.ctx_kv_memory_val.update("")
             self.ctx_insts_table.clear()
             return
 
