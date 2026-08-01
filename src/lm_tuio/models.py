@@ -5,6 +5,7 @@ Optional JSON fields from API response may be 'None'.
 
 from _collections_abc import Callable
 from enum import StrEnum
+from typing import Any
 
 from pydantic import BaseModel
 from textual import on
@@ -31,6 +32,35 @@ def format_bytes(size: int) -> str:
 # ======= DATA STRUCTS ========
 
 
+class ModelConfig(BaseModel):
+    """Specific loaded instance model configuration."""
+
+    context_length: int
+    eval_batch_size: int | None = None
+    physical_batch_size: int | None = None
+    parallel: int | None = None
+    flash_attention: bool | None = None
+    context_checkpoints: int | None = None
+    reasoning_budget_message: str | None = None
+
+    speculative_draft_mtp: bool | None = None
+    speculative_draft_simple: bool | None = None
+    speculative_draft_model: str | None = None
+    speculative_draft_max_tokens: int | None = None
+    speculative_draft_min_tokens: int | None = None
+    speculative_draft_min_continue_probability: float | None = None
+
+    num_experts: int | None = None
+    offload_kv_cache_to_gpu: bool | None = None
+
+
+class LoadedInstance(BaseModel):
+    """Loaded instance and specific configuration information."""
+
+    id: str
+    config: ModelConfig
+
+
 class QuantizationInfo(BaseModel):
     """Model quantization information."""
 
@@ -49,6 +79,7 @@ class ModelInfo(BaseModel):
     size_bytes: int
     params_string: str | None = None
     max_context_length: int
+    loaded_instances: list[LoadedInstance]
     format: str
     quantization: QuantizationInfo | None = None
 
