@@ -11,7 +11,7 @@ class ContextPane(Static):
     """Dynamic details pane for selected dashboard information."""
 
     def __init__(self, *args, **kwargs):
-        # Initialize static labels
+        # Initialize static labels, base model details (top) section
         self.ctx_placeholder: Label = Label(
             "Select model to view details.", id="ctx-placeholder"
         )
@@ -31,7 +31,19 @@ class ContextPane(Static):
             "Quantization", id="ctx-quant", classes="ctx-titles hidden"
         )
 
-        # Initialize dynamic content labels
+        # Initialize static labels, loaded model details (bottom) section
+        self.ctx_num_loaded_insts: Label = Label(
+            "Loaded Instances:",
+            id="ctx-num-loaded-insts",
+            classes="ctx-titles hidden",
+        )
+        self.ctx_loaded_insts_ids: Label = Label(
+            "Instance IDs:",
+            id="ctx-loaded-insts-ids",
+            classes="ctx-titles hidden",
+        )
+
+        # Initialize dynamic content labels, base model details (top) section
         self.ctx_name_val: Label = Label(
             "", id="ctx-name_val", classes="ctx-values hidden"
         )
@@ -48,10 +60,20 @@ class ContextPane(Static):
             "", id="ctx-quant_val", classes="ctx-values hidden"
         )
 
+        # Initialize dynamic content value labels, base model details (bottom) section
+        self.ctx_num_loaded_insts_val: Label = Label(
+            "", id="ctx-num-loaded-insts-val", classes="ctx-values hidden"
+        )
+        self.ctx_loaded_insts_ids_val: Label = Label(
+            "", id="ctx-loaded-insts-ids-val", classes="ctx-values hidden"
+        )
+
         super().__init__(*args, **kwargs)
 
+    # Present base Model details in top section, loaded instance info in bottom
     def compose(self) -> ComposeResult:
         with Vertical(id="context-details-pane"):
+            # Model base details, top context section
             yield self.ctx_placeholder
 
             yield self.ctx_name
@@ -78,6 +100,13 @@ class ContextPane(Static):
 
             yield Horizontal(id="ctx-separator")
 
+            # Model loaded instances information
+            yield self.ctx_num_loaded_insts
+            yield self.ctx_num_loaded_insts_val
+
+            yield self.ctx_loaded_insts_ids
+            yield self.ctx_loaded_insts_ids_val
+
     def on_mount(self) -> None:
         separator = self.query_one("#ctx-separator", Horizontal)
         separator.border_title = " Loaded "
@@ -97,7 +126,7 @@ class ContextPane(Static):
         for label in labels:
             label.display = True
 
-        # Populate value labels
+        # Populate base model info value labels
         self.ctx_name_val.update(f"{model.key}")
         self.ctx_publisher_val.update(f"{model.publisher}")
         self.ctx_arch_val.update(f"{model.architecture}")
@@ -110,3 +139,14 @@ class ContextPane(Static):
         )
         if quant:
             self.ctx_quant_val.update(quant)
+
+        # Populate loaded instance information labels
+        self.ctx_num_loaded_insts_val.update(f"{len(model.loaded_instances)}")
+
+        if model.loaded_instances:
+            ids_str: str = ""
+            for mdl in model.loaded_instances:
+                ids_str += f"{mdl.id}\n"
+            self.ctx_loaded_insts_ids_val.update(ids_str)
+        else:
+            self.ctx_loaded_insts_ids_val.update("")
