@@ -10,7 +10,7 @@ from typing import Any
 from pydantic import BaseModel
 from textual import on
 from textual.app import ComposeResult
-from textual.widgets import DataTable, Static
+from textual.widgets import DataTable, OptionList, Static
 
 
 def format_bytes(size: int) -> str:
@@ -252,3 +252,15 @@ class LoadedModels(BaseModelTable):
 
     def __init__(self, **kwargs) -> None:
         super().__init__(table_id="loaded-models-table", **kwargs)
+
+
+# OptionList for Context Pane and maybe Loaded Models pane
+class ModelInstanceTable(DataTable):
+    """Widget to display current running instances and associated context."""
+
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+        self.add_column(label="Instance ID", width=32)
+        self.add_column(label="Context")
+        self.show_horizontal_scrollbar = False
+        self.cursor_type = "row"
