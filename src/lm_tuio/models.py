@@ -5,12 +5,11 @@ Optional JSON fields from API response may be 'None'.
 
 from _collections_abc import Callable
 from enum import StrEnum
-from typing import Any
 
 from pydantic import BaseModel
 from textual import on
 from textual.app import ComposeResult
-from textual.widgets import DataTable, OptionList, Static
+from textual.widgets import DataTable, Static
 
 
 def format_bytes(size: int) -> str:
