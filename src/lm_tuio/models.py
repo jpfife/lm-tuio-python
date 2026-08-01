@@ -29,6 +29,37 @@ def format_bytes(size: int) -> str:
     return f"{int(size / KB)}K"
 
 
+def estimate_context_cache_memory(file_size_bytes: int, context_size_bytes) -> int:
+    """Loose estimation of context memory cache cost based on typical GQA model setups.
+
+    Estimated number of model layers based on base size of the model to determine
+    base token cost, using 3-tier param size approach for typical local model setups
+    at +/- 4-bit quants.
+    Using 4K token:
+    (8 KV Heads, 128 dimension, (K state + V state bytes),
+    at full precision KV cache (2 bytes).
+    KV cache cost per token:
+    <8B, <7 GB ~ 32 layers = 131 KB / token
+    <32B, <28 GB ~ 64 layers = 262 KB / token
+    35-70B+, 28 GB+ ~ 80 layers = 328 KB / token
+    """
+    GB: int = 1024**3
+    tier1_token: int = 32 * 4096
+    tier2_token: int = 64 * 4096
+    tier3_token: int = 80 * 4096
+    bytes_per_token: int = 0
+
+    file_GB: int = file_size_bytes // GB
+    if file_GB < 7:
+        bytes_per_token = tier1_token
+    elif file_GB < 28:
+        bytes_per_token = tier2_token
+    else:
+        bytes_per_token = tier3_token
+
+    return context_size_bytes * bytes_per_token
+
+
 # ======= DATA STRUCTS ========
 
 
