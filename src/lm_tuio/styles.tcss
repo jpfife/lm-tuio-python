@@ -133,7 +133,7 @@ Button {
     border-title-style: italic;
     border-title-color: $accent;
     height: 1;
-    margin: 1 0 1 0;
+    margin: 1 0 0 0;
 }
 
 #ctx-placeholder {
@@ -162,6 +162,10 @@ DataTable>.datatable--cursor {
 
 Horizontal>Label {
     height: auto;
+}
+
+Horizontal>DataTable {
+    height: 6;
 }
 
 /* =========================================
