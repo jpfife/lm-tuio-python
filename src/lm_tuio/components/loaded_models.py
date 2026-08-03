@@ -144,10 +144,8 @@ class LoadedModels(Static):
             collapsible = Collapsible(
                 SelectionList(
                     *selections,
-                    id=f"sel-list-{group.base_model_key.replace('/', '_').replace('.', '_')}",
                 ),
                 title=f"{group.display_name} ({len(instance_matches)})",
-                id=f"col-{group.base_model_key.replace('/', '_').replace('.', '_')}",
                 collapsed=False,
             )
             self.loaded_models_scroll.mount(collapsible)
