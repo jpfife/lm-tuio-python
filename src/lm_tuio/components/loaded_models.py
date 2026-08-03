@@ -5,12 +5,12 @@ from dataclasses import dataclass
 
 from textual import on
 from textual.app import ComposeResult
-from textual.containers import VerticalScroll
+from textual.containers import Horizontal, Vertical, VerticalScroll
 from textual.events import DescendantBlur, DescendantFocus
 from textual.widgets import Collapsible, Label, SelectionList, Static
 from textual.widgets.selection_list import Selection
 
-from lm_tuio.models import ModelInfo
+from lm_tuio.models import ModelInfo, format_bytes
 
 
 @dataclass
@@ -57,9 +57,22 @@ class LoadedModels(Static):
         super().__init__(*args, **kwargs)
 
     def compose(self) -> ComposeResult:
+        self.total_model_mem: Label = Label(
+            "Total Model Memory: ", id="loaded-models-total-mem"
+        )
+        self.total_model_mem_val: Label = Label(
+            "0.00 MB", id="loaded-models-total-mem-val"
+        )
         self.loaded_models_scroll: VerticalScroll = VerticalScroll(
             id="loaded-models-scroll"
         )
+
+        with Horizontal(id="loaded-models-total-mem-header"):
+            with Vertical(classes="vert-mem-header"):
+                yield self.total_model_mem
+            with Vertical(classes="vert-mem-header"):
+                yield self.total_model_mem_val
+
         yield self.loaded_models_scroll
 
     def load_model_groups(self, models: list[ModelInfo]) -> None:
@@ -74,19 +87,16 @@ class LoadedModels(Static):
             ui_instances: list[LoadedInstance] = []
             for inst in model.loaded_instances:
                 ctx_str = (
-                    f"{inst.config.context_length:,}"
+                    f"{format_bytes(inst.config.context_length)}"
                     if inst.config.context_length
                     else "?"
                 )
-                label_parts = [f"ctx: {ctx_str}"]
 
-                if inst.config.parallel and inst.config.parallel > 1:
-                    label_parts.append(f"parallel: {inst.config.parallel}")
-
-                if inst.config.eval_batch_size:
-                    label_parts.append(f"batch: {inst.config.eval_batch_size}")
-
-                label_parts.append(f"id: {inst.id}")
+                if len(inst.id) > 27:
+                    label_parts = [f"...{inst.id[-24:]}"]
+                else:
+                    label_parts = [f"{inst.id}"]
+                label_parts.append(f"ctx: {ctx_str}")
                 display_label = " | ".join(label_parts)
 
                 ui_instances.append(
@@ -112,11 +122,18 @@ class LoadedModels(Static):
             for inst in group.instances:
                 self._instance_map[inst.instance_id] = inst
 
+        # Get total model memory
+        total_bytes: int = sum(
+            inst.model_info.size_bytes for inst in self._instance_map.values()
+        )
+        self.total_model_mem_val.update(f"{format_bytes(total_bytes)}")
+
         self.refresh_groups()
 
     def refresh_groups(self) -> None:
         """Rebuilds collapsible group listing based on current filter."""
         self.loaded_models_scroll.remove_children()
+        self.mount(self.total_model_mem, self.total_model_mem_val)
 
         term = self.current_filter.lower()
         has_visible_items = False
