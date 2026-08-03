@@ -29,3 +29,11 @@ class ModelSelected(Message):
     def __init__(self, model: ModelInfo | None) -> None:
         self.model = model
         super().__init__()
+
+
+class UnloadInstancesRequested(Message):
+    """Fired when user requests unload of one or more instances."""
+
+    def __init__(self, instance_ids: list[str]) -> None:
+        self.instance_ids = instance_ids
+        super().__init__()

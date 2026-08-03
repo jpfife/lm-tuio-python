@@ -156,8 +156,25 @@ DataTable>.datatable--header {
 }
 
 DataTable>.datatable--cursor {
+    background: transparent;
+    color: $text;
+}
+
+DataTable:focus>.datatable--cursor {
     background: $secondary;
     color: $background;
+    text-style: bold;
+}
+
+/* SelectionList (Loaded Models collapsible) */
+SelectionList>.selection-list--highlighted {
+    background: transparent;
+}
+
+SelectionList:focus>.selection-list--highlighted {
+    background: $secondary;
+    color: $background;
+    text-style: bold;
 }
 
 Horizontal>Label {
@@ -166,6 +183,42 @@ Horizontal>Label {
 
 Horizontal>DataTable {
     height: 6;
+}
+
+/* =========================================
+   LOADED MODELS ACCORDION
+   ========================================= */
+#loaded-models-scroll {
+    height: 100%;
+    width: 100%;
+    padding: 0;
+}
+
+Collapsible {
+    padding: 0;
+    margin-bottom: 1;
+    background: transparent;
+    border: none;
+}
+
+Collapsible>.collapsible--title {
+    background: $surface;
+    color: $accent;
+    text-style: bold;
+    padding: 0 1;
+}
+
+SelectionList {
+    background: transparent;
+    border: none;
+    height: auto;
+    max-height: 10;
+    padding-left: 2;
+    /* Indents instances under the Base Model title */
+}
+
+SelectionList:focus {
+    border: none;
 }
 
 /* =========================================
