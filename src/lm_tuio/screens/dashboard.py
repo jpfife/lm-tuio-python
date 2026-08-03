@@ -107,8 +107,8 @@ class DashboardScreen(Screen):
         """Clears all data dependent on connected server"""
         self.downloadedmodels_widget.clear_model_list()
         self.downloadedmodels_widget.refresh_table()
-        # self.loadedmodels_widget.clear_model_list()
-        # self.loadedmodels_widget.refresh_table() # TODO:
+        self.loadedmodels_widget.clear_model_list()
+        self.loadedmodels_widget.refresh_groups()
         self.contextpane_widget.update_model_context(None)
 
     @work(exclusive=True)
@@ -136,7 +136,7 @@ class DashboardScreen(Screen):
     # ======= REACTIVE WATCHERS =======
     def watch_filter_str(self, new_filter: str) -> None:
         self.downloadedmodels_widget.apply_filter(new_filter)
-        # TODO: Add loaded models table filter
+        self.loadedmodels_widget.apply_filter(new_filter)
 
     # ========== ACTIONS ==========
 

@@ -130,6 +130,12 @@ class LoadedModels(Static):
 
         self.refresh_groups()
 
+    def clear_model_list(self) -> None:
+        """Clear model instance listings."""
+        self.total_model_mem_val.update("0.00 MB")
+        self._groups.clear()
+        self._instance_map.clear()
+
     def refresh_groups(self) -> None:
         """Rebuilds collapsible group listing based on current filter."""
         self.loaded_models_scroll.remove_children()
@@ -146,6 +152,16 @@ class LoadedModels(Static):
                 if base_model_matches
                 or term in inst.display_label.lower()
                 or term in inst.instance_id.lower()
+                or term in inst.model_info.publisher.lower()
+                or term in inst.model_info.key.lower()
+                or (
+                    inst.model_info.architecture
+                    and term in inst.model_info.architecture.lower()
+                )
+                or (
+                    inst.model_info.quantization
+                    and term in inst.model_info.quantization.name.lower()
+                )
             ]
 
             if not instance_matches:
