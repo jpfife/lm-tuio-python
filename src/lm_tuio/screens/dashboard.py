@@ -8,7 +8,7 @@ from textual.app import ComposeResult
 from textual.containers import Horizontal
 from textual.reactive import reactive
 from textual.screen import Screen
-from textual.widgets import Footer, Input, SelectionList
+from textual.widgets import Footer, Input, Label, SelectionList
 
 from lm_tuio import events, models as md
 from lm_tuio.api import fetch_available_models
@@ -85,6 +85,11 @@ class DashboardScreen(Screen):
         )
         self.search_bar.border_title = self.search_bar.name
 
+        self.filter_label: Label = Label("Filter: ", id="filter-label")
+        self.filter_label_val: Label = Label("OFF", id="filter-label-val")
+        self.filter_label_val.styles.text_style = "bold"
+        self.filter_label_val.styles.background = self.app.theme_variables["surface"]
+
         self.main_footer: Footer = Footer(id="main-footer", classes="footers")
 
         # Top row telemetry and logging
@@ -100,6 +105,10 @@ class DashboardScreen(Screen):
             yield self.contextpane_widget
 
         # Bottom row hotkeys bar
+        with Horizontal(id="filter-label-zone"):
+            yield self.filter_label
+            yield self.filter_label_val
+
         yield self.main_footer
         yield self.search_bar
 
@@ -137,6 +146,19 @@ class DashboardScreen(Screen):
     def watch_filter_str(self, new_filter: str) -> None:
         self.downloadedmodels_widget.apply_filter(new_filter)
         self.loadedmodels_widget.apply_filter(new_filter)
+
+        if self.filter_str:
+            self.filter_label_val.update(" ON ")
+            self.filter_label_val.styles.background = self.app.theme_variables[
+                "primary"
+            ]
+            self.filter_label_val.styles.color = self.app.theme_variables["background"]
+        else:
+            self.filter_label_val.update(" OFF ")
+            self.filter_label_val.styles.background = self.app.theme_variables[
+                "surface"
+            ]
+            self.filter_label_val.styles.color = self.app.theme_variables["foreground"]
 
     # ========== ACTIONS ==========
 

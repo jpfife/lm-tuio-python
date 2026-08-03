@@ -260,6 +260,18 @@ SelectionList:focus {
 /* =========================================
    FOOTER / SEARCH BAR
    ========================================= */
+
+#filter-label-zone {
+    height: 1;
+    content-align: left bottom;
+    margin: 1 0 1 2;
+}
+
+#filter-label {
+    color: $accent;
+    text-style: bold;
+}
+
 #search-bar {
     dock: bottom;
     width: 100%;
