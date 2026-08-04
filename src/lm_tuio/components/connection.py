@@ -10,8 +10,8 @@ from textual.reactive import reactive
 from textual.widgets import Static
 
 from lm_tuio.api import check_server_status
-from lm_tuio.config import AppConfig
-from lm_tuio.events import ServerConnected, ActionLogUpdate
+from lm_tuio.config.settings import AppConfig
+from lm_tuio.events import ActionLogUpdate, ServerConnected
 
 
 # Connection status indicator enums
