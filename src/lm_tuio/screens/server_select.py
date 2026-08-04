@@ -16,8 +16,17 @@ from lm_tuio.events import ServerEndpointUpdated
 from lm_tuio.scanner import scan_targets
 
 
-class ServerSelectionModal(ModalScreen[tuple[str, int] | None]):
-    """Modal to select, scan, and set active LMS API endpoints."""
+class ServerSelectionModal(
+    ModalScreen[
+        tuple[str, int, list[tuple[str, str]]] | tuple[None, list[tuple[str, str]]]
+    ]
+):
+    """Modal to select, scan, and set active LMS API endpoints.
+
+    Returns tuple(IP, Port, and logs, if any were generated.
+    If modal is closed without setting new endpoints, None is passed with any logs
+    to update ActionLog on the Dashboard.
+    """
 
     BINDINGS = [
         ("q,escape", "quit", "<close>"),
@@ -32,9 +41,13 @@ class ServerSelectionModal(ModalScreen[tuple[str, int] | None]):
     current_port: int
     default_subnet: str
 
+    logs: list[tuple[str, str]]
+
     def __init__(
         self, ip: str = "", port: int = 0, subnet: str = "", *args, **kwargs
     ) -> None:
+        self.logs = []
+
         # Don't load config if all args are passed in
         if ip and port and subnet:
             self.current_ip = ip
@@ -51,12 +64,16 @@ class ServerSelectionModal(ModalScreen[tuple[str, int] | None]):
                 self.notify(
                     config_err, severity="warning", timeout=AppConfig.NOTIFY_TIMEOUT
                 )
+                self.logs.append((config_err, "warn"))
             else:
+                err_msg: str = "Error: Could not resolve configuration"
                 self.notify(
-                    "Error: Could not resolve configuration",
+                    err_msg,
                     severity="warning",
                     timeout=AppConfig.NOTIFY_TIMEOUT,
                 )
+                self.logs.append((err_msg, "warn"))
+
         else:
             loaded_config, config_err = app_config.load()
 
@@ -149,11 +166,13 @@ class ServerSelectionModal(ModalScreen[tuple[str, int] | None]):
         valid_net, err = validate_ip_net(target_network)
 
         if err is not None:
+            err_str: str = f"Scan failed: {err}"
             self.notify(
-                f"Scan failed: {err}",
+                err_str,
                 severity="error",
                 timeout=AppConfig.NOTIFY_TIMEOUT,
             )
+            self.logs.append((err_str, "err"))
             active_list.add_option("Invalid network format.")
             active_list.disabled = True
             return
@@ -163,24 +182,23 @@ class ServerSelectionModal(ModalScreen[tuple[str, int] | None]):
             assert 1 <= port_num <= 65535
         except ValueError as err:
             self.notify(
-                "Scan port must be a number between 1 - 65535",
+                "Scan port must be a number between 1-65535",
                 severity="error",
                 timeout=AppConfig.NOTIFY_TIMEOUT,
             )
-            # TODO: Send err to logger display
             return
-        except AssertionError as err:
+        except AssertionError as _err:
             self.notify(
-                "Invalid port number. Must be between 1 - 65535",
+                "Invalid port number. Must be between 1-65535",
                 severity="error",
                 timeout=AppConfig.NOTIFY_TIMEOUT,
             )
-            # TODO: Send err to logger display
             return
 
         self.notify(
             f"Scanning network {valid_net}...", timeout=AppConfig.NOTIFY_TIMEOUT
         )
+        self.logs.append((f"Scanned {valid_net}", "info"))
         active_list.add_option("Scanning...")
         active_list.disabled = True
 
@@ -198,20 +216,23 @@ class ServerSelectionModal(ModalScreen[tuple[str, int] | None]):
 
         if scan_err:
             self.notify(scan_err, severity="warning", timeout=AppConfig.NOTIFY_TIMEOUT)
+            self.logs.append((scan_err, "warn"))
             active_list.add_option("No servers found.")
         elif servers:
+            success_msg: str = f"Found {len(servers)} active server(s)"
             self.notify(
-                f"Found {len(servers)} active server(s).",
+                success_msg,
                 severity="information",
                 timeout=AppConfig.NOTIFY_TIMEOUT,
             )
+            self.logs.append((success_msg, "ok"))
             options = [f"{server}:{self.current_port}" for server in servers]
             active_list.add_options(options)
             active_list.disabled = False
         else:
-            self.notify(
-                "Found 0 server endpoints on network.", timeout=AppConfig.NOTIFY_TIMEOUT
-            )
+            err_msg: str = f"Found 0 server endpoints on {valid_net} network"
+            self.notify(err_msg, timeout=AppConfig.NOTIFY_TIMEOUT)
+            self.logs.append((err_msg, "err"))
 
     @staticmethod
     def _validate_connection_input(
@@ -229,7 +250,7 @@ class ServerSelectionModal(ModalScreen[tuple[str, int] | None]):
             except ValueError:
                 return None, None, "Invalid port: Port must be a number"
             except AssertionError:
-                return None, None, "Invalid port: Port must be between 1 - 65535"
+                return None, None, "Invalid port: Port must be between 1-65535"
         else:
             ip = raw_input.strip()
             port = AppConfig.port
@@ -277,7 +298,8 @@ class ServerSelectionModal(ModalScreen[tuple[str, int] | None]):
 
         target: str = self.input_widget.value.strip()
         ip, port, response = self._validate_connection_input(target, is_subnet=False)
-        self.notify(response, severity="information", timeout=AppConfig.NOTIFY_TIMEOUT)
+        # self.notify(response, severity="information", timeout=AppConfig.NOTIFY_TIMEOUT)
+        self.logs.append((response, "info"))
 
         if (ip and port) is not None:
             assert isinstance(ip, str)
@@ -289,7 +311,7 @@ class ServerSelectionModal(ModalScreen[tuple[str, int] | None]):
             app_config = getattr(self.app, "config", None)
             if isinstance(app_config, AppConfig):
                 if endpoint_str in app_config.cached_ips:
-                    self.dismiss((ip, port))
+                    self.dismiss((ip, port, self.logs))
                     return
                 app_config.cached_ips.insert(0, endpoint_str)
                 app_config.cached_ips = app_config.cached_ips[
@@ -297,31 +319,36 @@ class ServerSelectionModal(ModalScreen[tuple[str, int] | None]):
                 ]
                 app_config.save()
 
-            self.dismiss((ip, port))
+            self.dismiss((ip, port, self.logs))
         else:
+            err_msg = "Error validating network enpoint."
             self.notify(
-                "Error validating network enpoint.",
+                err_msg,
                 severity="error",
                 timeout=AppConfig.NOTIFY_TIMEOUT,
             )
+            self.logs.append((err_msg, "err"))
 
     @on(Button.Pressed, "#default-connect-btn")
     def set_default_connection(self) -> None:
         """Saves manual connect target to config.toml"""
         target: str = self.input_widget.value.strip()
         ip, port, response = self._validate_connection_input(target, is_subnet=False)
-        self.notify(response, severity="information", timeout=AppConfig.NOTIFY_TIMEOUT)
+        # self.notify(response, severity="information", timeout=AppConfig.NOTIFY_TIMEOUT)
+        self.logs.append((response, "info"))
 
         if (ip and port) is not None:
             assert isinstance(ip, str)
             assert isinstance(port, int)
 
         else:
+            err_msg: str = "Error validating network enpoint."
             self.notify(
-                "Error validating network enpoint.",
+                err_msg,
                 severity="error",
                 timeout=AppConfig.NOTIFY_TIMEOUT,
             )
+            self.logs.append((err_msg, "err"))
             return
 
         app_config: AppConfig | None = getattr(self.app, "config", None)
@@ -334,12 +361,15 @@ class ServerSelectionModal(ModalScreen[tuple[str, int] | None]):
                 severity="information",
                 timeout=AppConfig.NOTIFY_TIMEOUT,
             )
+            self.logs.append((save_msg, "info"))
         else:
+            err_msg: str = "Error: Configuration not found."
             self.notify(
-                "Error: Configuration not found.",
+                err_msg,
                 severity="error",
                 timeout=AppConfig.NOTIFY_TIMEOUT,
             )
+            self.logs.append((err_msg, "err"))
 
     @on(Input.Submitted, "#scan-port-input")
     @on(Input.Submitted, "#scan-input")
@@ -360,18 +390,21 @@ class ServerSelectionModal(ModalScreen[tuple[str, int] | None]):
         ip_net, port, response = self._validate_connection_input(
             raw_ip_str, is_subnet=True
         )
-        self.notify(response, severity="information", timeout=AppConfig.NOTIFY_TIMEOUT)
+        # self.notify(response, severity="information", timeout=AppConfig.NOTIFY_TIMEOUT)
+        self.logs.append((response, "info"))
 
         if (ip_net and port) is not None:
             assert isinstance(ip_net, str)
             assert isinstance(port, int)
 
         else:
+            err_msg: str = "Error validating network endpoint"
             self.notify(
-                "Error validating network enpoint.",
+                err_msg,
                 severity="error",
                 timeout=AppConfig.NOTIFY_TIMEOUT,
             )
+            self.logs.append((err_msg, "err"))
             return
 
         app_config: AppConfig | None = getattr(self.app, "config", None)
@@ -384,14 +417,19 @@ class ServerSelectionModal(ModalScreen[tuple[str, int] | None]):
                 severity="information",
                 timeout=AppConfig.NOTIFY_TIMEOUT,
             )
+            self.logs.append((save_msg, "info"))
         else:
+            err_msg: str = "Error: Configuration not found"
             self.notify(
-                "Error: Configuration not found.",
+                err_msg,
                 severity="error",
                 timeout=AppConfig.NOTIFY_TIMEOUT,
             )
+            self.logs.append((err_msg, "err"))
 
-        self.notify(f"Default network set to {ip_net}")
+        success_msg: str = f"Default network set to {ip_net}"
+        self.notify(success_msg)
+        self.logs.append((success_msg, "ok"))
 
     @on(OptionList.OptionHighlighted, "#active-servers-list")
     def select_scanned_server(self, event: OptionList.OptionHighlighted) -> None:
@@ -420,11 +458,12 @@ class ServerSelectionModal(ModalScreen[tuple[str, int] | None]):
             cache_list = self.query_one("#cached-ips-list", OptionList)
             cache_list.clear_options()
             self.notify("Cache cleared.", severity="information")
+            self.logs.append(("Cache cleared", "info"))
 
     @on(Button.Pressed, "#cancel-btn")
     def cancel_modal(self) -> None:
         """Closes the modal without making changes"""
-        self.dismiss()
+        self.dismiss((None, self.logs))
 
     # ======= ACTIONS =======
     def action_connect_input_submit(self) -> None:
@@ -446,4 +485,4 @@ class ServerSelectionModal(ModalScreen[tuple[str, int] | None]):
 
     def action_quit(self) -> None:
         """Default 'q' hotkey"""
-        self.dismiss()
+        self.dismiss((None, self.logs))

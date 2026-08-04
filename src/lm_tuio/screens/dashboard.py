@@ -10,11 +10,9 @@ from textual.reactive import reactive
 from textual.screen import Screen
 from textual.widgets import Footer, Input, Label, SelectionList
 
-from lm_tuio import events, models as md
-import lm_tuio.api as api
+from lm_tuio import api, events, models as md
 from lm_tuio.components import ActionLog, ConnectionStatus, ContextPane, Title
 from lm_tuio.components.loaded_models import LoadedModels
-from lm_tuio.config import AppConfig
 from lm_tuio.screens.server_select import ServerSelectionModal
 
 
@@ -87,6 +85,7 @@ class DashboardScreen(Screen):
         )
         self.search_bar.border_title = self.search_bar.name
 
+        # Filter 'toggle'
         self.filter_label: Label = Label("Filter: ", id="filter-label")
         self.filter_label_val: Label = Label("OFF", id="filter-label-val")
         self.filter_label_val.styles.text_style = "bold"
@@ -130,17 +129,15 @@ class DashboardScreen(Screen):
         models, err = await api.fetch_available_models(ip, port)
 
         if err:
-            self.notify(
-                f"Failed to fetch models: {err}",
-                severity="error",
-                timeout=AppConfig.NOTIFY_TIMEOUT,
-            )
+            self.actionlog_widget.add_entry(f"Failed to fetch models: {err}", "error")
             return
 
         assert models
         self.downloadedmodels_widget.load_models(models)
         self.downloadedmodels_widget.table.focus()
-        self.notify(f"Found {len(models)} models")
+        self.actionlog_widget.add_entry(
+            f"Found {len(models)} downloaded models at {ip}:{port}"
+        )
 
         self.loadedmodels_widget.load_model_groups(models)
 
@@ -148,9 +145,8 @@ class DashboardScreen(Screen):
     async def unload_models(self, instance_ids: list[str]) -> None:
         """Execute API unload requests and refresh dashboard."""
         count = len(instance_ids)
-        self.notify(
-            f"Unloading {count} model instance{'s' if count > 1 else ''}...",
-            timeout=AppConfig.NOTIFY_TIMEOUT,
+        self.actionlog_widget.add_entry(
+            f"Unloading {count} model instance{'s' if count > 1 else ''}..."
         )
 
         success, err = await api.unload_model_instances(
@@ -160,15 +156,11 @@ class DashboardScreen(Screen):
         )
 
         if not success:
-            self.notify(
-                f"Unload error: {err}",
-                severity="error",
-                timeout=AppConfig.NOTIFY_TIMEOUT,
-            )
+            self.actionlog_widget.add_entry(f"Unload error: {err}", "error")
         else:
-            self.notify(
+            self.actionlog_widget.add_entry(
                 f"Successfully unloaded {count} model instance{'s' if count > 1 else ''}",
-                timeout=AppConfig.NOTIFY_TIMEOUT,
+                "ok",
             )
 
         self.action_refresh_models()
@@ -213,11 +205,34 @@ class DashboardScreen(Screen):
         """Default hotkey 'c' to connect to server"""
 
         # Track if endpoint actually changes
-        def is_same_server(net_config: tuple[str, int] | None) -> None:
-            if net_config:
-                self.connection_widget.apply_new_server(net_config)
-                ip, port = net_config
+        def is_same_server(
+            result: tuple[str, int, list[tuple[str, str]]]
+            | tuple[None, list[tuple[str, str]]],
+        ) -> None:
+            """Returns result of Server Selection modal and rebuilds logs to ActionLog.
+
+            result = (IP, Port, Logs) | (None, Logs)
+            """
+
+            if result[0] is None and isinstance(result[1], list):
+                for log in result[1]:
+                    self.post_message(events.ActionLogUpdate(log[0], log[1]))
+                return
+
+            assert (
+                len(result) == 3
+                and isinstance(result[0], str)
+                and isinstance(result[1], int)
+                and isinstance(result[2], list)
+            )
+
+            ip, port, logs = result
+            if ip and port:
+                self.connection_widget.apply_new_server((ip, port))
                 self.post_message(events.ServerEndpointUpdated(ip, port))
+
+            for log in logs:
+                self.post_message(events.ActionLogUpdate(log[0], log[1]))
 
         self.app.push_screen(ServerSelectionModal(), callback=is_same_server)
 
@@ -228,9 +243,7 @@ class DashboardScreen(Screen):
 
     def action_retry_connection(self) -> None:
         """Default hotkey '*' to retest connection to API endpoint"""
-        self.notify(
-            "Retesting connection to server...", timeout=AppConfig.NOTIFY_TIMEOUT
-        )
+        self.actionlog_widget.add_entry("Retesting connection to server...")
         self.connection_widget.reset_status()
         self.connection_widget.update_connection_status()
 
@@ -246,7 +259,9 @@ class DashboardScreen(Screen):
             # )
             self.unload_models(selected_ids)
         else:
-            self.notify("No instances checked for unloading.", severity="warning")
+            self.actionlog_widget.add_entry(
+                "No instances checked for unloading", "warn"
+            )
 
     def action_unload_all(self) -> None:
         """Sends all currently loaded model instances for unload."""
@@ -289,6 +304,13 @@ class DashboardScreen(Screen):
     def real_time_search(self, event: Input.Changed) -> None:
         """Real-time text filtering"""
         self.filter_str = event.value
+
+    @on(events.ActionLogUpdate)
+    def update_action_log(self, event: events.ActionLogUpdate) -> None:
+        """Passes fired messages to ActionLog."""
+        msg: str = event.msg
+        sev: str = event.severity
+        self.actionlog_widget.add_entry(msg, sev)
 
     def on_key(self, event) -> None:
         """Esc key listener for filter search"""
