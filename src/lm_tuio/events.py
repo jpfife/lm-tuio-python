@@ -5,6 +5,15 @@ from textual.message import Message
 from lm_tuio.models import ModelInfo
 
 
+class ActionLogUpdate(Message):
+    """Relays message for Dashboard ActionLog logging system."""
+
+    def __init__(self, msg: str, severity: str = "info") -> None:
+        super().__init__()
+        self.msg = msg
+        self.severity = severity
+
+
 class ServerEndpointUpdated(Message):
     """Fires when selecting new server or network config changes."""
 
