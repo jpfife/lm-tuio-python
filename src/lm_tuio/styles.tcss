@@ -57,7 +57,7 @@ Button {
     border: none;
     padding: 1;
     content-align: left middle;
-    width: auto;
+    width: 20%;
     min-width: 30;
     max-width: 40;
     margin-right: 2;
@@ -70,7 +70,7 @@ Button {
     border-subtitle-color: $primary;
     border-subtitle-background: rgba(0, 0, 0, 0);
     border-subtitle-style: italic;
-    width: 30%;
+    width: 25%;
     min-width: 38;
     margin-right: 4;
     content-align: left top;
@@ -79,13 +79,13 @@ Button {
 }
 
 #action-log {
-    width: 50%;
+    width: 1fr;
     border-title-align: left;
     border-title-color: $primary;
     border-title-background: rgba(0, 0, 0, 0);
     border-title-style: italic;
     border-right: none;
-    margin: 1 5 0 0;
+    margin: 1 2 0 3;
     background: transparent;
 }
 
@@ -105,6 +105,32 @@ Button {
     border-title-color: $primary;
     border-title-background: rgba(0, 0, 0, 0);
     border-title-style: italic;
+}
+
+/* =========================================
+   LOADED MODELS HEADER & MEMORY BAR
+   ========================================= */
+#loaded-models-total-mem-header {
+    width: 100%;
+    height: 1;
+    margin-bottom: 1;
+    /* padding: 0 1; */
+    background: rgba(0, 0, 0, 0.25);
+    color: $accent;
+    content-align: right middle;
+    text-align: right;
+}
+
+#loaded-models-total-mem {
+    color: $accent;
+    text-align: right;
+    text-style: bold;
+}
+
+#loaded-models-scroll {
+    width: 100%;
+    height: 1fr;
+    padding: 0;
 }
 
 #context-pane {
@@ -156,8 +182,26 @@ DataTable>.datatable--header {
 }
 
 DataTable>.datatable--cursor {
+    background: transparent;
+    color: $text;
+}
+
+DataTable:focus>.datatable--cursor {
     background: $secondary;
     color: $background;
+    text-style: bold;
+}
+
+/* SelectionList (Loaded Models collapsible) */
+SelectionList>.option-list--option-highlighted {
+    background: transparent;
+    color: $text;
+}
+
+SelectionList:focus>.option-list--option-highlighted {
+    background: $secondary;
+    color: $background;
+    text-style: bold;
 }
 
 Horizontal>Label {
@@ -165,12 +209,60 @@ Horizontal>Label {
 }
 
 Horizontal>DataTable {
-    height: 6;
+    height: 4;
+}
+
+/* =========================================
+   LOADED MODELS ACCORDION
+   ========================================= */
+#loaded-models-scroll {
+    height: 100%;
+    width: 100%;
+    padding: 0;
+}
+
+Collapsible {
+    padding: 0;
+    margin-bottom: 1;
+    background: transparent;
+    border: none;
+}
+
+Collapsible>.collapsible--title {
+    background: $surface;
+    color: $accent;
+    text-style: bold;
+    padding: 0 1;
+}
+
+SelectionList {
+    background: transparent;
+    border: none;
+    height: auto;
+    max-height: 10;
+    padding-left: 2;
+    /* Indents instances under the Base Model title */
+}
+
+SelectionList:focus {
+    border: none;
 }
 
 /* =========================================
    FOOTER / SEARCH BAR
    ========================================= */
+
+#filter-label-zone {
+    height: 1;
+    content-align: left bottom;
+    margin: 0 0 1 2;
+}
+
+#filter-label {
+    color: $accent;
+    text-style: bold;
+}
+
 #search-bar {
     dock: bottom;
     width: 100%;
