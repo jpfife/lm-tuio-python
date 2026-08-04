@@ -1,0 +1,26 @@
+[global]
+quit = { keys = ["q", "ctrl+c"], desc = "<quit>", show = true }
+change_server = { keys = ["c"], desc = "<change endpoint>", show = true }
+filter = { keys = ["/"], desc = "<filter>", show = true }
+clear_filter = { keys = [
+    "escape",
+    "ctrl+left_square_bracket",
+], desc = "<clr filter>", show = false }
+test_connection = { keys = ["*"], desc = "<test connection>", show = false }
+show_keybinds = { keys = ["?"], desc = "<hotkeys>", show = true }
+
+[tables]
+cursor_up = { keys = ["up", "k", "ctrl+p"], desc = "<cursor up>", show = false }
+cursor_down = { keys = [
+    "down",
+    "j",
+    "ctrl+n",
+], desc = "<cursor down>", show = false }
+sort_on_name = { keys = ["n"], desc = "<sort name>", show = true }
+sort_on_size = { keys = ["s"], desc = "<sort size>", show = true }
+
+[loaded_models]
+unload_selected = { keys = ["u"], desc = "<unload selected>", show = true }
+unload_all = { keys = ["U"], desc = "<unload all>", show = true }
+select_model = { keys = ["space"], desc = "<select model>", show = false }
+toggle_group = { keys = ["x"], desc = "<select group>", show = false }

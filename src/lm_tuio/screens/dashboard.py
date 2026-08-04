@@ -13,6 +13,7 @@ from textual.widgets import Footer, Input, Label, SelectionList
 from lm_tuio import api, events, models as md
 from lm_tuio.components import ActionLog, ConnectionStatus, ContextPane, Title
 from lm_tuio.components.loaded_models import LoadedModels
+from lm_tuio.config import keymap
 from lm_tuio.screens.server_select import ServerSelectionModal
 
 
@@ -21,16 +22,7 @@ class DashboardScreen(Screen):
 
     AUTO_FOCUS = "#downloaded_models"
 
-    BINDINGS = [
-        ("q", "quit", "<quit>"),
-        ("c", "change_server", "<change server>"),
-        ("r", "refresh_models", "<refresh models>"),
-        ("/", "filter", "<filter>"),
-        ("escape,ctrl+left_square_bracket", "clear_filter", "<clr filter>"),
-        ("*", "retry_connection"),
-        ("u", "unload_selected", "<unload selected>"),
-        ("U", "unload_all", "<unload all>"),
-    ]
+    BINDINGS = keymap.KeymapManager.get_bindings("global")
 
     filter_str: reactive[str] = reactive("")
 
