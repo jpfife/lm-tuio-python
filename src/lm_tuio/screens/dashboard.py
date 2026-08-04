@@ -11,7 +11,7 @@ from textual.screen import Screen
 from textual.widgets import Footer, Input, Label, SelectionList
 
 from lm_tuio import events, models as md
-from lm_tuio.api import fetch_available_models
+import lm_tuio.api as api
 from lm_tuio.components import ActionLog, ConnectionStatus, ContextPane, Title
 from lm_tuio.components.loaded_models import LoadedModels
 from lm_tuio.config import AppConfig
@@ -30,6 +30,8 @@ class DashboardScreen(Screen):
         ("/", "filter", "<filter>"),
         ("escape,ctrl+left_square_bracket", "clear_filter", "<clr filter>"),
         ("*", "retry_connection"),
+        ("u", "unload_selected", "<unload selected>"),
+        ("U", "unload_all", "<unload all>"),
     ]
 
     filter_str: reactive[str] = reactive("")
@@ -125,7 +127,7 @@ class DashboardScreen(Screen):
         """Fetch models from LMS API endpoint and populate UI"""
         self.downloadedmodels_widget.clear_model_list()
         self.downloadedmodels_widget.refresh_table()
-        models, err = await fetch_available_models(ip, port)
+        models, err = await api.fetch_available_models(ip, port)
 
         if err:
             self.notify(
@@ -141,6 +143,35 @@ class DashboardScreen(Screen):
         self.notify(f"Found {len(models)} models")
 
         self.loadedmodels_widget.load_model_groups(models)
+
+    @work(exclusive=True)
+    async def unload_models(self, instance_ids: list[str]) -> None:
+        """Execute API unload requests and refresh dashboard."""
+        count = len(instance_ids)
+        self.notify(
+            f"Unloading {count} model instance{'s' if count > 1 else ''}...",
+            timeout=AppConfig.NOTIFY_TIMEOUT,
+        )
+
+        success, err = await api.unload_model_instances(
+            self.connection_widget.server_ip,
+            self.connection_widget.server_port,
+            instance_ids,
+        )
+
+        if not success:
+            self.notify(
+                f"Unload error: {err}",
+                severity="error",
+                timeout=AppConfig.NOTIFY_TIMEOUT,
+            )
+        else:
+            self.notify(
+                f"Successfully unloaded {count} model instance{'s' if count > 1 else ''}",
+                timeout=AppConfig.NOTIFY_TIMEOUT,
+            )
+
+        self.action_refresh_models()
 
     # ======= REACTIVE WATCHERS =======
     def watch_filter_str(self, new_filter: str) -> None:
@@ -210,11 +241,29 @@ class DashboardScreen(Screen):
             selected_ids.extend(sel_list.selected)
 
         if selected_ids:
-            self.post_message(events.UnloadInstancesRequested(selected_ids))
+            # self.post_message(
+            #     self.loadedmodels_widget.post_unload_model_request(selected_ids)
+            # )
+            self.unload_models(selected_ids)
         else:
             self.notify("No instances checked for unloading.", severity="warning")
 
+    def action_unload_all(self) -> None:
+        """Sends all currently loaded model instances for unload."""
+        all_ids = list(self.loadedmodels_widget._instance_map.keys())
+        if all_ids:
+            # self.post_message(
+            #     self.loadedmodels_widget.post_unload_model_request(all_ids)
+            # )
+            self.unload_models(all_ids)
+
     # ========= EVENTS ==========
+
+    @on(events.UnloadInstancesRequested)
+    def handle_unload_request(self, event: events.UnloadInstancesRequested) -> None:
+        """Listen for unload requests and dispatch async worker."""
+        if event.instance_ids:
+            self.unload_models(event.instance_ids)
 
     @on(events.ServerConnected)
     def handle_server_connected(self, event: events.ServerConnected) -> None:

@@ -9,31 +9,31 @@ class ServerEndpointUpdated(Message):
     """Fires when selecting new server or network config changes."""
 
     def __init__(self, ip: str, port: int) -> None:
+        super().__init__()
         self.ip = ip
         self.port = port
-        super().__init__()
 
 
 class ServerConnected(Message):
     """Fired when ConnectionStatus widget successfully pings server."""
 
     def __init__(self, ip: str, port: int) -> None:
+        super().__init__()
         self.ip = ip
         self.port = port
-        super().__init__()
 
 
 class ModelSelected(Message):
     """Fired when model is highlighted in Loaded/Downloaded Models lists."""
 
     def __init__(self, model: ModelInfo | None) -> None:
-        self.model = model
         super().__init__()
+        self.model = model
 
 
 class UnloadInstancesRequested(Message):
     """Fired when user requests unload of one or more instances."""
 
     def __init__(self, instance_ids: list[str]) -> None:
-        self.instance_ids = instance_ids
         super().__init__()
+        self.instance_ids = instance_ids

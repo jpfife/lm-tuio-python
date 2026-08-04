@@ -127,16 +127,6 @@ Button {
     text-style: bold;
 }
 
-/* Can't get this to work */
-/* #loaded-models-total-mem-val { */
-/*     content-align: right middle; */
-/* } */
-/**/
-/* .vert-mem-header { */
-/*     content-align: right middle; */
-/*     text-align: right; */
-/* } */
-
 #loaded-models-scroll {
     width: 100%;
     height: 1fr;
@@ -203,11 +193,12 @@ DataTable:focus>.datatable--cursor {
 }
 
 /* SelectionList (Loaded Models collapsible) */
-SelectionList>.selection-list--highlighted {
+SelectionList>.option-list--option-highlighted {
     background: transparent;
+    color: $text;
 }
 
-SelectionList:focus>.selection-list--highlighted {
+SelectionList:focus>.option-list--option-highlighted {
     background: $secondary;
     color: $background;
     text-style: bold;
@@ -218,7 +209,7 @@ Horizontal>Label {
 }
 
 Horizontal>DataTable {
-    height: 6;
+    height: 4;
 }
 
 /* =========================================
@@ -264,7 +255,7 @@ SelectionList:focus {
 #filter-label-zone {
     height: 1;
     content-align: left bottom;
-    margin: 1 0 1 2;
+    margin: 0 0 1 2;
 }
 
 #filter-label {

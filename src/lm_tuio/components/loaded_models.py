@@ -195,7 +195,7 @@ class LoadedModels(Static):
 
     # ======= ACTIONS =======
 
-    def action_toggle_select_all(self) -> None:
+    def action_toggle_group(self) -> None:
         """Toggles all checkboxes in the currently focused SelectionList."""
         focused = self.app.focused
         if isinstance(focused, SelectionList):
