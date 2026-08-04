@@ -11,7 +11,7 @@ from textual.widgets import Static
 
 from lm_tuio.api import check_server_status
 from lm_tuio.config import AppConfig
-from lm_tuio.events import ServerConnected
+from lm_tuio.events import ServerConnected, ActionLogUpdate
 
 
 # Connection status indicator enums
@@ -56,7 +56,7 @@ class ConnectionStatus(Static):
             self.server_ip = app_config.target
             self.server_port = app_config.port
         else:
-            self.notify("Could not load config.toml.", severity="warning")
+            self.post_message(ActionLogUpdate("Could not load config.toml", "warn"))
             default_config = AppConfig().load()
             assert isinstance(default_config, AppConfig)
             self.server_ip = default_config.target
@@ -94,7 +94,7 @@ class ConnectionStatus(Static):
         ip, port = ip_conf
         self.server_ip = ip
         self.server_port = port
-        self.notify(f"Connecting to {ip}:{port}...", timeout=AppConfig.NOTIFY_TIMEOUT)
+        self.post_message(ActionLogUpdate(f"Connecting to {ip}:{port}..."))
         self.reset_status()
         self.update_connection_status()
 
