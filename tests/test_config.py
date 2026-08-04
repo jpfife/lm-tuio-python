@@ -3,8 +3,7 @@
 Tests parsing and validation functionality for CLI args.
 """
 
-from lm_tuio.config import AppConfig, validate_ip_net
-from lm_tuio.config import parse_arguments
+from lm_tuio.config.settings import AppConfig, validate_ip_net
 
 # NOTE: validate_ip_net() uses the ipaddress module which automatically
 #       appends CIDR subnet notation to a valid, single IPv4 address ('/32').
@@ -39,14 +38,14 @@ def test_validate_ip_net_with_subnet() -> None:
     assert valid_target == "100.10.0.0/16"
 
 
-# TEST: PARSER VALIDATION using config.parse_arguments():
+# TEST: PARSER VALIDATION using config.AppConfig._parse_arguments():
 
 
 def test_parse_arguments_defaults() -> None:
     """No positional args uses default subnet and port."""
     config: AppConfig | None
     err: str | None
-    config, err = parse_arguments([])
+    config, err = AppConfig._parse_arguments([])
 
     assert err is None
     assert config is not None
@@ -59,7 +58,7 @@ def test_parse_arguments_positional_ip() -> None:
     """Single IP passed to parser."""
     config: AppConfig | None
     err: str | None
-    config, err = parse_arguments(["100.64.0.5"])
+    config, err = AppConfig._parse_arguments(["100.64.0.5"])
 
     assert err is None
     assert config is not None
@@ -71,7 +70,7 @@ def test_parse_arguments_flags() -> None:
     """Test passing a custom network and port via CLI flags."""
     config: AppConfig | None
     err: str | None
-    config, err = parse_arguments(["-n", "10.0.0.0/8", "-p", "8080"])
+    config, err = AppConfig._parse_arguments(["-n", "10.0.0.0/8", "-p", "8080"])
 
     assert err is None
     assert config is not None
@@ -84,7 +83,7 @@ def test_parse_arguments_invalid_input() -> None:
     """Invalid inputs return the expected error tuple without crashing."""
     config: AppConfig | None
     err: str | None
-    config, err = parse_arguments(["999.999.999.999"])
+    config, err = AppConfig._parse_arguments(["999.999.999.999"])
 
     assert config is None
     assert err is not None

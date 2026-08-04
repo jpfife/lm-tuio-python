@@ -12,6 +12,8 @@ from textual.app import ComposeResult
 from textual.events import DescendantBlur, DescendantFocus
 from textual.widgets import DataTable, Static
 
+from lm_tuio.config import keymap
+
 
 def format_bytes(size: int) -> str:
     """Converts bytes to MB or GB for model listing"""
@@ -127,10 +129,7 @@ class ModelListResponse(BaseModel):
 class BaseModelTable(Static):
     """Base class for model display tables (Loaded/Downloaded models)"""
 
-    BINDINGS = [
-        ("n", "sort_on_name", "<sort name>"),
-        ("s", "sort_on_size", "<sort size>"),
-    ]
+    BINDINGS = keymap.KeymapManager.get_bindings("tables")
 
     class SortType(StrEnum):
         NAME = "name"
