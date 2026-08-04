@@ -184,9 +184,14 @@ class LoadedModels(Static):
             self.loaded_models_scroll.mount(collapsible)
 
         if not has_visible_items:
-            self.loaded_models_scroll.mount(
-                Label("No filter match", classes="section-title")
-            )
+            if self._instance_map:
+                self.loaded_models_scroll.mount(
+                    Label("No filter match", classes="section-title")
+                )
+            else:
+                self.loaded_models_scroll.mount(
+                    Label("No models loaded", classes="section-title")
+                )
 
     def apply_filter(self, search_term: str) -> None:
         """Apply Dashboard search filter term to groups/instances."""

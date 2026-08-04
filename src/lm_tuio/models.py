@@ -230,7 +230,7 @@ class BaseModelTable(Static):
     @on(DataTable.RowHighlighted)
     def handle_row_highlight(self, event: DataTable.RowHighlighted) -> None:
         """Fires when navigating through table."""
-        if not self.has_focus_within:
+        if not self.has_focus_within or not self.table.row_count > 0:
             return
 
         key = event.row_key.value
