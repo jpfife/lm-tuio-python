@@ -8,11 +8,12 @@ from textual.app import ComposeResult
 from textual.containers import Horizontal
 from textual.reactive import reactive
 from textual.screen import Screen
-from textual.widgets import Footer, Input
+from textual.widgets import Footer, Input, Label, SelectionList
 
 from lm_tuio import events, models as md
-from lm_tuio.api import fetch_available_models
+import lm_tuio.api as api
 from lm_tuio.components import ActionLog, ConnectionStatus, ContextPane, Title
+from lm_tuio.components.loaded_models import LoadedModels
 from lm_tuio.config import AppConfig
 from lm_tuio.screens.server_select import ServerSelectionModal
 
@@ -29,6 +30,8 @@ class DashboardScreen(Screen):
         ("/", "filter", "<filter>"),
         ("escape,ctrl+left_square_bracket", "clear_filter", "<clr filter>"),
         ("*", "retry_connection"),
+        ("u", "unload_selected", "<unload selected>"),
+        ("U", "unload_all", "<unload all>"),
     ]
 
     filter_str: reactive[str] = reactive("")
@@ -52,7 +55,8 @@ class DashboardScreen(Screen):
         )
         self.actionlog_widget.border_title = self.actionlog_widget.name
 
-        self.loadedmodels_widget: md.LoadedModels = md.LoadedModels(
+        self.loadedmodels_widget: LoadedModels = LoadedModels(
+            post_unload_model_request_callback=events.UnloadInstancesRequested,
             post_highlighted_model_callback=events.ModelSelected,
             name="Actively Loaded Models",
             id="loaded-models",
@@ -83,6 +87,11 @@ class DashboardScreen(Screen):
         )
         self.search_bar.border_title = self.search_bar.name
 
+        self.filter_label: Label = Label("Filter: ", id="filter-label")
+        self.filter_label_val: Label = Label("OFF", id="filter-label-val")
+        self.filter_label_val.styles.text_style = "bold"
+        self.filter_label_val.styles.background = self.app.theme_variables["surface"]
+
         self.main_footer: Footer = Footer(id="main-footer", classes="footers")
 
         # Top row telemetry and logging
@@ -98,6 +107,10 @@ class DashboardScreen(Screen):
             yield self.contextpane_widget
 
         # Bottom row hotkeys bar
+        with Horizontal(id="filter-label-zone"):
+            yield self.filter_label
+            yield self.filter_label_val
+
         yield self.main_footer
         yield self.search_bar
 
@@ -105,15 +118,16 @@ class DashboardScreen(Screen):
         """Clears all data dependent on connected server"""
         self.downloadedmodels_widget.clear_model_list()
         self.downloadedmodels_widget.refresh_table()
+        self.loadedmodels_widget.clear_model_list()
+        self.loadedmodels_widget.refresh_groups()
         self.contextpane_widget.update_model_context(None)
-        # TODO: Add loaded models table clear
 
     @work(exclusive=True)
     async def fetch_load_models(self, ip: str, port: int) -> None:
         """Fetch models from LMS API endpoint and populate UI"""
         self.downloadedmodels_widget.clear_model_list()
         self.downloadedmodels_widget.refresh_table()
-        models, err = await fetch_available_models(ip, port)
+        models, err = await api.fetch_available_models(ip, port)
 
         if err:
             self.notify(
@@ -128,10 +142,54 @@ class DashboardScreen(Screen):
         self.downloadedmodels_widget.table.focus()
         self.notify(f"Found {len(models)} models")
 
+        self.loadedmodels_widget.load_model_groups(models)
+
+    @work(exclusive=True)
+    async def unload_models(self, instance_ids: list[str]) -> None:
+        """Execute API unload requests and refresh dashboard."""
+        count = len(instance_ids)
+        self.notify(
+            f"Unloading {count} model instance{'s' if count > 1 else ''}...",
+            timeout=AppConfig.NOTIFY_TIMEOUT,
+        )
+
+        success, err = await api.unload_model_instances(
+            self.connection_widget.server_ip,
+            self.connection_widget.server_port,
+            instance_ids,
+        )
+
+        if not success:
+            self.notify(
+                f"Unload error: {err}",
+                severity="error",
+                timeout=AppConfig.NOTIFY_TIMEOUT,
+            )
+        else:
+            self.notify(
+                f"Successfully unloaded {count} model instance{'s' if count > 1 else ''}",
+                timeout=AppConfig.NOTIFY_TIMEOUT,
+            )
+
+        self.action_refresh_models()
+
     # ======= REACTIVE WATCHERS =======
     def watch_filter_str(self, new_filter: str) -> None:
         self.downloadedmodels_widget.apply_filter(new_filter)
-        # TODO: Add loaded models table filter
+        self.loadedmodels_widget.apply_filter(new_filter)
+
+        if self.filter_str:
+            self.filter_label_val.update(" ON ")
+            self.filter_label_val.styles.background = self.app.theme_variables[
+                "primary"
+            ]
+            self.filter_label_val.styles.color = self.app.theme_variables["background"]
+        else:
+            self.filter_label_val.update(" OFF ")
+            self.filter_label_val.styles.background = self.app.theme_variables[
+                "surface"
+            ]
+            self.filter_label_val.styles.color = self.app.theme_variables["foreground"]
 
     # ========== ACTIONS ==========
 
@@ -176,7 +234,36 @@ class DashboardScreen(Screen):
         self.connection_widget.reset_status()
         self.connection_widget.update_connection_status()
 
+    def action_unload_selected(self) -> None:
+        """Gathers all checkboxes across all collapsible groups and fires unload."""
+        selected_ids: list[str] = []
+        for sel_list in self.query(SelectionList):
+            selected_ids.extend(sel_list.selected)
+
+        if selected_ids:
+            # self.post_message(
+            #     self.loadedmodels_widget.post_unload_model_request(selected_ids)
+            # )
+            self.unload_models(selected_ids)
+        else:
+            self.notify("No instances checked for unloading.", severity="warning")
+
+    def action_unload_all(self) -> None:
+        """Sends all currently loaded model instances for unload."""
+        all_ids = list(self.loadedmodels_widget._instance_map.keys())
+        if all_ids:
+            # self.post_message(
+            #     self.loadedmodels_widget.post_unload_model_request(all_ids)
+            # )
+            self.unload_models(all_ids)
+
     # ========= EVENTS ==========
+
+    @on(events.UnloadInstancesRequested)
+    def handle_unload_request(self, event: events.UnloadInstancesRequested) -> None:
+        """Listen for unload requests and dispatch async worker."""
+        if event.instance_ids:
+            self.unload_models(event.instance_ids)
 
     @on(events.ServerConnected)
     def handle_server_connected(self, event: events.ServerConnected) -> None:

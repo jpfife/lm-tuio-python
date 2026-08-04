@@ -9,8 +9,6 @@ from lm_tuio.config import parse_arguments
 # NOTE: validate_ip_net() uses the ipaddress module which automatically
 #       appends CIDR subnet notation to a valid, single IPv4 address ('/32').
 
-# TEST: IP VALIDATION using config.valid_ip_net():
-
 
 def test_validate_ip_net_single_ip() -> None:
     target: str = "100.10.5.1"

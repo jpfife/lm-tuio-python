@@ -9,6 +9,7 @@ from enum import StrEnum
 from pydantic import BaseModel
 from textual import on
 from textual.app import ComposeResult
+from textual.events import DescendantBlur, DescendantFocus
 from textual.widgets import DataTable, Static
 
 
@@ -184,6 +185,7 @@ class BaseModelTable(Static):
             or self.current_filter in m.publisher.lower()
             or self.current_filter in m.key.lower()
             or (m.quantization and self.current_filter in m.quantization.name.lower())
+            or (m.architecture and self.current_filter in m.architecture.lower())
         ]
 
         if self.current_sort == self.SortType.NAME:
@@ -228,12 +230,33 @@ class BaseModelTable(Static):
     @on(DataTable.RowHighlighted)
     def handle_row_highlight(self, event: DataTable.RowHighlighted) -> None:
         """Fires when navigating through table."""
-        key = event.row_key.value
+        if not self.has_focus_within or not self.table.row_count > 0:
+            return
 
+        key = event.row_key.value
         assert key
         model = self._all_models.get(key)
-
         self.post_message(self.post_highlighted_model(model))
+
+    @on(DescendantFocus)
+    def on_table_focus(self) -> None:
+        """Restore cursor and re-emit selection when table gains focus."""
+        self.table.show_cursor = True
+
+        if self.table.row_count > 0 and self.table.cursor_row is not None:
+            cell_key = self.table.coordinate_to_cell_key(self.table.cursor_coordinate)
+            row_key = cell_key.row_key.value
+            if row_key and row_key in self._all_models:
+                self.post_message(
+                    self.post_highlighted_model(self._all_models[row_key])
+                )
+            else:
+                self.post_message(self.post_highlighted_model(None))
+
+    @on(DescendantBlur)
+    def on_table_blur(self) -> None:
+        """Hide table cursor when focus moves to another pane."""
+        self.table.show_cursor = False
 
 
 # Model DataTable implementations
@@ -246,11 +269,11 @@ class DownloadedModels(BaseModelTable):
         super().__init__(table_id="dl-models-table", **kwargs)
 
 
-class LoadedModels(BaseModelTable):
-    """Widget displaying currently loaded models for immediate use."""
-
-    def __init__(self, **kwargs) -> None:
-        super().__init__(table_id="loaded-models-table", **kwargs)
+# TODO: Decide if I need to keep this class for anything
+# class LoadedModels(BaseModelTable):
+#     """Widget displaying currently loaded models for immediate use."""
+#     def __init__(self, **kwargs) -> None:
+#         super().__init__(table_id="loaded-models-table", **kwargs)
 
 
 # OptionList for Context Pane and maybe Loaded Models pane
