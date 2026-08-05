@@ -22,6 +22,17 @@ Button {
     content-align: center middle;
     height: 100%;
     border-title-align: left;
+    border-title-color: $primary;
+    border-title-background: rgba(0, 0, 0, 0);
+    border-title-style: italic;
+
+    &:focus-within {
+        border-top: round $accent;
+        border-right: round $accent;
+        border-title-align: left;
+        border-title-color: $accent;
+        border-title-background: rgba(0, 0, 0, 0);
+    }
 }
 
 .section-title {
@@ -80,10 +91,6 @@ Button {
 
 #action-log {
     width: 1fr;
-    border-title-align: left;
-    border-title-color: $primary;
-    border-title-background: rgba(0, 0, 0, 0);
-    border-title-style: italic;
     border-right: none;
     margin: 1 2 0 3;
     background: transparent;
@@ -99,12 +106,7 @@ Button {
 
 #loaded-models,
 #downloaded-models {
-    /* width: 30%; */
     width: 1fr;
-    border-title-align: left;
-    border-title-color: $primary;
-    border-title-background: rgba(0, 0, 0, 0);
-    border-title-style: italic;
 }
 
 /* =========================================
@@ -114,7 +116,6 @@ Button {
     width: 100%;
     height: 1;
     margin-bottom: 1;
-    /* padding: 0 1; */
     background: rgba(0, 0, 0, 0.25);
     color: $accent;
     content-align: right middle;
@@ -134,12 +135,7 @@ Button {
 }
 
 #context-pane {
-    /* width: 40%; */
     width: 1fr;
-    border-title-align: left;
-    border-title-color: $primary;
-    border-title-background: rgba(0, 0, 0, 0);
-    border-title-style: italic;
     padding: 1 2;
 }
 
@@ -213,7 +209,7 @@ Horizontal>DataTable {
 }
 
 /* =========================================
-   LOADED MODELS ACCORDION
+   LOADED MODELS PANE
    ========================================= */
 #loaded-models-scroll {
     height: 100%;
