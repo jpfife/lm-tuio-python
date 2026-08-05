@@ -9,6 +9,23 @@ clear_filter = { keys = [
 test_connection = { keys = ["*"], desc = "<test connection>", show = false }
 show_keybinds = { keys = ["?"], desc = "<hotkeys>", show = true }
 
+focus_left = { keys = [
+    "ctrl+h",
+    "ctrl+left",
+], desc = "Focus pane left", show = false }
+focus_right = { keys = [
+    "ctrl+l",
+    "ctrl+right",
+], desc = "Focus pane right", show = false }
+focus_up = { keys = [
+    "ctrl+k",
+    "ctrl+up",
+], desc = "Focus header log", show = false }
+focus_down = { keys = [
+    "ctrl+j",
+    "ctrl+down",
+], desc = "Focus main area", show = false }
+
 [tables]
 cursor_up = { keys = ["up", "k", "ctrl+p"], desc = "<cursor up>", show = false }
 cursor_down = { keys = [
