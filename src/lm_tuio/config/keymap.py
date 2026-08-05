@@ -26,6 +26,26 @@ DEFAULT_KEYMAP: dict[str, dict[str, dict[str, Any]]] = {
             "desc": "<hotkeys>",
             "show": True,
         },
+        "focus_left": {
+            "keys": ["ctrl+h", "ctrl+left"],
+            "desc": "<focus pane left>",
+            "show": False,
+        },
+        "focus_right": {
+            "keys": ["ctrl+l", "ctrl+right"],
+            "desc": "<focus pane right>",
+            "show": False,
+        },
+        "focus_up": {
+            "keys": ["ctrl+k", "ctrl+up"],
+            "desc": "<focus header log>",
+            "show": False,
+        },
+        "focus_down": {
+            "keys": ["ctrl+j", "ctrl+down"],
+            "desc": "<focus main area>",
+            "show": False,
+        },
     },
     "tables": {
         "cursor_up": {
