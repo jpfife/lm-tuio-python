@@ -50,12 +50,12 @@ DEFAULT_KEYMAP: dict[str, dict[str, dict[str, Any]]] = {
     },
     "tables": {
         "cursor_up": {
-            "keys": ["up", "k", "ctrl+shift+p"],
+            "keys": ["up", "k", "alt+p"],
             "desc": "<cursor up>",
             "show": False,
         },
         "cursor_down": {
-            "keys": ["down", "j", "ctrl+shift+n"],
+            "keys": ["down", "j", "alt+n"],
             "desc": "<cursor down>",
             "show": False,
         },
@@ -76,24 +76,24 @@ DEFAULT_KEYMAP: dict[str, dict[str, dict[str, Any]]] = {
             "show": False,
         },
         "select_up": {
-            "keys": ["up", "k", "ctrl+shift+p"],
+            "keys": ["up", "k", "alt+p"],
             "desc": "<cursor up>",
             "show": False,
         },
         "select_down": {
-            "keys": ["down", "j", "ctrl+shift+n"],
+            "keys": ["down", "j", "alt+n"],
             "desc": "<cursor down>",
             "show": False,
         },
     },
     "action_log": {
         "scroll_up": {
-            "keys": ["up", "k", "ctrl+shift+p"],
+            "keys": ["up", "k", "alt+p"],
             "desc": "<scroll up>",
             "show": False,
         },
         "scroll_down": {
-            "keys": ["down", "j", "ctrl+shift+n"],
+            "keys": ["down", "j", "alt+n"],
             "desc": "<scroll down>",
             "show": False,
         },
@@ -111,12 +111,12 @@ DEFAULT_KEYMAP: dict[str, dict[str, dict[str, Any]]] = {
         "save_defaults": {"keys": ["ctrl+s"], "desc": "<save defaults>", "show": True},
         "clear_cache": {"keys": ["x"], "desc": "<clear cache>", "show": True},
         "select_up": {
-            "keys": ["up", "k", "ctrl+shift+p"],
+            "keys": ["up", "k", "alt+p"],
             "desc": "<cursor up>",
             "show": False,
         },
         "select_down": {
-            "keys": ["down", "j", "ctrl+shift+n"],
+            "keys": ["down", "j", "alt+n"],
             "desc": "<cursor down>",
             "show": False,
         },
