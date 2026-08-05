@@ -75,6 +75,16 @@ DEFAULT_KEYMAP: dict[str, dict[str, dict[str, Any]]] = {
             "desc": "<select group>",
             "show": False,
         },
+        "select_up": {
+            "keys": ["up", "k", "ctrl+shift+p"],
+            "desc": "<cursor up>",
+            "show": False,
+        },
+        "select_down": {
+            "keys": ["down", "j", "ctrl+shift+n"],
+            "desc": "<cursor down>",
+            "show": False,
+        },
     },
     "action_log": {
         "scroll_up": {
