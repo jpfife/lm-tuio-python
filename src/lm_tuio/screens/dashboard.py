@@ -113,6 +113,65 @@ class DashboardScreen(Screen):
         self.loadedmodels_widget.refresh_groups()
         self.contextpane_widget.update_model_context(None)
 
+    # ========== NAVIGATION ==========
+
+    def _get_horizontal_panes(self) -> list:
+        """Returns the ordered list of primary focusable widgets from left to right."""
+        panes = []
+
+        try:
+            sel_list = self.loadedmodels_widget.query_one("SelectionList")
+            panes.append(sel_list)
+        except Exception:
+            panes.append(self.loadedmodels_widget.loaded_models_scroll)
+
+        panes.append(self.downloadedmodels_widget.table)
+
+        panes.append(self.contextpane_widget)
+
+        return panes
+
+    def action_focus_left(self) -> None:
+        """Move focus one pane to the left (ctrl+h / ctrl+left)."""
+        panes = self._get_horizontal_panes()
+        focused = self.app.focused
+
+        # Find current focus
+        current_idx = -1
+        for idx, pane in enumerate(panes):
+            if pane == focused or pane.has_focus_within:
+                current_idx = idx
+                break
+
+        if current_idx > 0:
+            panes[current_idx - 1].focus()
+        elif current_idx == -1:
+            self.downloadedmodels_widget.table.focus()  # Default middle table
+
+    def action_focus_right(self) -> None:
+        """Move focus one pane to the right (ctrl+l / ctrl+right)."""
+        panes = self._get_horizontal_panes()
+        focused = self.app.focused
+
+        current_idx = -1
+        for idx, pane in enumerate(panes):
+            if pane == focused or pane.has_focus_within:
+                current_idx = idx
+                break
+
+        if 0 <= current_idx < len(panes) - 1:
+            panes[current_idx + 1].focus()
+        elif current_idx == -1:
+            self.downloadedmodels_widget.table.focus()
+
+    def action_focus_up(self) -> None:
+        """Jump focus up to the header ActionLog (ctrl+k / ctrl+up)."""
+        self.actionlog_widget.focus()
+
+    def action_focus_down(self) -> None:
+        """Jump focus down from the header back to the main models table (ctrl+j / ctrl+down)."""
+        self.downloadedmodels_widget.table.focus()
+
     @work(exclusive=True)
     async def fetch_load_models(self, ip: str, port: int) -> None:
         """Fetch models from LMS API endpoint and populate UI"""
