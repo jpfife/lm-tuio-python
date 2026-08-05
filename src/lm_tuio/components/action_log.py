@@ -5,9 +5,13 @@ from zoneinfo import ZoneInfo
 
 from textual.widgets import RichLog
 
+from lm_tuio.config import keymap
+
 
 class ActionLog(RichLog):
     """Header widget for real-time app and API telemetry."""
+
+    BINDINGS = keymap.KeymapManager.get_bindings("action_log")
 
     history: list[tuple[str, str, str]]
     timezone: str
@@ -39,3 +43,11 @@ class ActionLog(RichLog):
         self.history.append((timestamp, severity, message))
 
         self.write(f"[dim]{timestamp}[/] {tag} {message}")
+
+    # ======= ACTIONS =======
+
+    def action_scroll_up(self) -> None:
+        self.scroll_up()
+
+    def action_scroll_down(self) -> None:
+        self.scroll_down()

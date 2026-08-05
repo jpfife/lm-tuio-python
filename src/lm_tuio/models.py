@@ -208,6 +208,12 @@ class BaseModelTable(Static):
 
     # ======= ACTIONS =======
 
+    def action_cursor_up(self) -> None:
+        self.table.action_cursor_up()
+
+    def action_cursor_down(self) -> None:
+        self.table.action_cursor_down()
+
     def action_sort_on_name(self) -> None:
         """Sort model table by display name, or reverse sort if already sorted on name."""
         if self.current_sort == self.SortType.NAME:
@@ -225,6 +231,8 @@ class BaseModelTable(Static):
             self.current_sort = self.SortType.SIZE
             self.sort_reverse = True  # Default display largest models first
         self.refresh_table()
+
+    # ======= EVENTS =======
 
     @on(DataTable.RowHighlighted)
     def handle_row_highlight(self, event: DataTable.RowHighlighted) -> None:

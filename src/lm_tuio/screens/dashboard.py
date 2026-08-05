@@ -126,8 +126,7 @@ class DashboardScreen(Screen):
             panes.append(self.loadedmodels_widget.loaded_models_scroll)
 
         panes.append(self.downloadedmodels_widget.table)
-
-        panes.append(self.contextpane_widget)
+        panes.append(self.contextpane_widget.ctx_insts_table)
 
         return panes
 
@@ -143,8 +142,8 @@ class DashboardScreen(Screen):
                 current_idx = idx
                 break
 
-        if current_idx > 0:
-            panes[current_idx - 1].focus()
+        if current_idx >= 0:
+            panes[(current_idx - 1) % 3].focus()
         elif current_idx == -1:
             self.downloadedmodels_widget.table.focus()  # Default middle table
 
@@ -159,8 +158,8 @@ class DashboardScreen(Screen):
                 current_idx = idx
                 break
 
-        if 0 <= current_idx < len(panes) - 1:
-            panes[current_idx + 1].focus()
+        if 0 <= current_idx <= len(panes) - 1:
+            panes[(current_idx + 1) % 3].focus()
         elif current_idx == -1:
             self.downloadedmodels_widget.table.focus()
 

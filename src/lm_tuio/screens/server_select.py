@@ -12,6 +12,7 @@ from textual.screen import ModalScreen
 from textual.widgets import Button, Footer, Input, Label, OptionList
 
 from lm_tuio.config.settings import AppConfig, validate_ip_net
+from lm_tuio.config import keymap
 from lm_tuio.events import ServerEndpointUpdated
 from lm_tuio.scanner import scan_targets
 
@@ -28,14 +29,7 @@ class ServerSelectionModal(
     to update ActionLog on the Dashboard.
     """
 
-    BINDINGS = [
-        ("q,escape", "quit", "<close>"),
-        ("c", "connect_input_submit", "<connect>"),
-        ("s", "scan_network", "<scan>"),
-        ("ctrl+s", "save_defaults", "<save defaults>"),
-        ("x", "clear_cache", "<clear cache>"),
-        ("q,escape", "quit", "<quit>"),
-    ]
+    BINDINGS = keymap.KeymapManager.get_bindings("server_select")
 
     current_ip: str
     current_port: int
@@ -146,10 +140,12 @@ class ServerSelectionModal(
     def on_mount(self) -> None:
         """Populate cached IPs and conduct default network scan."""
 
+        self.cache_list: OptionList = self.query_one("#cached-ips-list", OptionList)
+        self.active_ips: OptionList = self.query_one("#active-servers-list", OptionList)
+
         app_config = getattr(self.app, "config", None)
         if isinstance(app_config, AppConfig) and app_config.cached_ips:
-            cache_list: OptionList = self.query_one("#cached-ips-list", OptionList)
-            cache_list.add_options(app_config.cached_ips)
+            self.cache_list.add_options(app_config.cached_ips)
 
         self.exectute_network_scan(self.default_subnet, self.current_port)
 
@@ -161,7 +157,7 @@ class ServerSelectionModal(
 
         Args: target_network: str, target_port: int | str
         """
-        active_list: OptionList = self.query_one("#active-servers-list", OptionList)
+        active_list = self.active_ips
         active_list.clear_options()
         valid_net, err = validate_ip_net(target_network)
 
@@ -466,6 +462,19 @@ class ServerSelectionModal(
         self.dismiss((None, self.logs))
 
     # ======= ACTIONS =======
+
+    def action_select_up(self) -> None:
+        widget = self.focused
+        if widget == self.active_ips or widget == self.cache_list:
+            assert isinstance(widget, OptionList)
+            widget.action_cursor_up()
+
+    def action_select_down(self) -> None:
+        widget = self.focused
+        if widget == self.active_ips or widget == self.cache_list:
+            assert isinstance(widget, OptionList)
+            widget.action_cursor_down()
+
     def action_connect_input_submit(self) -> None:
         """Default 'c' hotkey"""
         self.connect_to_new_server()
