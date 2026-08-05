@@ -28,15 +28,11 @@ focus_down = { keys = [
 ], desc = "Focus main area", show = false }
 
 [tables]
-cursor_up = { keys = [
-    "up",
-    "k",
-    "ctrl+shift+p",
-], desc = "<cursor up>", show = false }
+cursor_up = { keys = ["up", "k", "alt+p"], desc = "<cursor up>", show = false }
 cursor_down = { keys = [
     "down",
     "j",
-    "ctrl+shift+n",
+    "alt+n",
 ], desc = "<cursor down>", show = false }
 sort_on_name = { keys = ["n"], desc = "<sort name>", show = true }
 sort_on_size = { keys = ["s"], desc = "<sort size>", show = true }
@@ -49,24 +45,16 @@ toggle_group = { keys = ["x"], desc = "<select group>", show = false }
 select_down = { keys = [
     "down",
     "j",
-    "ctrl+shift+n",
+    "alt+n",
 ], desc = "<cursor down>", show = false }
-select_up = { keys = [
-    "up",
-    "k",
-    "ctrl+shift+p",
-], desc = "<cursor up>", show = false }
+select_up = { keys = ["up", "k", "alt+p"], desc = "<cursor up>", show = false }
 
 [action_log]
-scroll_up = { keys = [
-    "up",
-    "k",
-    "ctrl+shift+p",
-], desc = "<scroll up>", show = false }
+scroll_up = { keys = ["up", "k", "alt+p"], desc = "<scroll up>", show = false }
 scroll_down = { keys = [
     "down",
     "j",
-    "ctrl+shift+n",
+    "alt+n",
 ], desc = "<scroll down>", show = false }
 
 [sever_select]
@@ -75,13 +63,9 @@ connect_input_submit = { keys = ["c"], desc = "<connect>", show = true }
 scan_network = { keys = ["s"], desc = "<scan>", show = true }
 save_defaults = { keys = ["ctrl+s"], desc = "<save defaults>", show = true }
 clear_cache = { keys = ["x"], desc = "<clear cache>", show = true }
-select_up = { keys = [
-    "up",
-    "k",
-    "ctrl+shift+p",
-], desc = "<cursor up>", show = false }
+select_up = { keys = ["up", "k", "alt+p"], desc = "<cursor up>", show = false }
 select_down = { keys = [
     "down",
     "j",
-    "ctrl+shift+n",
+    "alt+n",
 ], desc = "<cursor down>", show = false }
