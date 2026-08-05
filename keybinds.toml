@@ -46,6 +46,16 @@ unload_selected = { keys = ["u"], desc = "<unload selected>", show = true }
 unload_all = { keys = ["U"], desc = "<unload all>", show = true }
 select_model = { keys = ["space"], desc = "<select model>", show = false }
 toggle_group = { keys = ["x"], desc = "<select group>", show = false }
+select_down = { keys = [
+    "down",
+    "j",
+    "ctrl+shift+n",
+], desc = "<cursor down>", show = false }
+select_up = { keys = [
+    "up",
+    "k",
+    "ctrl+shift+p",
+], desc = "<cursor up>", show = false }
 
 [action_log]
 scroll_up = { keys = [

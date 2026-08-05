@@ -208,10 +208,12 @@ class LoadedModels(Static):
                 focused.select_all()
 
     def action_select_up(self) -> None:
-        pass
+        if isinstance(self.app.focused, SelectionList):
+            self.app.focused.action_cursor_up()
 
     def action_select_down(self) -> None:
-        pass
+        if isinstance(self.app.focused, SelectionList):
+            self.app.focused.action_cursor_down()
 
     # ========== EVENTS ==========
 
