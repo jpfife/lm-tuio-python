@@ -207,6 +207,12 @@ class LoadedModels(Static):
             else:
                 focused.select_all()
 
+    def action_select_up(self) -> None:
+        pass
+
+    def action_select_down(self) -> None:
+        pass
+
     # ========== EVENTS ==========
 
     @on(SelectionList.SelectionHighlighted)

@@ -6,6 +6,7 @@ clear_filter = { keys = [
     "escape",
     "ctrl+left_square_bracket",
 ], desc = "<clr filter>", show = false }
+refresh_models = { keys = ["r"], desc = "<refresh models>", show = true }
 test_connection = { keys = ["*"], desc = "<test connection>", show = false }
 show_keybinds = { keys = ["?"], desc = "<hotkeys>", show = true }
 
@@ -27,11 +28,15 @@ focus_down = { keys = [
 ], desc = "Focus main area", show = false }
 
 [tables]
-cursor_up = { keys = ["up", "k", "ctrl+p"], desc = "<cursor up>", show = false }
+cursor_up = { keys = [
+    "up",
+    "k",
+    "ctrl+shift+p",
+], desc = "<cursor up>", show = false }
 cursor_down = { keys = [
     "down",
     "j",
-    "ctrl+n",
+    "ctrl+shift+n",
 ], desc = "<cursor down>", show = false }
 sort_on_name = { keys = ["n"], desc = "<sort name>", show = true }
 sort_on_size = { keys = ["s"], desc = "<sort size>", show = true }
@@ -41,3 +46,32 @@ unload_selected = { keys = ["u"], desc = "<unload selected>", show = true }
 unload_all = { keys = ["U"], desc = "<unload all>", show = true }
 select_model = { keys = ["space"], desc = "<select model>", show = false }
 toggle_group = { keys = ["x"], desc = "<select group>", show = false }
+
+[action_log]
+scroll_up = { keys = [
+    "up",
+    "k",
+    "ctrl+shift+p",
+], desc = "<scroll up>", show = false }
+scroll_down = { keys = [
+    "down",
+    "j",
+    "ctrl+shift+n",
+], desc = "<scroll down>", show = false }
+
+[sever_select]
+quit = { keys = ["q", "escape"], desc = "<cancel>", show = true }
+connect_input_submit = { keys = ["c"], desc = "<connect>", show = true }
+scan_network = { keys = ["s"], desc = "<scan>", show = true }
+save_defaults = { keys = ["ctrl+s"], desc = "<save defaults>", show = true }
+clear_cache = { keys = ["x"], desc = "<clear cache>", show = true }
+select_up = { keys = [
+    "up",
+    "k",
+    "ctrl+shift+p",
+], desc = "<cursor up>", show = false }
+select_down = { keys = [
+    "down",
+    "j",
+    "ctrl+shift+n",
+], desc = "<cursor down>", show = false }
