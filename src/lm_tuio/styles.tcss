@@ -308,6 +308,12 @@ ServerSelectionModal {
     background: rgba(0, 0, 0, 0.30);
 }
 
+#active-servers-list:focus,
+#cached-ips-list:focus {
+    outline: round $secondary;
+    padding: 1 1 0 1;
+}
+
 #main-action-area {
     width: 55%;
     padding: 2 1 -1 3;

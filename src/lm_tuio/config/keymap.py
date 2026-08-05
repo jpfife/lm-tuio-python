@@ -10,6 +10,7 @@ DEFAULT_KEYMAP: dict[str, dict[str, dict[str, Any]]] = {
     "global": {
         "quit": {"keys": ["q", "ctrl+c"], "desc": "<quit>", "show": True},
         "change_server": {"keys": ["c"], "desc": "<change endpoint>", "show": True},
+        "refresh_models": {"keys": ["r"], "desc": "<refresh models>", "show": True},
         "filter": {"keys": ["/"], "desc": "<filter>", "show": True},
         "clear_filter": {
             "keys": ["escape", "ctrl+left_square_bracket"],
@@ -49,12 +50,12 @@ DEFAULT_KEYMAP: dict[str, dict[str, dict[str, Any]]] = {
     },
     "tables": {
         "cursor_up": {
-            "keys": ["up", "k", "ctrl+p"],
+            "keys": ["up", "k", "ctrl+shift+p"],
             "desc": "<cursor up>",
             "show": False,
         },
         "cursor_down": {
-            "keys": ["down", "j", "ctrl+n"],
+            "keys": ["down", "j", "ctrl+shift+n"],
             "desc": "<cursor down>",
             "show": False,
         },
@@ -72,6 +73,41 @@ DEFAULT_KEYMAP: dict[str, dict[str, dict[str, Any]]] = {
         "toggle_group": {
             "keys": ["x"],
             "desc": "<select group>",
+            "show": False,
+        },
+    },
+    "action_log": {
+        "scroll_up": {
+            "keys": ["up", "k", "ctrl+shift+p"],
+            "desc": "<scroll up>",
+            "show": False,
+        },
+        "scroll_down": {
+            "keys": ["down", "j", "ctrl+shift+n"],
+            "desc": "<scroll down>",
+            "show": False,
+        },
+        "sort_on_name": {"keys": ["n"], "desc": "<sort name>", "show": True},
+        "sort_on_size": {"keys": ["s"], "desc": "<sort size>", "show": True},
+    },
+    "server_select": {
+        "quit": {
+            "keys": ["q", "escape"],
+            "desc": "<cancel>",
+            "show": True,
+        },
+        "connect_input_submit": {"keys": ["c"], "desc": "<connect>", "show": True},
+        "scan_network": {"keys": ["s"], "desc": "<scan>", "show": True},
+        "save_defaults": {"keys": ["ctrl+s"], "desc": "<save defaults>", "show": True},
+        "clear_cache": {"keys": ["x"], "desc": "<clear cache>", "show": True},
+        "select_up": {
+            "keys": ["up", "k", "ctrl+shift+p"],
+            "desc": "<cursor up>",
+            "show": False,
+        },
+        "select_down": {
+            "keys": ["down", "j", "ctrl+shift+n"],
+            "desc": "<cursor down>",
             "show": False,
         },
     },
