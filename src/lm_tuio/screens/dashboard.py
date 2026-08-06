@@ -15,6 +15,7 @@ from lm_tuio.components import ActionLog, ConnectionStatus, ContextPane, Title
 from lm_tuio.components.loaded_models import LoadedModels
 from lm_tuio.config import keymap
 from lm_tuio.screens.server_select import ServerSelectionModal
+from lm_tuio.screens.keybind_helper import KeybindsModal
 
 
 class DashboardScreen(Screen):
@@ -304,9 +305,6 @@ class DashboardScreen(Screen):
             selected_ids.extend(sel_list.selected)
 
         if selected_ids:
-            # self.post_message(
-            #     self.loadedmodels_widget.post_unload_model_request(selected_ids)
-            # )
             self.unload_models(selected_ids)
         else:
             self.actionlog_widget.add_entry(
@@ -317,10 +315,11 @@ class DashboardScreen(Screen):
         """Sends all currently loaded model instances for unload."""
         all_ids = list(self.loadedmodels_widget._instance_map.keys())
         if all_ids:
-            # self.post_message(
-            #     self.loadedmodels_widget.post_unload_model_request(all_ids)
-            # )
             self.unload_models(all_ids)
+
+    def action_show_keybinds(self) -> None:
+        """Open keybinds help screen."""
+        self.app.push_screen(KeybindsModal())
 
     # ========= EVENTS ==========
 
