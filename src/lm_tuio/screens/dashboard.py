@@ -10,15 +10,16 @@ from textual.app import ComposeResult
 from textual.containers import Horizontal
 from textual.reactive import reactive
 from textual.screen import Screen
-from textual.widgets import Footer, Input, Label, SelectionList
+from textual.widgets import Footer, Input, Label
 
 from lm_tuio import api, events, models as md
 from lm_tuio.components import ActionLog, ConnectionStatus, ContextPane, Title
+from lm_tuio.components import loaded_models
 from lm_tuio.components.loaded_models import LoadedModels
 from lm_tuio.config import keymap
-from lm_tuio.screens.server_select import ServerSelectionModal
 from lm_tuio.screens.keybind_helper import KeybindsModal
 from lm_tuio.screens.load_model import LoadModelModal
+from lm_tuio.screens.server_select import ServerSelectionModal
 
 
 class DashboardScreen(Screen):
@@ -205,9 +206,11 @@ class DashboardScreen(Screen):
             f"Unloading {count} model instance{'s' if count > 1 else ''}..."
         )
 
+        self.loadedmodels_widget.loading = True
         ip: str = self.connection_widget.server_ip
         port: int = self.connection_widget.server_port
         success, err = await api.unload_model_instances(ip, port, instance_ids)
+        self.loadedmodels_widget.loading = False
 
         if not success:
             self.actionlog_widget.add_entry(f"Unload error: {err}", "error")
@@ -235,9 +238,12 @@ class DashboardScreen(Screen):
         if payload is None:
             return
 
+        # self.loadedmodels_widget.loading = True
+        self.loadedmodels_widget.loading = True
         ip: str = self.connection_widget.server_ip
         port: int = self.connection_widget.server_port
         success, err = await api.load_model_instance(ip, port, payload)
+        self.loadedmodels_widget.loading = False
 
         if not success:
             self.actionlog_widget.add_entry(f"Load error: {err}", "error")
@@ -247,6 +253,7 @@ class DashboardScreen(Screen):
                 "ok",
             )
 
+        # self.loadedmodels_widget.loading = False
         self.action_refresh_models()
 
     # ======= REACTIVE WATCHERS =======
@@ -319,37 +326,6 @@ class DashboardScreen(Screen):
                 self.post_message(events.ActionLogUpdate(log[0], log[1]))
 
         self.app.push_screen(ServerSelectionModal(), callback=is_same_server)
-
-    # def action_load_model(self) -> None:
-    #     """Spawn load model dialog from selected Downloaded Model table."""
-    #     table = self.downloadedmodels_widget.table
-    #     selected = table.cursor_row
-    #
-    #     if selected is None:
-    #         self.post_message(
-    #             events.ActionLogUpdate("No model selected to load", "warn")
-    #         )
-    #         return
-    #
-    #     row_data = table.get_row_at(selected)
-    #     model_id = str(row_data[0])
-    #     model = None
-    #     for mdl in self.downloadedmodels_widget._all_models:
-    #         assert isinstance(mdl, md.ModelInfo)
-    #         if model_id == mdl.display_name:
-    #             model = mdl
-    #         else:
-    #             self.post_message(
-    #                 events.ActionLogUpdate(f"Model {model_id} not found", "err")
-    #             )
-    #             return
-    #
-    #     self.post_message(events.ModelLoadRequest(model))
-    #
-    #     def test(self, model: md.ModelInfo):
-    #         pass  # TODO: create callback for API request
-    #
-    #     self.app.push_screen(LoadModelModal(), callback=test)
 
     def action_refresh_models(self) -> None:
         self.fetch_load_models(
