@@ -4,6 +4,7 @@ Uses async HTTPX clients for server heartbeat checks (HEAD only) and performing 
 """
 
 import asyncio
+from typing import Any
 
 import httpx
 from pydantic import ValidationError
@@ -13,7 +14,7 @@ from lm_tuio.models import ModelInfo, ModelListResponse
 # NOTE: Using LM Studio Native v1 REST API endpoints (/api/v1/[api_action]) for more robust server functionality.
 #       OpenAI compatible endpoints (/v1/[api_action]) are primarily for inference.
 
-API_TIMEOUT: float = 60.0
+API_TIMEOUT: float = 120.0
 UNLOAD_TIMEOUT: float = 10.0
 
 api_action: dict[str, str] = {
@@ -82,6 +83,26 @@ async def unload_model_instances(
 
     except Exception as e:
         return False, str(e)
+
+
+async def load_model_instance(
+    ip: str, port: int, payload: dict[str, Any], timeout: float = API_TIMEOUT
+) -> tuple[dict[str, Any] | None, str | None]:
+    """Send load request to LMS REST API and return response."""
+    server_url: str = f"http://{ip}:{port}{api_action['load']}"
+
+    try:
+        async with httpx.AsyncClient(timeout=timeout) as client:
+            resp = await client.post(server_url, json=payload)
+
+        if resp.status_code == 200:
+            return resp.json(), None
+        return None, f"HTTP {resp.status_code}: {resp.text}"
+
+    except httpx.TimeoutException:
+        return None, f"Request timed out after {timeout}s while loading model"
+    except Exception as err:
+        return None, f"Connection failure: {err}"
 
 
 async def check_server_status(ip: str, port: int, timeout: float = API_TIMEOUT) -> bool:
