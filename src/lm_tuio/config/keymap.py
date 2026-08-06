@@ -28,22 +28,22 @@ DEFAULT_KEYMAP: dict[str, dict[str, dict[str, Any]]] = {
             "show": True,
         },
         "focus_left": {
-            "keys": ["ctrl+h", "ctrl+left"],
+            "keys": ["ctrl+h", "ctrl+left", "alt+h"],
             "desc": "<focus pane left>",
             "show": False,
         },
         "focus_right": {
-            "keys": ["ctrl+l", "ctrl+right"],
+            "keys": ["ctrl+l", "ctrl+right", "alt+l"],
             "desc": "<focus pane right>",
             "show": False,
         },
         "focus_up": {
-            "keys": ["ctrl+k", "ctrl+up"],
+            "keys": ["ctrl+k", "ctrl+up", "alt+k"],
             "desc": "<focus header log>",
             "show": False,
         },
         "focus_down": {
-            "keys": ["ctrl+j", "ctrl+down"],
+            "keys": ["ctrl+j", "ctrl+down", "alt+j"],
             "desc": "<focus main area>",
             "show": False,
         },

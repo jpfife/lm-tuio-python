@@ -7,6 +7,11 @@ Screen {
     padding: 0 1 1 1;
 }
 
+ModalScreen {
+    outline: none;
+    padding: 0;
+}
+
 Button {
     border: none;
     width: 16;
@@ -324,7 +329,6 @@ ServerSelectionModal {
     width: auto;
     min-width: 32;
     margin: 0 0 1 0;
-    /* background: rgba(0, 0, 0, 0.25); */
     border: round $secondary 80%;
     border-subtitle-align: right;
     border-subtitle-color: $accent-darken-2;
@@ -348,4 +352,62 @@ ServerSelectionModal {
 .button-group {
     height: 3;
     margin-top: 2;
+}
+
+/* ==========================================
+ * KEYBINDS MODAL
+ * ========================================== */
+
+KeybindsModal {
+    align: center middle;
+    background: $background 60%;
+    border: none;
+}
+
+#keybind-dialog {
+    width: 80%;
+    max-width: 120;
+    height: 80%;
+    max-height: 36;
+    background: $surface;
+    border: thick $primary;
+    padding: 1 2;
+}
+
+#keybind-title {
+    width: 100%;
+    text-align: center;
+    text-style: bold;
+    color: $accent;
+    margin-bottom: 1;
+}
+
+#keybind-explaner {
+    width: 100%;
+    text-style: italic dim;
+    border-bottom: solid $primary-muted;
+    margin-bottom: 1;
+    padding: 0 2 1 2;
+}
+
+#keybind-grid {
+    layout: grid;
+    grid-size: 2;
+    grid-gutter: 1 4;
+    width: 100%;
+    height: auto;
+    padding-right: 4;
+    padding-left: 4;
+}
+
+KeybindSection {
+    width: 100%;
+    height: auto;
+    margin-bottom: 1;
+}
+
+#keybinds-footer {
+    height: 1;
+    padding: 0 0 0 0;
+    margin: 0 0 0 0;
 }

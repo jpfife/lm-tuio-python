@@ -13,18 +13,22 @@ show_keybinds = { keys = ["?"], desc = "<hotkeys>", show = true }
 focus_left = { keys = [
     "ctrl+h",
     "ctrl+left",
+    "alt+h",
 ], desc = "Focus pane left", show = false }
 focus_right = { keys = [
     "ctrl+l",
     "ctrl+right",
+    "alt+l",
 ], desc = "Focus pane right", show = false }
 focus_up = { keys = [
     "ctrl+k",
     "ctrl+up",
+    "alt+k",
 ], desc = "Focus header log", show = false }
 focus_down = { keys = [
     "ctrl+j",
     "ctrl+down",
+    "alt+j",
 ], desc = "Focus main area", show = false }
 
 [tables]
