@@ -298,25 +298,6 @@ class DashboardScreen(Screen):
         self.connection_widget.reset_status()
         self.connection_widget.update_connection_status()
 
-    def action_unload_selected(self) -> None:
-        """Gathers all checkboxes across all collapsible groups and fires unload."""
-        selected_ids: list[str] = []
-        for sel_list in self.query(SelectionList):
-            selected_ids.extend(sel_list.selected)
-
-        if selected_ids:
-            self.unload_models(selected_ids)
-        else:
-            self.actionlog_widget.add_entry(
-                "No instances checked for unloading", "warn"
-            )
-
-    def action_unload_all(self) -> None:
-        """Sends all currently loaded model instances for unload."""
-        all_ids = list(self.loadedmodels_widget._instance_map.keys())
-        if all_ids:
-            self.unload_models(all_ids)
-
     def action_show_keybinds(self) -> None:
         """Open keybinds help screen."""
         self.app.push_screen(KeybindsModal())
