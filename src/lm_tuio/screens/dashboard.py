@@ -219,29 +219,35 @@ class DashboardScreen(Screen):
 
         self.action_refresh_models()
 
-    @work(exclusive=True)
-    async def load_model_modal(self, model: md.ModelInfo) -> None:
+    def load_model_modal(self, model: md.ModelInfo) -> None:
         """Spawn Load Model modal and send API request to LMS endpoint."""
 
-        async def _api_load_request(payload: dict[str, Any] | None):
-            if payload is None:
-                return
+        def _on_dismiss(payload: dict[str, Any] | None) -> None:
+            if payload is not None:
+                self._api_load_request(model, payload)
 
-            ip: str = self.connection_widget.server_ip
-            port: int = self.connection_widget.server_port
-            success, err = await api.load_model_instance(ip, port, payload)
+        self.app.push_screen(LoadModelModal(model), callback=_on_dismiss)
 
-            if not success:
-                self.actionlog_widget.add_entry(f"Load error: {err}", "error")
-            else:
-                self.actionlog_widget.add_entry(
-                    f"Successfully loaded {model} instance",
-                    "ok",
-                )
+    @work(exclusive=True)
+    async def _api_load_request(
+        self, model: md.ModelInfo, payload: dict[str, Any] | None
+    ):
+        if payload is None:
+            return
 
-            self.action_refresh_models()
+        ip: str = self.connection_widget.server_ip
+        port: int = self.connection_widget.server_port
+        success, err = await api.load_model_instance(ip, port, payload)
 
-        self.app.push_screen(LoadModelModal(model), callback=_api_load_request)
+        if not success:
+            self.actionlog_widget.add_entry(f"Load error: {err}", "error")
+        else:
+            self.actionlog_widget.add_entry(
+                f"Successfully loaded {model} instance",
+                "ok",
+            )
+
+        self.action_refresh_models()
 
     # ======= REACTIVE WATCHERS =======
     def watch_filter_str(self, new_filter: str) -> None:
