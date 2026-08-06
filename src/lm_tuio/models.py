@@ -272,15 +272,41 @@ class BaseModelTable(Static):
 class DownloadedModels(BaseModelTable):
     """Widget displaying all downloaded models available on the server."""
 
-    def __init__(self, **kwargs) -> None:
+    def __init__(
+        self,
+        post_model_load_callback: Callable[[ModelInfo | None]],
+        post_action_logger_update_callback: Callable[[str, str]],
+        **kwargs,
+    ) -> None:
         super().__init__(table_id="dl-models-table", **kwargs)
+        self.post_model_load = post_model_load_callback
+        self.post_action_logger_update = post_action_logger_update_callback
 
+    @on(DataTable.RowSelected)
+    def action_load_model(self) -> None:
+        selected = self.table.cursor_row
 
-# TODO: Decide if I need to keep this class for anything
-# class LoadedModels(BaseModelTable):
-#     """Widget displaying currently loaded models for immediate use."""
-#     def __init__(self, **kwargs) -> None:
-#         super().__init__(table_id="loaded-models-table", **kwargs)
+        if selected is None:
+            self.post_message(
+                self.post_action_logger_update("No model selected to load", "warn")
+            )
+            return
+
+        row_data = self.table.get_row_at(selected)
+        model_id = str(row_data[0])
+        model = None
+        for mdl in self._all_models.values():
+            assert isinstance(mdl, ModelInfo)
+            if model_id == mdl.display_name:
+                model = mdl
+
+        if model is None:
+            self.post_message(
+                self.post_action_logger_update(f"Model {model_id} not found", "err")
+            )
+            return
+
+        self.post_message(self.post_model_load(model))
 
 
 # OptionList for Context Pane and maybe Loaded Models pane

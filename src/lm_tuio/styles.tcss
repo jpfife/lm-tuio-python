@@ -411,3 +411,81 @@ KeybindSection {
     padding: 0 0 0 0;
     margin: 0 0 0 0;
 }
+
+/* ==========================================
+ * LOAD MODEL MODAL
+ * ========================================== */
+
+LoadModelModal {
+    align: center middle;
+    background: $background 60%;
+    border: none;
+    outline: none;
+    padding: 0;
+}
+
+#load-modal-dialog {
+    width: 60%;
+    max-width: 76;
+    height: auto;
+    max-height: 85%;
+    background: $surface;
+    border: thick $primary;
+    padding: 1 2;
+}
+
+#load-modal-title {
+    width: 100%;
+    text-align: center;
+    text-style: bold;
+    color: $accent;
+    margin-bottom: 1;
+    border-bottom: solid $primary-muted;
+    padding-bottom: 1;
+}
+
+#load-modal-top-bar {
+    height: 3;
+    /* align: space-between middle; */
+    margin-bottom: 1;
+}
+
+#model-type-badge {
+    content-align: left middle;
+    padding: 0 1;
+}
+
+#input-context-length {
+    width: 1fr;
+}
+
+#check-context-default {
+    width: 1fr;
+}
+
+#context-progress-bar {
+    width: 100%;
+    text-align: center;
+    margin-top: 1;
+    margin-bottom: 1;
+}
+
+#checkbox-grid {
+    layout: grid;
+    grid-size: 2;
+    grid-gutter: 1 2;
+    height: auto;
+    margin-top: 1;
+    margin-bottom: 1;
+}
+
+#load-btn-group {
+    align: center middle;
+    height: 3;
+    margin-top: 2;
+}
+
+#btn-load-submit,
+#btn-load-cancel {
+    margin: 0 1;
+}

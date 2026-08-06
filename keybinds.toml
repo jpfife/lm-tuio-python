@@ -38,6 +38,7 @@ cursor_down = { keys = [
     "j",
     "alt+n",
 ], desc = "<cursor down>", show = false }
+load_model = { keys = ["return"], desc = "<load model>", show = true }
 sort_on_name = { keys = ["n"], desc = "<sort name>", show = true }
 sort_on_size = { keys = ["s"], desc = "<sort size>", show = true }
 

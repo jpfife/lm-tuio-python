@@ -133,7 +133,7 @@ class ServerSelectionModal(
                         )
 
                 with Vertical(id="bottom-btn-group", classes="button-group"):
-                    yield Button("Cancel (q)", id="cancel-btn", variant="error")
+                    yield Button("Cancel", id="cancel-btn", variant="error")
 
             yield Footer()
 

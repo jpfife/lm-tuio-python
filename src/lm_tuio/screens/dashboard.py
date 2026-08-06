@@ -3,6 +3,8 @@
 Container for interactive and display components.
 """
 
+from typing import Any
+
 from textual import on, work
 from textual.app import ComposeResult
 from textual.containers import Horizontal
@@ -16,6 +18,7 @@ from lm_tuio.components.loaded_models import LoadedModels
 from lm_tuio.config import keymap
 from lm_tuio.screens.server_select import ServerSelectionModal
 from lm_tuio.screens.keybind_helper import KeybindsModal
+from lm_tuio.screens.load_model import LoadModelModal
 
 
 class DashboardScreen(Screen):
@@ -57,6 +60,8 @@ class DashboardScreen(Screen):
 
         self.downloadedmodels_widget: md.DownloadedModels = md.DownloadedModels(
             post_highlighted_model_callback=events.ModelSelected,
+            post_model_load_callback=events.ModelLoadRequest,
+            post_action_logger_update_callback=events.ActionLogUpdate,
             name="Downloaded Models",
             id="downloaded-models",
             classes="box",
@@ -200,11 +205,9 @@ class DashboardScreen(Screen):
             f"Unloading {count} model instance{'s' if count > 1 else ''}..."
         )
 
-        success, err = await api.unload_model_instances(
-            self.connection_widget.server_ip,
-            self.connection_widget.server_port,
-            instance_ids,
-        )
+        ip: str = self.connection_widget.server_ip
+        port: int = self.connection_widget.server_port
+        success, err = await api.unload_model_instances(ip, port, instance_ids)
 
         if not success:
             self.actionlog_widget.add_entry(f"Unload error: {err}", "error")
@@ -215,6 +218,30 @@ class DashboardScreen(Screen):
             )
 
         self.action_refresh_models()
+
+    @work(exclusive=True)
+    async def load_model_modal(self, model: md.ModelInfo) -> None:
+        """Spawn Load Model modal and send API request to LMS endpoint."""
+
+        async def _api_load_request(payload: dict[str, Any] | None):
+            if payload is None:
+                return
+
+            ip: str = self.connection_widget.server_ip
+            port: int = self.connection_widget.server_port
+            success, err = await api.load_model_instance(ip, port, payload)
+
+            if not success:
+                self.actionlog_widget.add_entry(f"Load error: {err}", "error")
+            else:
+                self.actionlog_widget.add_entry(
+                    f"Successfully loaded {model} instance",
+                    "ok",
+                )
+
+            self.action_refresh_models()
+
+        self.app.push_screen(LoadModelModal(model), callback=_api_load_request)
 
     # ======= REACTIVE WATCHERS =======
     def watch_filter_str(self, new_filter: str) -> None:
@@ -287,6 +314,37 @@ class DashboardScreen(Screen):
 
         self.app.push_screen(ServerSelectionModal(), callback=is_same_server)
 
+    # def action_load_model(self) -> None:
+    #     """Spawn load model dialog from selected Downloaded Model table."""
+    #     table = self.downloadedmodels_widget.table
+    #     selected = table.cursor_row
+    #
+    #     if selected is None:
+    #         self.post_message(
+    #             events.ActionLogUpdate("No model selected to load", "warn")
+    #         )
+    #         return
+    #
+    #     row_data = table.get_row_at(selected)
+    #     model_id = str(row_data[0])
+    #     model = None
+    #     for mdl in self.downloadedmodels_widget._all_models:
+    #         assert isinstance(mdl, md.ModelInfo)
+    #         if model_id == mdl.display_name:
+    #             model = mdl
+    #         else:
+    #             self.post_message(
+    #                 events.ActionLogUpdate(f"Model {model_id} not found", "err")
+    #             )
+    #             return
+    #
+    #     self.post_message(events.ModelLoadRequest(model))
+    #
+    #     def test(self, model: md.ModelInfo):
+    #         pass  # TODO: create callback for API request
+    #
+    #     self.app.push_screen(LoadModelModal(), callback=test)
+
     def action_refresh_models(self) -> None:
         self.fetch_load_models(
             self.connection_widget.server_ip, self.connection_widget.server_port
@@ -323,6 +381,11 @@ class DashboardScreen(Screen):
     @on(events.ModelSelected)
     def update_context_display(self, event: events.ModelSelected) -> None:
         self.contextpane_widget.update_model_context(event.model)
+
+    @on(events.ModelLoadRequest)
+    def handle_load_model(self, event: events.ModelLoadRequest) -> None:
+        if event.model:
+            self.load_model_modal(event.model)
 
     @on(Input.Submitted, "#search-bar")
     def apply_search(self) -> None:
