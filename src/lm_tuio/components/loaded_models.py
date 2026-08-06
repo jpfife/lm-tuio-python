@@ -10,8 +10,9 @@ from textual.events import DescendantBlur, DescendantFocus
 from textual.widgets import Collapsible, Label, SelectionList, Static
 from textual.widgets.selection_list import Selection
 
-from lm_tuio.models import ModelInfo, format_bytes
+from lm_tuio import events
 from lm_tuio.config import keymap
+from lm_tuio.models import ModelInfo, format_bytes
 
 
 @dataclass
@@ -206,6 +207,25 @@ class LoadedModels(Static):
                 focused.deselect_all()
             else:
                 focused.select_all()
+
+    def action_unload_selected(self) -> None:
+        """Gathers all checkboxes across all collapsible groups and fires unload."""
+        selected_ids: list[str] = []
+        for sel_list in self.query(SelectionList):
+            selected_ids.extend(sel_list.selected)
+
+        if selected_ids:
+            self.post_message(events.UnloadInstancesRequested(selected_ids))
+        else:
+            self.post_message(
+                events.ActionLogUpdate("No instances checked for unloading", "warn")
+            )
+
+    def action_unload_all(self) -> None:
+        """Sends all currently loaded model instances for unload."""
+        all_ids = list(self._instance_map.keys())
+        if all_ids:
+            self.post_message(events.UnloadInstancesRequested(all_ids))
 
     def action_select_up(self) -> None:
         if isinstance(self.app.focused, SelectionList):
