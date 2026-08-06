@@ -10,7 +10,7 @@ from textual.containers import Grid, Horizontal, Vertical, VerticalScroll
 from textual.screen import ModalScreen
 from textual.widgets import Button, Checkbox, Collapsible, Footer, Input, Label, Static
 
-from lm_tuio.models import ModelInfo, estimate_context_cache_memory
+from lm_tuio.models import ModelInfo, estimate_context_cache_memory, format_bytes
 
 
 class LoadModelModal(ModalScreen[dict[str, Any] | None]):
@@ -18,6 +18,7 @@ class LoadModelModal(ModalScreen[dict[str, Any] | None]):
 
     BINDINGS = [
         Binding("q,escape", "dismiss_modal", "<cancel>", show=True),
+        Binding("l", "submit_load_model", "<load>", show=True),
     ]
 
     current_context: reactive[int]
@@ -135,12 +136,25 @@ class LoadModelModal(ModalScreen[dict[str, Any] | None]):
 
     def on_mount(self) -> None:
         """Hide advanced LLM options completely if an embedding model is selected."""
+        self.query_one("#check-defaults").focus()
+
         if self.model_type == "embedding":
             self.query_one("#llm-advanced-section").display = False
+
+        self.query_one("#load-model-size-val", Label).update(
+            format_bytes(self.model.size_bytes)
+        )
+
+    # ======= ACTIONS =======
 
     def action_dismiss_modal(self) -> None:
         """Cancel and dismiss modal."""
         self.dismiss(None)
+
+    def action_submit_load_model(self) -> None:
+        self.handle_submit()
+
+    # ======= EVENTS =======
 
     @on(Checkbox.Changed, "#check-defaults")
     def handle_defaults_toggle(self, event: Checkbox.Changed) -> None:
@@ -166,6 +180,8 @@ class LoadModelModal(ModalScreen[dict[str, Any] | None]):
 
         self.query_one("#input-context-length", Input).value = str(new_val)
         self.query_one(ContextProgressBar).current_context = new_val
+
+        self._update_context_memory(new_val)
 
     @on(Button.Pressed, "#btn-load-cancel")
     def handle_cancel(self) -> None:
@@ -209,6 +225,21 @@ class LoadModelModal(ModalScreen[dict[str, Any] | None]):
                 payload["context_length"] = int(ctx_val)
 
         self.dismiss(payload)
+
+    def _update_context_memory(self, current: int) -> None:
+        context_bytes = estimate_context_cache_memory(self.model.size_bytes, current)
+
+        kv_mem_str: str = (
+            f"KV Q16 - {format_bytes(context_bytes + self.model.size_bytes)}\n"
+        )
+        kv_mem_str += (
+            f"KV Q8  - {format_bytes((context_bytes // 2) + self.model.size_bytes)}\n"
+        )
+        kv_mem_str += (
+            f"KV Q4  - {format_bytes((context_bytes // 4) + self.model.size_bytes)}"
+        )
+
+        self.query_one("#load-model-kv-cache-val", Label).update(kv_mem_str)
 
 
 class ContextProgressBar(Static):
