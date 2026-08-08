@@ -40,6 +40,14 @@ class ModelSelected(Message):
         self.model = model
 
 
+class ModelLoadRequest(Message):
+    """Fired when model selected for load in Downloaded Models table."""
+
+    def __init__(self, model: ModelInfo | None) -> None:
+        super().__init__()
+        self.model = model
+
+
 class UnloadInstancesRequested(Message):
     """Fired when user requests unload of one or more instances."""
 

@@ -60,12 +60,12 @@ class ContextPane(Static):
             classes="ctx-titles hidden",
         )
         self.ctx_total_memory: Label = Label(
-            "Total Memory (Est):",
+            "Total Instance(s) Size:",
             id="ctx-total-memory",
             classes="ctx-titles hidden",
         )
         self.ctx_kv_memory: Label = Label(
-            "With KV Cache Context (~):",
+            "Totals + KV (Rough Est):",
             id="ctx-kv-memory",
             classes="ctx-titles hidden",
         )
@@ -118,11 +118,10 @@ class ContextPane(Static):
             yield Horizontal(id="ctx-separator")
 
             # Model loaded instances information, bottom section
-            yield self.ctx_num_loaded_insts
-            yield self.ctx_num_loaded_insts_val
-
             with Horizontal():
                 with Vertical():
+                    yield self.ctx_num_loaded_insts
+                    yield self.ctx_num_loaded_insts_val
                     yield self.ctx_total_memory
                     yield self.ctx_total_memory_val
 
@@ -178,7 +177,7 @@ class ContextPane(Static):
 
             self.ctx_insts_table.add_row(ids_str, ctx_str)
 
-        memory_str: str = f"{format_bytes(size_bytes)} (Models)"
+        memory_str: str = f"{format_bytes(size_bytes)}"
         kv_mem_str: str = f"KV Q16 - {format_bytes(context_bytes + size_bytes)}\n"
         kv_mem_str += f"KV Q8  - {format_bytes((context_bytes // 2) + size_bytes)}\n"
         kv_mem_str += f"KV Q4  - {format_bytes((context_bytes // 4) + size_bytes)}"

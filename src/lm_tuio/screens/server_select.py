@@ -84,19 +84,19 @@ class ServerSelectionModal(
             value=f"{self.current_ip}:{self.current_port}",
             placeholder="IP:[Port]",
             id="manual-ip-input",
-            classes="server-select-input-field",
+            classes="input-field",
         )
         self.scan_widget: Input = Input(
             value=self.default_subnet,
             placeholder="Subnet (e.g., 192.168.1.0/24)",
             id="scan-input",
-            classes="server-select-input-field",
+            classes="input-field",
         )
         self.scan_port_widget: Input = Input(
             value=str(self.current_port),
             placeholder="Port (e.g., 1234)",
             id="scan-port-input",
-            classes="server-select-input-field",
+            classes="input-field",
         )
         self.input_widget.border_subtitle = "Server IP"
         self.scan_widget.border_subtitle = "Subnet"
@@ -133,7 +133,7 @@ class ServerSelectionModal(
                         )
 
                 with Vertical(id="bottom-btn-group", classes="button-group"):
-                    yield Button("Cancel (q)", id="cancel-btn", variant="error")
+                    yield Button("Cancel", id="cancel-btn", variant="error")
 
             yield Footer()
 

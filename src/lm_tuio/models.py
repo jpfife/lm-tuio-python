@@ -36,7 +36,7 @@ def estimate_context_cache_memory(file_size_bytes: int, context_size_bytes) -> i
 
     Estimated number of model layers based on base size of the model to determine
     base token cost, using 3-tier param size approach for typical local model setups
-    at +/- 4-bit quants.
+    at (+/- 1) 4-bit quants.
     Using 4K token:
     (8 KV Heads, 128 dimension, (K state + V state bytes),
     at full precision KV cache (2 bytes).
@@ -44,6 +44,8 @@ def estimate_context_cache_memory(file_size_bytes: int, context_size_bytes) -> i
     <8B, <7 GB ~ 32 layers = 131 KB / token
     <32B, <28 GB ~ 64 layers = 262 KB / token
     35-70B+, 28 GB+ ~ 80 layers = 328 KB / token
+
+    Assume 1GB per 8K context at 32 layers.
     """
     GB: int = 1024**3
     tier1_token: int = 32 * 4096
@@ -272,20 +274,48 @@ class BaseModelTable(Static):
 class DownloadedModels(BaseModelTable):
     """Widget displaying all downloaded models available on the server."""
 
-    def __init__(self, **kwargs) -> None:
+    def __init__(
+        self,
+        post_model_load_callback: Callable[[ModelInfo | None]],
+        post_action_logger_update_callback: Callable[[str, str]],
+        **kwargs,
+    ) -> None:
         super().__init__(table_id="dl-models-table", **kwargs)
+        self.post_model_load = post_model_load_callback
+        self.post_action_logger_update = post_action_logger_update_callback
 
+    @on(DataTable.RowSelected)
+    def action_load_model(self) -> None:
+        selected = self.table.cursor_row
 
-# TODO: Decide if I need to keep this class for anything
-# class LoadedModels(BaseModelTable):
-#     """Widget displaying currently loaded models for immediate use."""
-#     def __init__(self, **kwargs) -> None:
-#         super().__init__(table_id="loaded-models-table", **kwargs)
+        if selected is None:
+            self.post_message(
+                self.post_action_logger_update("No model selected to load", "warn")
+            )
+            return
+
+        row_data = self.table.get_row_at(selected)
+        model_id = str(row_data[0])
+        model = None
+        for mdl in self._all_models.values():
+            assert isinstance(mdl, ModelInfo)
+            if model_id == mdl.display_name:
+                model = mdl
+
+        if model is None:
+            self.post_message(
+                self.post_action_logger_update(f"Model {model_id} not found", "err")
+            )
+            return
+
+        self.post_message(self.post_model_load(model))
 
 
 # OptionList for Context Pane and maybe Loaded Models pane
 class ModelInstanceTable(DataTable):
     """Widget to display current running instances and associated context."""
+
+    BINDINGS = keymap.KeymapManager.get_bindings("tables")
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
