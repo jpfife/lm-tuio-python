@@ -6,9 +6,18 @@ from textual import on
 from textual.reactive import reactive
 from textual.app import ComposeResult
 from textual.binding import Binding
-from textual.containers import Grid, Horizontal, Vertical, VerticalScroll
+from textual.containers import Grid, Horizontal, Vertical, VerticalGroup, VerticalScroll
 from textual.screen import ModalScreen
-from textual.widgets import Button, Checkbox, Collapsible, Footer, Input, Label, Static
+from textual.widgets import (
+    Button,
+    Checkbox,
+    Collapsible,
+    Footer,
+    Input,
+    Label,
+    Rule,
+    Static,
+)
 
 from lm_tuio.models import ModelInfo, estimate_context_cache_memory, format_bytes
 
@@ -36,110 +45,138 @@ class LoadModelModal(ModalScreen[dict[str, Any] | None]):
     def compose(self) -> ComposeResult:
         self.default_ctx = min((32 * 1024), self.max_context)
 
-        with VerticalScroll(id="load-modal-dialog"):
-            yield Label(f"Load Model: {self.model_id}", id="load-modal-title")
+        self.standard_options_group: VerticalGroup = VerticalGroup(
+            id="standard-options-group", name="Standard Options"
+        )
+        self.standard_options_group.border_title = self.standard_options_group.name
+        self.input_context_length: Input = Input(
+            value="0",
+            placeholder=f"Max: {self.max_context}",
+            id="input-context-length",
+            type="integer",
+            disabled=True,  # Opt for LMS config by default
+            name="Context Length",
+            classes="input-field",
+        )
+        self.input_context_length.border_subtitle = self.input_context_length.name
+        self.advanced_options_group = VerticalGroup(
+            name="Advanced Options", id="advanced-options-group", disabled=True
+        )
+        self.advanced_options_group.border_title = self.advanced_options_group.name
+        self.input_eval_batch: Input = Input(
+            value="512",
+            placeholder="512",
+            id="input-eval-batch",
+            type="integer",
+            name="Eval Batch Size",
+            classes="input-field",
+        )
+        self.input_eval_batch.border_subtitle = self.input_eval_batch.name
+        self.input_num_experts: Input = Input(
+            placeholder="Leave blank if not MoE",
+            id="input-num-experts",
+            type="integer",
+            name="Num Experts",
+            classes="input-field",
+        )
+        self.input_num_experts.border_subtitle = self.input_num_experts.name
 
-            # Model type and defaults toggle
-            with Horizontal(id="load-modal-top-bar"):
-                yield Label(
-                    f"Type: [bold accent]{self.model_type.upper()}[/]",
-                    id="model-type-badge",
-                )
-                yield Checkbox(
-                    "Use Server Defaults",
-                    value=True,
-                    id="check-defaults",
-                )
+        with Vertical(id="load-modal-dialog"):
+            yield Label(
+                f"Type: [bold]{self.model_type.upper()}[/]",
+                id="model-type-badge",
+            )
+            yield Label(
+                f"Load Model: {self.model_id}",
+                id="load-modal-title",
+                classes="section-title",
+            )
 
-            # Universal params
-            with Vertical(classes="form-section", id="manual-params-section"):
-                yield Label("Context Length (Tokens):", classes="input-label")
-                with Horizontal():
-                    yield Checkbox(
-                        "Override Context Size",
-                        value=False,
-                        id="check-context-override",
-                        disabled=False,
-                    )
-                    yield Input(
-                        value="0",
-                        placeholder=f"Max: {self.max_context}",
-                        id="input-context-length",
-                        type="integer",
-                        disabled=True,  # Opt for LMS config by default
-                    )
-                with Horizontal(id="context-details-group"):
-                    with Vertical():
-                        yield Label(
-                            "Model Size:",
-                            id="load-model-size-label",
-                            classes="section-title",
+            with Horizontal():
+                with self.standard_options_group:
+                    # Defaults toggle
+                    with Horizontal(id="load-modal-defaults-section"):
+                        yield Checkbox(
+                            "Use Server Defaults",
+                            value=True,
+                            id="check-defaults",
+                            classes="checkbox",
                         )
-                        yield Label("", id="load-model-size-val")
-
-                    with Vertical():
                         yield Label(
-                            "KV Cache RAM (Estimated):",
-                            id="load-model-kv-cache-label",
-                            classes="section-title",
+                            "Uncheck to enable advanced options (LLM only)",
+                            id="load-model-defaults-explainer",
+                            shrink=True,
+                            classes="comments",
                         )
-                        yield Label("", id="load-model-kv-cache-val")
 
-                # Dynamic Context Length Progress Bar
-                yield Label("Context Override Size")
-                yield ContextProgressBar(
-                    current=self.default_ctx,
-                    max_val=self.max_context,
-                    id="context-progress-bar",
-                )
+                    # Universal params
+                    with Vertical(classes="form-section", id="manual-params-section"):
+                        # Dynamic Context Length Progress Bar
+                        yield ContextProgressBar(
+                            current=self.default_ctx,
+                            max_val=self.max_context,
+                            id="context-progress-bar",
+                        )
+                        with Horizontal(id="load-model-ctx-input-group"):
+                            yield Checkbox(
+                                "Override Context Size",
+                                value=False,
+                                id="check-context-override",
+                                disabled=False,
+                                classes="checkbox",
+                            )
+                            yield self.input_context_length
 
-            # Advanced options (Override enabled)
-            with Collapsible(
-                title="Advanced Engine Settings (LLM)",
-                id="llm-advanced-section",
-                collapsed=True,
-                disabled=True,
-            ):
-                with Grid(id="checkbox-grid"):
+                        with Horizontal(id="context-details-group"):
+                            with Vertical():
+                                yield Label(
+                                    "Model Size:",
+                                    id="load-model-size-label",
+                                    classes="section-title",
+                                )
+                                yield Label("", id="load-model-size-val")
+
+                            with Vertical():
+                                yield Label(
+                                    "KV Cache RAM (Rough Est):",
+                                    id="load-model-kv-cache-label",
+                                    classes="section-title",
+                                )
+                                yield Label("", id="load-model-kv-cache-val")
+
+                yield Rule("vertical", id="load-model-vert-rule")
+
+                # Advanced options (Override enabled)
+                with self.advanced_options_group:
                     yield Checkbox(
                         "Flash Attention",
                         value=True,
                         id="check-flash-attention",
+                        classes="checkbox",
                     )
                     yield Checkbox(
                         "Offload KV Cache to GPU",
                         value=True,
                         id="check-kv-offload",
+                        classes="checkbox",
                     )
 
-                yield Label("Eval Batch Size:", classes="input-label")
-                yield Input(
-                    value="512",
-                    placeholder="512",
-                    id="input-eval-batch",
-                    type="integer",
-                )
-
-                yield Label("Num Experts (MoE only):", classes="input-label")
-                yield Input(
-                    placeholder="Leave blank if not MoE",
-                    id="input-num-experts",
-                    type="integer",
-                )
+                    yield self.input_eval_batch
+                    yield self.input_num_experts
 
             # Buttons
             with Horizontal(id="load-btn-group"):
                 yield Button("Load Model", variant="success", id="btn-load-submit")
                 yield Button("Cancel", variant="error", id="btn-load-cancel")
 
-            yield Footer()
+            yield Footer(id="load-model-footer")
 
     def on_mount(self) -> None:
         """Hide advanced LLM options completely if an embedding model is selected."""
         self.query_one("#check-defaults").focus()
 
         if self.model_type == "embedding":
-            self.query_one("#llm-advanced-section").display = False
+            self.query_one("#check-defaults").disabled = True
 
         self.query_one("#load-model-size-val", Label).update(
             format_bytes(self.model.size_bytes)
@@ -158,9 +195,9 @@ class LoadModelModal(ModalScreen[dict[str, Any] | None]):
 
     @on(Checkbox.Changed, "#check-defaults")
     def handle_defaults_toggle(self, event: Checkbox.Changed) -> None:
-        """Enable or disable input controls based on whether override is checked."""
-        advanced_section = self.query_one("#llm-advanced-section")
-        advanced_section.disabled = not event.value
+        """Enable or disable input controls based on whether defaults is checked."""
+        advanced_section = self.query_one("#advanced-options-group", VerticalGroup)
+        advanced_section.disabled = event.value
 
     @on(Checkbox.Changed, "#check-context-override")
     def handle_context_override_toggle(self, event: Checkbox.Changed) -> None:
@@ -264,6 +301,6 @@ class ContextProgressBar(Static):
 
         max_label = f"{max_val // 1024}K" if max_val >= 1024 else str(max_val)
         return (
-            f"[dim]0[/] <[bold green]{'=' * filled}[/]"
+            f"[bold cyan]0[/] <[bold green]{'=' * filled}[/]"
             f"[dim]{'-' * empty}[/]> [bold cyan]{max_label}[/]"
         )

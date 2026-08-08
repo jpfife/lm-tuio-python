@@ -36,7 +36,7 @@ def estimate_context_cache_memory(file_size_bytes: int, context_size_bytes) -> i
 
     Estimated number of model layers based on base size of the model to determine
     base token cost, using 3-tier param size approach for typical local model setups
-    at +/- 4-bit quants.
+    at (+/- 1) 4-bit quants.
     Using 4K token:
     (8 KV Heads, 128 dimension, (K state + V state bytes),
     at full precision KV cache (2 bytes).
@@ -44,6 +44,8 @@ def estimate_context_cache_memory(file_size_bytes: int, context_size_bytes) -> i
     <8B, <7 GB ~ 32 layers = 131 KB / token
     <32B, <28 GB ~ 64 layers = 262 KB / token
     35-70B+, 28 GB+ ~ 80 layers = 328 KB / token
+
+    Assume 1GB per 8K context at 32 layers.
     """
     GB: int = 1024**3
     tier1_token: int = 32 * 4096
@@ -312,6 +314,8 @@ class DownloadedModels(BaseModelTable):
 # OptionList for Context Pane and maybe Loaded Models pane
 class ModelInstanceTable(DataTable):
     """Widget to display current running instances and associated context."""
+
+    BINDINGS = keymap.KeymapManager.get_bindings("tables")
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
