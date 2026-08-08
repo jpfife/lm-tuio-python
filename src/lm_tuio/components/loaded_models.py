@@ -56,7 +56,7 @@ class LoadedModels(Static):
 
     def compose(self) -> ComposeResult:
         self.total_model_mem: Label = Label(
-            "Total Model Memory: ", id="loaded-models-total-mem"
+            "Total Model Memory Usage: ", id="loaded-models-total-mem"
         )
         self.total_model_mem_val: Label = Label(
             "0.00 MB", id="loaded-models-total-mem-val"

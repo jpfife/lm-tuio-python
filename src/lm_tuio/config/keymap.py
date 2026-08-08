@@ -59,6 +59,7 @@ DEFAULT_KEYMAP: dict[str, dict[str, dict[str, Any]]] = {
             "desc": "<cursor down>",
             "show": False,
         },
+        "load_model": {"keys": ["return"], "desc": "<load model>", "show": True},
         "sort_on_name": {"keys": ["n"], "desc": "<sort name>", "show": True},
         "sort_on_size": {"keys": ["s"], "desc": "<sort size>", "show": True},
     },

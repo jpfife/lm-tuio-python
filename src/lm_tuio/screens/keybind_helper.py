@@ -69,7 +69,7 @@ class KeybindsModal(ModalScreen):
 
         with self.scroller:
             yield Label("Application Keybinds", id="keybind-title")
-            yield Label(self.explanation, id="keybind-explaner")
+            yield Label(self.explanation, id="keybind-explaner", classes="comments")
 
             with Grid(id="keybind-grid"):
                 for scope, actions in keymap.items():
