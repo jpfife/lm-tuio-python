@@ -191,9 +191,6 @@ class ServerSelectionModal(
             )
             return
 
-        self.notify(
-            f"Scanning network {valid_net}...", timeout=AppConfig.NOTIFY_TIMEOUT
-        )
         self.logs.append((f"Scanned {valid_net}", "info"))
         active_list.add_option("Scanning...")
         active_list.disabled = True
@@ -216,11 +213,6 @@ class ServerSelectionModal(
             active_list.add_option("No servers found.")
         elif servers:
             success_msg: str = f"Found {len(servers)} active server(s)"
-            self.notify(
-                success_msg,
-                severity="information",
-                timeout=AppConfig.NOTIFY_TIMEOUT,
-            )
             self.logs.append((success_msg, "ok"))
             options = [f"{server}:{self.current_port}" for server in servers]
             active_list.add_options(options)
@@ -294,7 +286,6 @@ class ServerSelectionModal(
 
         target: str = self.input_widget.value.strip()
         ip, port, response = self._validate_connection_input(target, is_subnet=False)
-        # self.notify(response, severity="information", timeout=AppConfig.NOTIFY_TIMEOUT)
         self.logs.append((response, "info"))
 
         if (ip and port) is not None:
@@ -330,7 +321,6 @@ class ServerSelectionModal(
         """Saves manual connect target to config.toml"""
         target: str = self.input_widget.value.strip()
         ip, port, response = self._validate_connection_input(target, is_subnet=False)
-        # self.notify(response, severity="information", timeout=AppConfig.NOTIFY_TIMEOUT)
         self.logs.append((response, "info"))
 
         if (ip and port) is not None:
@@ -386,7 +376,6 @@ class ServerSelectionModal(
         ip_net, port, response = self._validate_connection_input(
             raw_ip_str, is_subnet=True
         )
-        # self.notify(response, severity="information", timeout=AppConfig.NOTIFY_TIMEOUT)
         self.logs.append((response, "info"))
 
         if (ip_net and port) is not None:
