@@ -10,4 +10,5 @@ wheels/
 .venv
 
 # Auto-gen config files
+keybinds.toml
 config.toml
