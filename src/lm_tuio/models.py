@@ -9,7 +9,7 @@ from enum import StrEnum
 from pydantic import BaseModel
 from textual import on
 from textual.app import ComposeResult
-from textual.events import DescendantBlur, DescendantFocus
+from textual.events import DescendantBlur, DescendantFocus, Resize
 from textual.widgets import DataTable, Static
 
 from lm_tuio.config import keymap
@@ -133,6 +133,9 @@ class BaseModelTable(Static):
 
     BINDINGS = keymap.KeymapManager.get_bindings("tables")
 
+    MAX_MOD_COL_WIDTH: int = 40
+    MAX_SIZE_COL_WIDTH: int = 9
+
     class SortType(StrEnum):
         NAME = "name"
         SIZE = "size"
@@ -159,7 +162,8 @@ class BaseModelTable(Static):
         yield self.table
 
     def on_mount(self) -> None:
-        self.table.add_columns("Name", "Size")
+        self.table.add_column("Name", width=self.MAX_MOD_COL_WIDTH)
+        self.table.add_column("Size", width=self.MAX_SIZE_COL_WIDTH)
 
     def clear_model_list(self) -> None:
         self._all_models.clear()
@@ -284,6 +288,8 @@ class DownloadedModels(BaseModelTable):
         self.post_model_load = post_model_load_callback
         self.post_action_logger_update = post_action_logger_update_callback
 
+        self.COL_WIDTH_PCTS: list[float] = [0.75, 0.15]
+
     @on(DataTable.RowSelected)
     def action_load_model(self) -> None:
         selected = self.table.cursor_row
@@ -310,6 +316,19 @@ class DownloadedModels(BaseModelTable):
 
         self.post_message(self.post_model_load(model))
 
+    def on_resize(self, event: Resize) -> None:
+        """Set table column widths dynamically to fit terminal size."""
+        total_width: int = event.container_size.width
+
+        for col_key, pct in zip(self.table.columns.keys(), self.COL_WIDTH_PCTS):
+            column = self.table.columns[col_key]
+            column.auto_width = False
+            column.width = int(total_width * pct)
+
+        self.show_horizontal_scrollbar = False
+        self.refresh()
+        self.table.refresh()
+
 
 # OptionList for Context Pane and maybe Loaded Models pane
 class ModelInstanceTable(DataTable):
@@ -319,7 +338,20 @@ class ModelInstanceTable(DataTable):
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
-        self.add_column(label="Instance ID", width=32)
+        self.COL_WIDTH_PCTS: list[float] = [0.65, 0.2]
+        self.add_column(label="Instance ID")
         self.add_column(label="Context")
         self.show_horizontal_scrollbar = False
         self.cursor_type = "row"
+
+    def on_resize(self, event: Resize) -> None:
+        """Set table column widths dynamically to fit terminal size."""
+        total_width: int = event.container_size.width
+
+        for col_key, pct in zip(self.columns.keys(), self.COL_WIDTH_PCTS):
+            column = self.columns[col_key]
+            column.auto_width = False
+            column.width = int(total_width * pct)
+
+        self.show_horizontal_scrollbar = False
+        self.refresh()
