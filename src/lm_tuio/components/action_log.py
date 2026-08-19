@@ -1,11 +1,19 @@
 """Live log feed and action status widget for primary dashboard."""
 
 from datetime import datetime
+from enum import StrEnum
 from zoneinfo import ZoneInfo
 
 from textual.widgets import RichLog
 
 from lm_tuio.config import keymap
+
+
+class LogColor(StrEnum):
+    ERR = "[bold red]"
+    WARN = "[bold yellow]"
+    OK = "[bold green]"
+    INF = "[bold cyan]"
 
 
 class ActionLog(RichLog):
@@ -32,13 +40,13 @@ class ActionLog(RichLog):
 
         match severity.lower():
             case "error" | "err":
-                tag = "[bold red]ERR[/]"
+                tag = f"{LogColor.ERR}ERR[/]"
             case "warning" | "warn":
-                tag = "[bold yellow]WRN[/]"
+                tag = f"{LogColor.WARN}WRN[/]"
             case "success" | "ok":
-                tag = "[bold green]OK [/]"
+                tag = f"{LogColor.OK}OK [/]"
             case _:
-                tag = "[bold cyan]INF[/]"
+                tag = f"{LogColor.INF}INF[/]"
 
         self.history.append((timestamp, severity, message))
 
