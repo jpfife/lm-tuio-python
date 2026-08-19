@@ -6,6 +6,11 @@ from typing import Any
 from textual.binding import Binding
 import tomlkit
 
+from lm_tuio.config import paths
+
+
+KEYBIND_CONFIG: str = "keybinds.toml"
+
 DEFAULT_KEYMAP: dict[str, dict[str, dict[str, Any]]] = {
     "global": {
         "quit": {"keys": ["q", "ctrl+c"], "desc": "<quit>", "show": True},
@@ -129,7 +134,6 @@ class KeymapManager:
     """Loads and manages application keybinds from keybinds.toml."""
 
     _keymap_cache: dict[str, Any] | None = None
-    _config_path: Path = Path("keybinds.toml")
 
     @classmethod
     def load_keymap(cls) -> dict[str, Any]:
@@ -137,13 +141,15 @@ class KeymapManager:
         if cls._keymap_cache is not None:
             return cls._keymap_cache
 
-        if not cls._config_path.exists():
-            cls._write_default_file()
+        config_path = paths.get_config_path(KEYBIND_CONFIG)
+
+        if not config_path.exists():
+            cls._write_default_file(config_path)
             cls._keymap_cache = DEFAULT_KEYMAP
             return cls._keymap_cache
 
         try:
-            with open(cls._config_path, "r", encoding="utf-8") as f:
+            with open(config_path, "r", encoding="utf-8") as f:
                 parsed = tomlkit.load(f)
                 cls._keymap_cache = dict(parsed)
         except Exception:
@@ -183,7 +189,7 @@ class KeymapManager:
         return bindings
 
     @classmethod
-    def _write_default_file(cls) -> None:
+    def _write_default_file(cls, path: Path) -> None:
         """Writes the default keymap to disk if it doesn't exist."""
         try:
             doc = tomlkit.document()
@@ -193,7 +199,7 @@ class KeymapManager:
                     table[action_name] = data
                 doc[scope] = table
 
-            with open(cls._config_path, "w", encoding="utf-8") as f:
+            with open(path, "w", encoding="utf-8") as f:
                 f.write(tomlkit.dumps(doc))
         except Exception:
             pass  # TODO: Log exceptions on config write
