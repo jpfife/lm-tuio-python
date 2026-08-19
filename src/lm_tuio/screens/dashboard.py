@@ -19,6 +19,7 @@ from lm_tuio.config import keymap
 from lm_tuio.screens.keybind_helper import KeybindsModal
 from lm_tuio.screens.load_model import LoadModelModal
 from lm_tuio.screens.server_select import ServerSelectionModal
+from lm_tuio.screens.actionlog_modal import ActionLogModal
 
 
 class DashboardScreen(Screen):
@@ -119,8 +120,6 @@ class DashboardScreen(Screen):
         self.loadedmodels_widget.refresh_groups()
         self.contextpane_widget.update_model_context(None)
 
-    # ========== NAVIGATION ==========
-
     def _get_horizontal_panes(self) -> list:
         """Returns the ordered list of primary focusable widgets from left to right."""
         panes = []
@@ -135,47 +134,6 @@ class DashboardScreen(Screen):
         panes.append(self.contextpane_widget.ctx_insts_table)
 
         return panes
-
-    def action_focus_left(self) -> None:
-        """Move focus one pane to the left (ctrl+h / ctrl+left)."""
-        panes = self._get_horizontal_panes()
-        focused = self.app.focused
-
-        # Find current focus
-        current_idx = -1
-        for idx, pane in enumerate(panes):
-            if pane == focused or pane.has_focus_within:
-                current_idx = idx
-                break
-
-        if current_idx >= 0:
-            panes[(current_idx - 1) % 3].focus()
-        elif current_idx == -1:
-            self.downloadedmodels_widget.table.focus()  # Default middle table
-
-    def action_focus_right(self) -> None:
-        """Move focus one pane to the right (ctrl+l / ctrl+right)."""
-        panes = self._get_horizontal_panes()
-        focused = self.app.focused
-
-        current_idx = -1
-        for idx, pane in enumerate(panes):
-            if pane == focused or pane.has_focus_within:
-                current_idx = idx
-                break
-
-        if 0 <= current_idx <= len(panes) - 1:
-            panes[(current_idx + 1) % 3].focus()
-        elif current_idx == -1:
-            self.downloadedmodels_widget.table.focus()
-
-    def action_focus_up(self) -> None:
-        """Jump focus up to the header ActionLog (ctrl+k / ctrl+up)."""
-        self.actionlog_widget.focus()
-
-    def action_focus_down(self) -> None:
-        """Jump focus down from the header back to the main models table (ctrl+j / ctrl+down)."""
-        self.downloadedmodels_widget.table.focus()
 
     @work(exclusive=True)
     async def fetch_load_models(self, ip: str, port: int) -> None:
@@ -281,6 +239,47 @@ class DashboardScreen(Screen):
 
     # ========== ACTIONS ==========
 
+    def action_focus_left(self) -> None:
+        """Move focus one pane to the left (ctrl+h / ctrl+left)."""
+        panes = self._get_horizontal_panes()
+        focused = self.app.focused
+
+        # Find current focus
+        current_idx = -1
+        for idx, pane in enumerate(panes):
+            if pane == focused or pane.has_focus_within:
+                current_idx = idx
+                break
+
+        if current_idx >= 0:
+            panes[(current_idx - 1) % 3].focus()
+        elif current_idx == -1:
+            self.downloadedmodels_widget.table.focus()  # Default middle table
+
+    def action_focus_right(self) -> None:
+        """Move focus one pane to the right (ctrl+l / ctrl+right)."""
+        panes = self._get_horizontal_panes()
+        focused = self.app.focused
+
+        current_idx = -1
+        for idx, pane in enumerate(panes):
+            if pane == focused or pane.has_focus_within:
+                current_idx = idx
+                break
+
+        if 0 <= current_idx <= len(panes) - 1:
+            panes[(current_idx + 1) % 3].focus()
+        elif current_idx == -1:
+            self.downloadedmodels_widget.table.focus()
+
+    def action_focus_up(self) -> None:
+        """Jump focus up to the header ActionLog (ctrl+k / ctrl+up)."""
+        self.actionlog_widget.focus()
+
+    def action_focus_down(self) -> None:
+        """Jump focus down from the header back to the main models table (ctrl+j / ctrl+down)."""
+        self.downloadedmodels_widget.table.focus()
+
     def action_filter(self) -> None:
         """Default hotkey '/' to filter display lists"""
         self.main_footer.display = False
@@ -353,6 +352,11 @@ class DashboardScreen(Screen):
 
     def action_unload_all(self) -> None:
         self.loadedmodels_widget.action_unload_all()
+
+    def action_show_action_log(self) -> None:
+        """Spawn full viewer Action Log."""
+        log_history = self.actionlog_widget.history
+        self.app.push_screen(ActionLogModal(history=log_history))
 
     # ========= EVENTS ==========
 
