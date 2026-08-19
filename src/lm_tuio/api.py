@@ -27,17 +27,23 @@ api_action: dict[str, str] = {
 
 
 async def fetch_available_models(
-    ip: str, port: int, timeout: float = API_TIMEOUT
+    ip: str, port: int, api_key: str | None = None, timeout: float = API_TIMEOUT
 ) -> tuple[list[ModelInfo] | None, str | None]:
-    """
-    Calls LM Studio /api/v1/models API to list installed models, does not describe model load state
+    """Calls LM Studio /api/v1/models API to list downloaded models, does not describe model load config
+
     Returns tuple: (List of ModelInfo objects, err)
     """
     server_url: str = f"http://{ip}:{port}{api_action['models']}"
 
+    headers: dict[str, str] = {}
+    if api_key:
+        headers["Authorization"] = f"Bearer {api_key}"
+
     async with httpx.AsyncClient() as client:
         try:
-            response: httpx.Response = await client.get(server_url, timeout=timeout)
+            response: httpx.Response = await client.get(
+                server_url, headers=headers, timeout=timeout
+            )
             response.raise_for_status()
             raw_json: dict = response.json()
             validated_data: ModelListResponse = ModelListResponse.model_validate(
@@ -56,7 +62,7 @@ async def fetch_available_models(
 
 
 async def unload_model_instances(
-    ip: str, port: int, instance_ids: list[str]
+    ip: str, port: int, instance_ids: list[str], api_key: str | None = None
 ) -> tuple[bool, str | None]:
     """Send one or more model instances to be unloaded via LMS API /api/v1/unload endpoint."""
     if not instance_ids:
@@ -64,6 +70,9 @@ async def unload_model_instances(
 
     server_url: str = f"http://{ip}:{port}{api_action['unload']}"
     headers: dict = {"Content-Type": "application/json"}
+
+    if api_key:
+        headers["Authorization"] = f"Bearer {api_key}"
 
     async def _unload_single(client: httpx.AsyncClient, inst_id: str) -> None:
         payload = {"instance_id": inst_id}
@@ -86,14 +95,22 @@ async def unload_model_instances(
 
 
 async def load_model_instance(
-    ip: str, port: int, payload: dict[str, Any], timeout: float = API_TIMEOUT
+    ip: str,
+    port: int,
+    payload: dict[str, Any],
+    api_key: str | None = None,
+    timeout: float = API_TIMEOUT,
 ) -> tuple[dict[str, Any] | None, str | None]:
     """Send load request to LMS REST API and return response."""
     server_url: str = f"http://{ip}:{port}{api_action['load']}"
 
+    headers: dict[str, str] = {}
+    if api_key:
+        headers["Authorization"] = f"Bearer {api_key}"
+
     try:
         async with httpx.AsyncClient(timeout=timeout) as client:
-            resp = await client.post(server_url, json=payload)
+            resp = await client.post(server_url, headers=headers, json=payload)
 
         if resp.status_code == 200:
             return resp.json(), None
@@ -105,13 +122,21 @@ async def load_model_instance(
         return None, f"Connection failure: {err}"
 
 
-async def check_server_status(ip: str, port: int, timeout: float = API_TIMEOUT) -> bool:
+async def check_server_status(
+    ip: str, port: int, api_key: str | None = None, timeout: float = API_TIMEOUT
+) -> bool:
     """Lightweight http ping to LMS server endpoint"""
     server_url: str = f"http://{ip}:{port}{api_action['models']}"
 
+    headers: dict[str, str] = {}
+    if api_key:
+        headers["Authorization"] = f"Bearer {api_key}"
+
     async with httpx.AsyncClient() as client:
         try:
-            response: httpx.Response = await client.head(server_url, timeout=timeout)
+            response: httpx.Response = await client.head(
+                server_url, headers=headers, timeout=timeout
+            )
             return response.status_code == 200
         except Exception:
             return False
