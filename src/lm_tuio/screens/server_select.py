@@ -477,15 +477,27 @@ class ServerSelectionModal(
     @on(Button.Pressed, "#clear-cache-btn")
     def clear_ip_cache(self) -> None:
         """Clears IP cache list and updates saved config."""
+
         app_config = getattr(self.app, "config", None)
         if isinstance(app_config, AppConfig):
+            # Preserve default endpoint before clear
+            default_endpoint: str = f"{app_config.target}:{app_config.port}"
+            purge_endpoints: list[str] = [
+                ip for ip in app_config.cached_ips if ip != default_endpoint
+            ]
+
+            # Clear endpoints from SECRETS_FILE
+            if purge_endpoints:
+                secrets.SecretsManager.remove_endpoints(purge_endpoints)
+
             app_config.cached_ips.clear()
             app_config.save()
 
             cache_list = self.query_one("#cached-ips-list", OptionList)
             cache_list.clear_options()
-            self.notify("Cache cleared.", severity="information")
-            self.logs.append(("Cache cleared", "info"))
+            message: str = "Cache and keys cleared - preserved defaults"
+            self.notify(message, severity="information")
+            self.logs.append((message, "info"))
 
     @on(Button.Pressed, "#cancel-btn")
     def cancel_modal(self) -> None:
