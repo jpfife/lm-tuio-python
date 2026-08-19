@@ -10,6 +10,7 @@ from textual.reactive import reactive
 from textual.widgets import Static
 
 from lm_tuio.api import check_server_status
+from lm_tuio.config import secrets
 from lm_tuio.config.settings import AppConfig
 from lm_tuio.events import ActionLogUpdate, ServerConnected
 
@@ -63,6 +64,9 @@ class ConnectionStatus(Static):
             self.server_ip = default_config.target
             self.server_port = default_config.port
 
+        self.api_key = secrets.SecretsManager.get_api_key(
+            self.server_ip, self.server_port
+        )
         self.update_connection_status()
         self.set_interval(PING_INTERVAL, self.update_connection_status)
 
@@ -77,7 +81,7 @@ class ConnectionStatus(Static):
     async def update_connection_status(self) -> None:
         """Check server API status and update reactive state"""
         is_connected: bool = await check_server_status(
-            self.server_ip, self.server_port, PING_INTERVAL
+            self.server_ip, self.server_port, self.api_key, timeout=PING_INTERVAL
         )
         if is_connected:
             # Check if previously connected
