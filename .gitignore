@@ -13,3 +13,4 @@ wheels/
 keybinds.toml
 config.toml
 secrets.toml
+*.bak
