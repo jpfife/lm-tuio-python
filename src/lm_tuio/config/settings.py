@@ -1,7 +1,7 @@
 """Configuration parser for managing app data and state.
 
 Uses hierarchical loading strategy for parsing Defaults -> config.toml -> CLI args.
-Update _build_toml_config and _parse_toml helper methods when adding tables to config.toml !!
+Config file pulling from working directory if present, otherwise XDG_CONFIG_HOME.
 """
 
 import argparse
@@ -13,12 +13,17 @@ from typing import Any
 
 import tomlkit
 
+from lm_tuio.config import paths
+
+
+SETTINGS_CONFIG: str = "config.toml"
+
 
 @dataclass
 class AppConfig:
     """Master app configuration dataclass."""
 
-    # Map for config.toml
+    # Table map for config.toml
     # SERVER
     target: str = field(
         default="127.0.0.1", metadata={"table": "server", "key": "default_ip"}
@@ -36,32 +41,42 @@ class AppConfig:
 
     # APP
     NOTIFY_TIMEOUT: float = field(
-        default=2.0, metadata={"table": "app", "key": "notify_timeout"}
+        default=4.0, metadata={"table": "app", "key": "notify_timeout"}
     )
     MAX_CACHED_IPS: int = field(
         default=10, metadata={"table": "app", "key": "max_cached_ips"}
     )
+    config_path: str = field(
+        default="~/.config/lm-tuio",
+        metadata={"table": "app", "key": "config_path"},
+    )
+    # config_path: Path = field(
+    #     default=Path("~/.config/lm-tuio"),
+    #     metadata={"table": "app", "key": "config_path"},
+    # )
 
     # Internal vars, no TOML map
     is_network: bool = False
-    config_path: Path = Path("config.toml")
+    # config_path: Path = Path("~/.config/lm-tuio")
 
     # NOTE: Using tomlkit to preserve structure, don't use tomllib functions for saving
     def save(self) -> str:
         """Saves current state data to config_path, returns response string"""
+
+        config_path: Path = paths.get_config_path(SETTINGS_CONFIG)
+
         try:
-            if self.config_path.exists():
-                with open(self.config_path, "r", encoding="utf-8") as file:
+            if config_path.exists():
+                with open(config_path, "r", encoding="utf-8") as file:
                     doc = tomlkit.parse(file.read())
             else:
                 doc = tomlkit.document()
 
             self._build_toml_config(doc)
 
-            with open(self.config_path, "w", encoding="utf-8") as file:
+            with open(config_path, "w", encoding="utf-8") as file:
                 file.write(tomlkit.dumps(doc))
-
-            return f"Saved config to {self.config_path}"
+            return f"Saved config to {config_path}"
 
         except Exception as err:
             return f"Failed to save config: {err}"
@@ -72,7 +87,9 @@ class AppConfig:
     ) -> tuple["AppConfig | None", str | None]:
         """Method for loading configs into AppConfig instance."""
 
-        conf_path: Path = Path(custom_path) if custom_path else cls.config_path
+        conf_path: Path = (
+            Path(custom_path) if custom_path else paths.get_config_path(SETTINGS_CONFIG)
+        )
 
         # Defaults
         config_data: dict[str, Any] = {}
@@ -85,13 +102,16 @@ class AppConfig:
         logs: list[str] = []
 
         # Override defaults with config.toml
+        missing_config: bool
         if conf_path.exists():
+            missing_config = False
             toml_updates, toml_err = cls._parse_toml(conf_path)
             config_data.update(toml_updates)
             if toml_err:
                 logs.append(toml_err)
         else:
-            logs.append("Warning: config.toml not found.")
+            missing_config = True
+            logs.append("config.toml not found.")
 
         # CLI args override defaults and config.toml
         # Parser handles err independently, only returns dict
@@ -113,15 +133,18 @@ class AppConfig:
         assert isinstance(valid_network, str)
         config_data["is_network"] = "/32" not in valid_target
         config_data["scan_subnet"] = valid_network
-        config_data["config_path"] = conf_path
-
-        # Compile non-fatal logs
-        status_msg = "\n".join(logs) if logs else None
+        config_data["config_path"] = str(conf_path)
 
         # NOTE: Add class attributes separate from dataclass fields
         config = cls(
             **config_data,
         )
+
+        # Write config out if file was missing
+        if missing_config:
+            logs.append(cls.save(config))
+
+        status_msg = "\n".join(logs) if logs else None
 
         return config, status_msg
 
@@ -195,8 +218,8 @@ class AppConfig:
 
 
 def validate_ip_net(target: str) -> tuple[str | None, str | None]:
-    """
-    Validates passed IP or subnet.
+    """Validates passed IP or subnet.
+
     Returns (valid_target_string, err)
         Success: err = None
         Fail: valid_target_string = None

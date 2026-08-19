@@ -7,6 +7,7 @@ Spawns TUI if script flags not passed.
 from textual.app import App
 
 from lm_tuio.config.settings import AppConfig
+from lm_tuio.events import ActionLogUpdate
 from lm_tuio.screens.dashboard import DashboardScreen
 
 
@@ -19,14 +20,15 @@ class LMTuioApp(App):
         self.config = loaded_config if loaded_config else AppConfig()
 
         if err:
-            self.notify(
-                f"Warning: Error occurred while loading configuration: {err}",
-                severity="warning",
-                timeout=AppConfig.NOTIFY_TIMEOUT,
-            )
+            logs, ntfy = err, "warn"
+        else:
+            logs, ntfy = "Configuration loaded successfully", "ok"
 
         dashboard: DashboardScreen = DashboardScreen()
         self.push_screen(dashboard)
+
+        # Push logs to ActionLog
+        dashboard.update_action_log(event=ActionLogUpdate(logs, ntfy))
 
 
 def main():
