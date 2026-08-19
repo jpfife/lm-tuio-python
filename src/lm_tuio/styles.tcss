@@ -298,7 +298,7 @@ ServerSelectionModal {
 }
 
 #modal-container {
-    width: 45%;
+    width: 55%;
     height: 75%;
     background: $surface;
     border: thick $primary;
@@ -333,7 +333,7 @@ ServerSelectionModal {
 
 #main-action-area {
     width: 55%;
-    padding: 0 1 -1 3;
+    padding: 0 1 -1 4;
 }
 
 #server-section {
@@ -343,6 +343,10 @@ ServerSelectionModal {
 #scan-section {
     height: 1fr;
     padding-top: 1;
+}
+
+.input-group {
+    align: center middle;
 }
 
 #connect-btn,

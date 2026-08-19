@@ -89,7 +89,7 @@ class ServerSelectionModal(
         self.api_key_widget: Input = Input(
             placeholder="API Key (Optional)",
             password=True,
-            id="api_key_input",
+            id="api-key-input",
             classes="input-field",
         )
         self.scan_widget: Input = Input(
@@ -291,6 +291,7 @@ class ServerSelectionModal(
     @on(OptionList.OptionSelected, "#cached-ips-list")
     @on(OptionList.OptionSelected, "#active-servers-list")
     @on(Input.Submitted, "#manual-ip-input")
+    @on(Input.Submitted, "#api-key-input")
     @on(Button.Pressed, "#connect-btn")
     def connect_to_new_server(self) -> None:
         """Parses and validates manual input; updates IP cache on submission."""
