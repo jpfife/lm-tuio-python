@@ -11,8 +11,8 @@ from textual.containers import Horizontal, Vertical
 from textual.screen import ModalScreen
 from textual.widgets import Button, Footer, Input, Label, OptionList
 
-from lm_tuio.config.settings import AppConfig, validate_ip_net
 from lm_tuio.config import keymap
+from lm_tuio.config.settings import AppConfig, validate_ip_net
 from lm_tuio.events import ServerEndpointUpdated
 from lm_tuio.scanner import scan_targets
 
@@ -86,6 +86,12 @@ class ServerSelectionModal(
             id="manual-ip-input",
             classes="input-field",
         )
+        self.api_key_widget: Input = Input(
+            placeholder="API Key (Optional)",
+            password=True,
+            id="api_key_input",
+            classes="input-field",
+        )
         self.scan_widget: Input = Input(
             value=self.default_subnet,
             placeholder="Subnet (e.g., 192.168.1.0/24)",
@@ -99,6 +105,7 @@ class ServerSelectionModal(
             classes="input-field",
         )
         self.input_widget.border_subtitle = "Server IP"
+        self.api_key_widget.border_subtitle = "API Key"
         self.scan_widget.border_subtitle = "Subnet"
         self.scan_port_widget.border_subtitle = "Port"
 
@@ -116,6 +123,7 @@ class ServerSelectionModal(
                 with Vertical(id="server-section"):
                     yield Label("Connect to Server", classes="section-title")
                     yield self.input_widget
+                    yield self.api_key_widget
                     with Horizontal(classes="input-group"):
                         yield Button("Connect", id="connect-btn", variant="primary")
                         yield Button(
