@@ -27,18 +27,19 @@ DEFAULT_KEYMAP: dict[str, dict[str, dict[str, Any]]] = {
             "desc": "<test connection>",
             "show": False,
         },
+        "unload_all": {"keys": ["U"], "desc": "<unload all>", "show": True},
         "show_keybinds": {
             "keys": ["?"],
             "desc": "<hotkeys>",
             "show": True,
         },
         "focus_left": {
-            "keys": ["ctrl+h", "ctrl+left", "alt+h"],
+            "keys": ["ctrl+h", "left", "ctrl+left", "alt+h"],
             "desc": "<focus pane left>",
             "show": False,
         },
         "focus_right": {
-            "keys": ["ctrl+l", "ctrl+right", "alt+l"],
+            "keys": ["ctrl+l", "right", "ctrl+right", "alt+l"],
             "desc": "<focus pane right>",
             "show": False,
         },
@@ -74,7 +75,6 @@ DEFAULT_KEYMAP: dict[str, dict[str, dict[str, Any]]] = {
             "desc": "<unload selected>",
             "show": True,
         },
-        "unload_all": {"keys": ["U"], "desc": "<unload all>", "show": True},
         "select_model": {"keys": ["space"], "desc": "<select model>", "show": False},
         "toggle_group": {
             "keys": ["x"],
