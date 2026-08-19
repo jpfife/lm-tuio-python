@@ -104,3 +104,32 @@ class SecretsManager:
             file.write(tomlkit.dumps(doc))
 
         cls._secrets_cache = dict(doc)
+
+    @classmethod
+    def remove_endpoints(cls, endpoints: list[str]) -> None:
+        """Removes the specified endpoints from secrets.toml."""
+
+        secrets_path = paths.get_config_path(SECRETS_FILE)
+        if not secrets_path.exists():
+            return
+
+        try:
+            with open(secrets_path, "r", encoding=ENCODING) as file:
+                doc = tomlkit.load(file)
+        except Exception:
+            return
+
+        servers_table = doc.get(SERVERS_TABLE)
+        if not servers_table:
+            return
+
+        changed = False
+        for endpoint in endpoints:
+            if endpoint in servers_table:
+                del servers_table[endpoint]
+                changed = True
+
+        if changed:
+            with open(secrets_path, "w", encoding=ENCODING) as file:
+                file.write(tomlkit.dumps(doc))
+            cls._secrets_cache = dict(doc)
