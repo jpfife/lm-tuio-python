@@ -45,6 +45,7 @@ class ConnectionStatus(Static):
     status: reactive[str] = reactive(Connection.YELLOW)
     server_ip: reactive[str] = reactive("192.168.1.1")
     server_port: reactive[int] = reactive(1234)
+    api_key: str = ""
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

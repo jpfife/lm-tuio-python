@@ -11,7 +11,7 @@ from textual.containers import Horizontal, Vertical
 from textual.screen import ModalScreen
 from textual.widgets import Button, Footer, Input, Label, OptionList
 
-from lm_tuio.config import keymap
+from lm_tuio.config import keymap, secrets
 from lm_tuio.config.settings import AppConfig, validate_ip_net
 from lm_tuio.events import ServerEndpointUpdated
 from lm_tuio.scanner import scan_targets
@@ -19,7 +19,7 @@ from lm_tuio.scanner import scan_targets
 
 class ServerSelectionModal(
     ModalScreen[
-        tuple[str, int, list[tuple[str, str]]] | tuple[None, list[tuple[str, str]]]
+        tuple[str, int, str, list[tuple[str, str]]] | tuple[None, list[tuple[str, str]]]
     ]
 ):
     """Modal to select, scan, and set active LMS API endpoints.
@@ -293,12 +293,14 @@ class ServerSelectionModal(
         """Parses and validates manual input; updates IP cache on submission."""
 
         target: str = self.input_widget.value.strip()
+        api_key: str = self.api_key_widget.value.strip()
         ip, port, response = self._validate_connection_input(target, is_subnet=False)
         self.logs.append((response, "info"))
 
         if (ip and port) is not None:
             assert isinstance(ip, str)
             assert isinstance(port, int)
+            secrets.SecretsManager.save_api_key(ip, port, api_key)
             self.post_message(ServerEndpointUpdated(ip, port))
 
             endpoint_str: str = f"{ip}:{port}"
@@ -306,7 +308,7 @@ class ServerSelectionModal(
             app_config = getattr(self.app, "config", None)
             if isinstance(app_config, AppConfig):
                 if endpoint_str in app_config.cached_ips:
-                    self.dismiss((ip, port, self.logs))
+                    self.dismiss((ip, port, api_key, self.logs))
                     return
                 app_config.cached_ips.insert(0, endpoint_str)
                 app_config.cached_ips = app_config.cached_ips[
@@ -314,7 +316,7 @@ class ServerSelectionModal(
                 ]
                 app_config.save()
 
-            self.dismiss((ip, port, self.logs))
+            self.dismiss((ip, port, api_key, self.logs))
         else:
             err_msg = "Error validating network enpoint."
             self.notify(
@@ -328,12 +330,14 @@ class ServerSelectionModal(
     def set_default_connection(self) -> None:
         """Saves manual connect target to config.toml"""
         target: str = self.input_widget.value.strip()
+        api_key: str = self.api_key_widget.value.strip()
         ip, port, response = self._validate_connection_input(target, is_subnet=False)
         self.logs.append((response, "info"))
 
         if (ip and port) is not None:
             assert isinstance(ip, str)
             assert isinstance(port, int)
+            secrets.SecretsManager.save_api_key(ip, port, api_key)
 
         else:
             err_msg: str = "Error validating network enpoint."
@@ -424,21 +428,47 @@ class ServerSelectionModal(
         self.notify(success_msg)
         self.logs.append((success_msg, "ok"))
 
+    def _get_cached_endpoint(
+        self, event: OptionList.OptionHighlighted
+    ) -> tuple[str, str]:
+        """Return cached endpoint/API key for Server Connection input fields auto-population."""
+
+        # Get server field value
+        selected_endpoint: str = str(event.option.prompt)
+
+        # Get API Key field value
+        ip, port, _ = self._validate_connection_input(
+            selected_endpoint, is_subnet=False
+        )
+        key: str = ""
+        if ip and port:
+            key = secrets.SecretsManager.get_api_key(
+                ip, port
+            )  # Returns empty str if None
+
+        return selected_endpoint, key
+
     @on(OptionList.OptionHighlighted, "#active-servers-list")
     def select_scanned_server(self, event: OptionList.OptionHighlighted) -> None:
-        """Copies currently selected server into Server Connection input field."""
+        """Copy currently selected server and API key into Server Connection input fields."""
+
         if event.option_list.disabled:
             return
-        selected_endpoint: str = str(event.option.prompt)
-        self.input_widget.value = selected_endpoint
+
+        endpoint, key = self._get_cached_endpoint(event)
+        self.input_widget.value = endpoint
+        self.api_key_widget.value = key
 
     @on(OptionList.OptionHighlighted, "#cached-ips-list")
     def select_cached_server(self, event: OptionList.OptionHighlighted) -> None:
-        """Copies currently selected cached server into Server Connection input field."""
+        """Copy currently selected cached server and API key into Server Connection input fields."""
+
         if event.option_list.disabled:
             return
-        selected_endpoint: str = str(event.option.prompt)
-        self.input_widget.value = selected_endpoint
+
+        endpoint, key = self._get_cached_endpoint(event)
+        self.input_widget.value = endpoint
+        self.api_key_widget.value = key
 
     @on(Button.Pressed, "#clear-cache-btn")
     def clear_ip_cache(self) -> None:
