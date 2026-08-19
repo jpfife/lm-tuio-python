@@ -50,10 +50,6 @@ class AppConfig:
         default="~/.config/lm-tuio",
         metadata={"table": "app", "key": "config_path"},
     )
-    # config_path: Path = field(
-    #     default=Path("~/.config/lm-tuio"),
-    #     metadata={"table": "app", "key": "config_path"},
-    # )
 
     # Internal vars, no TOML map
     is_network: bool = False
