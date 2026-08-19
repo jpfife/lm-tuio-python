@@ -14,7 +14,6 @@ from textual.widgets import Footer, Input, Label
 
 from lm_tuio import api, events, models as md
 from lm_tuio.components import ActionLog, ConnectionStatus, ContextPane, Title
-from lm_tuio.components import loaded_models
 from lm_tuio.components.loaded_models import LoadedModels
 from lm_tuio.config import keymap
 from lm_tuio.screens.keybind_helper import KeybindsModal
@@ -341,6 +340,9 @@ class DashboardScreen(Screen):
     def action_show_keybinds(self) -> None:
         """Open keybinds help screen."""
         self.app.push_screen(KeybindsModal())
+
+    def action_unload_all(self) -> None:
+        self.loadedmodels_widget.action_unload_all()
 
     # ========= EVENTS ==========
 
