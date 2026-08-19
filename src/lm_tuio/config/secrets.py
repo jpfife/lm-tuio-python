@@ -61,7 +61,7 @@ class SecretsManager:
         return cls._secrets_cache
 
     @classmethod
-    def get_api_key(cls, ip: str, port: int) -> str | None:
+    def get_api_key(cls, ip: str, port: int) -> str:
         """Retrieve API key for specific endpoint [IP:Port]."""
 
         secrets: dict[str, Any] = cls.load_secrets()
@@ -69,7 +69,7 @@ class SecretsManager:
 
         servers_table: dict = secrets.get(SERVERS_TABLE, {})
         server_data: dict = servers_table.get(endpoint, {})
-        return server_data.get("api_key")
+        return server_data.get("api_key") or ""
 
     @classmethod
     def save_api_key(cls, ip: str, port: int, api_key: str) -> None:
