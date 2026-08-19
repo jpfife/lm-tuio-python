@@ -63,7 +63,7 @@ Button {
 .input-field {
     width: auto;
     min-width: 32;
-    margin: 0 0 1 0;
+    margin: 0 0 0 0;
     height: 3;
     border: round $secondary 80%;
     border-subtitle-align: right;
@@ -298,7 +298,7 @@ ServerSelectionModal {
 }
 
 #modal-container {
-    width: 45%;
+    width: 55%;
     height: 75%;
     background: $surface;
     border: thick $primary;
@@ -333,19 +333,27 @@ ServerSelectionModal {
 
 #main-action-area {
     width: 55%;
-    padding: 2 1 -1 3;
+    padding: 0 1 -1 4;
 }
 
-#server-section,
+#server-section {
+    height: 1fr;
+}
+
 #scan-section {
     height: 1fr;
+    padding-top: 1;
+}
+
+.input-group {
+    align: center middle;
 }
 
 #connect-btn,
 #default-connect-btn,
 #scan-btn,
 #default-network-btn {
-    margin: 0 1 1 0;
+    margin: 1 1 1 0;
 }
 
 #cancel-btn,

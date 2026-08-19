@@ -182,7 +182,9 @@ class DashboardScreen(Screen):
         """Fetch models from LMS API endpoint and populate UI"""
         self.downloadedmodels_widget.clear_model_list()
         self.downloadedmodels_widget.refresh_table()
-        models, err = await api.fetch_available_models(ip, port)
+
+        key: str = self.connection_widget.api_key
+        models, err = await api.fetch_available_models(ip, port, api_key=key)
 
         if err:
             self.actionlog_widget.add_entry(f"Failed to fetch models: {err}", "error")
@@ -208,7 +210,10 @@ class DashboardScreen(Screen):
         self.loadedmodels_widget.loading = True
         ip: str = self.connection_widget.server_ip
         port: int = self.connection_widget.server_port
-        success, err = await api.unload_model_instances(ip, port, instance_ids)
+        key: str = self.connection_widget.api_key
+        success, err = await api.unload_model_instances(
+            ip, port, instance_ids, api_key=key
+        )
         self.loadedmodels_widget.loading = False
 
         if not success:
@@ -241,7 +246,8 @@ class DashboardScreen(Screen):
         self.loadedmodels_widget.loading = True
         ip: str = self.connection_widget.server_ip
         port: int = self.connection_widget.server_port
-        success, err = await api.load_model_instance(ip, port, payload)
+        key: str = self.connection_widget.api_key
+        success, err = await api.load_model_instance(ip, port, payload, api_key=key)
         self.loadedmodels_widget.loading = False
 
         if not success:
@@ -296,28 +302,31 @@ class DashboardScreen(Screen):
 
         # Track if endpoint actually changes
         def is_same_server(
-            result: tuple[str, int, list[tuple[str, str]]]
+            result: tuple[str, int, str, list[tuple[str, str]]]
             | tuple[None, list[tuple[str, str]]],
         ) -> None:
             """Returns result of Server Selection modal and rebuilds logs to ActionLog.
 
-            result = (IP, Port, Logs) | (None, Logs)
+            result = (IP, Port, API Key, Logs) | (None, Logs)
             """
 
             if result[0] is None and isinstance(result[1], list):
                 for log in result[1]:
+                    # log[0] = msg, log[1] = severity
                     self.post_message(events.ActionLogUpdate(log[0], log[1]))
                 return
 
             assert (
-                len(result) == 3
+                len(result) == 4
                 and isinstance(result[0], str)
                 and isinstance(result[1], int)
-                and isinstance(result[2], list)
+                and isinstance(result[2], str)
+                and isinstance(result[3], list)
             )
 
-            ip, port, logs = result
+            ip, port, api_key, logs = result
             if ip and port:
+                self.connection_widget.api_key = api_key
                 self.connection_widget.apply_new_server((ip, port))
                 self.post_message(events.ServerEndpointUpdated(ip, port))
 
@@ -328,7 +337,8 @@ class DashboardScreen(Screen):
 
     def action_refresh_models(self) -> None:
         self.fetch_load_models(
-            self.connection_widget.server_ip, self.connection_widget.server_port
+            self.connection_widget.server_ip,
+            self.connection_widget.server_port,
         )
 
     def action_retry_connection(self) -> None:
