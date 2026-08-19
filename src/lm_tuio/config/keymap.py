@@ -28,6 +28,7 @@ DEFAULT_KEYMAP: dict[str, dict[str, dict[str, Any]]] = {
             "show": False,
         },
         "unload_all": {"keys": ["U"], "desc": "<unload all>", "show": True},
+        "show_action_log": {"keys": ["L"], "desc": "<log viewer>", "show": True},
         "show_keybinds": {
             "keys": ["?"],
             "desc": "<hotkeys>",

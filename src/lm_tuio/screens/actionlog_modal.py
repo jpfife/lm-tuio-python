@@ -12,7 +12,7 @@ from lm_tuio.config import keymap
 class ActionLogModal(ModalScreen[None]):
     """A larger, scrollable view of the ActionLog with clipboard support."""
 
-    BINDINGS = keymap.KeymapManager.get_keybinds("action_log_viewer")
+    BINDINGS = keymap.KeymapManager.get_bindings("action_log_viewer")
 
     def __init__(self, history: list[tuple[str, str, str]], *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
@@ -27,7 +27,7 @@ class ActionLogModal(ModalScreen[None]):
             )
             yield self.log_viewer
 
-        yield Footer()
+            yield Footer()
 
     def on_mount(self) -> None:
         """Pre-populate log viewer with the existing dashboard history."""

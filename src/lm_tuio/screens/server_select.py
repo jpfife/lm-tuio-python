@@ -223,7 +223,9 @@ class ServerSelectionModal(
             self.logs.append((scan_err, "warn"))
             active_list.add_option("No servers found.")
         elif servers:
-            success_msg: str = f"Found {len(servers)} active server(s)"
+            success_msg: str = (
+                f"Found {len(servers)} active server{'s' if len(servers) > 1 else ''}"
+            )
             self.logs.append((success_msg, "ok"))
             options = [f"{server}:{self.current_port}" for server in servers]
             active_list.add_options(options)
