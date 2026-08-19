@@ -534,3 +534,39 @@ LoadModelModal {
 #btn-load-cancel {
     margin: 0 1;
 }
+
+/* ==========================================
+ * ACTION LOG MODAL
+ * ========================================== */
+
+ActionLogModal {
+    align: center middle;
+    background: $background 60%;
+    border: none;
+    outline: none;
+    padding: 0;
+}
+
+#action-log-modal-dialog {
+    width: 80%;
+    height: 85%;
+    background: $surface;
+    border: thick $primary;
+    padding: 1 2 0 2;
+}
+
+#action-log-modal-title {
+    width: 100%;
+    text-align: center;
+    text-style: bold;
+    color: $accent;
+    margin-bottom: 1;
+    border-bottom: solid $primary-muted;
+    padding-bottom: 1;
+}
+
+#action-log-viewer {
+    height: 1fr;
+    background: $surface-darken-1;
+    padding: 1;
+}
