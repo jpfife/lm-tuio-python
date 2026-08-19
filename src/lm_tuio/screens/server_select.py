@@ -155,6 +155,9 @@ class ServerSelectionModal(
         if isinstance(app_config, AppConfig) and app_config.cached_ips:
             self.cache_list.add_options(app_config.cached_ips)
 
+        self.api_key_widget.value = secrets.SecretsManager.get_api_key(
+            self.current_ip, self.current_port
+        )
         self.exectute_network_scan(self.default_subnet, self.current_port)
 
     @work(exclusive=True)

@@ -210,7 +210,10 @@ class DashboardScreen(Screen):
         self.loadedmodels_widget.loading = True
         ip: str = self.connection_widget.server_ip
         port: int = self.connection_widget.server_port
-        success, err = await api.unload_model_instances(ip, port, instance_ids)
+        key: str = self.connection_widget.api_key
+        success, err = await api.unload_model_instances(
+            ip, port, instance_ids, api_key=key
+        )
         self.loadedmodels_widget.loading = False
 
         if not success:
@@ -243,7 +246,8 @@ class DashboardScreen(Screen):
         self.loadedmodels_widget.loading = True
         ip: str = self.connection_widget.server_ip
         port: int = self.connection_widget.server_port
-        success, err = await api.load_model_instance(ip, port, payload)
+        key: str = self.connection_widget.api_key
+        success, err = await api.load_model_instance(ip, port, payload, api_key=key)
         self.loadedmodels_widget.loading = False
 
         if not success:
@@ -322,8 +326,8 @@ class DashboardScreen(Screen):
 
             ip, port, api_key, logs = result
             if ip and port:
-                self.connection_widget.apply_new_server((ip, port))
                 self.connection_widget.api_key = api_key
+                self.connection_widget.apply_new_server((ip, port))
                 self.post_message(events.ServerEndpointUpdated(ip, port))
 
             for log in logs:
@@ -335,7 +339,6 @@ class DashboardScreen(Screen):
         self.fetch_load_models(
             self.connection_widget.server_ip,
             self.connection_widget.server_port,
-            self.connection_widget.api_key,
         )
 
     def action_retry_connection(self) -> None:

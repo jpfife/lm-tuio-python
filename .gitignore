@@ -12,3 +12,4 @@ wheels/
 # Auto-gen config files
 keybinds.toml
 config.toml
+secrets.toml
