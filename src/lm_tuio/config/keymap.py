@@ -103,8 +103,28 @@ DEFAULT_KEYMAP: dict[str, dict[str, dict[str, Any]]] = {
             "desc": "<scroll down>",
             "show": False,
         },
-        "sort_on_name": {"keys": ["n"], "desc": "<sort name>", "show": True},
-        "sort_on_size": {"keys": ["s"], "desc": "<sort size>", "show": True},
+    },
+    "action_log_viewer": {
+        "quit": {
+            "keys": ["q", "escape"],
+            "desc": "<close>",
+            "show": True,
+        },
+        "copy_to_clipboard": {
+            "keys": ["c", "y"],
+            "desc": "<copy to clipboard>",
+            "show": True,
+        },
+        "scroll_up": {
+            "keys": ["up", "k", "alt+p"],
+            "desc": "<scroll up>",
+            "show": False,
+        },
+        "scroll_down": {
+            "keys": ["down", "j", "alt+n"],
+            "desc": "<scroll down>",
+            "show": False,
+        },
     },
     "server_select": {
         "quit": {
