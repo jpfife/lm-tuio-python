@@ -24,6 +24,7 @@ from lm_tuio.screens.server_select import ServerSelectionModal
 
 
 DL_CHECK_INTVL: float = 2.0
+MAX_NUM_DL_STATUS_ERROR = 5
 
 
 class DashboardScreen(Screen):
@@ -227,6 +228,53 @@ class DashboardScreen(Screen):
 
         self.action_refresh_models()
 
+    async def _get_dl_progress(
+        self, ip: str, port: int, key: str, job_id: str, target: str
+    ) -> None:
+        """Polls API endpoint for model download status updates."""
+
+        import asyncio
+
+        is_downloading: bool = True
+        error_count: int = 0
+        while is_downloading:
+            await asyncio.sleep(DL_CHECK_INTVL)
+
+            status_data, poll_err = await api.check_download_progress(
+                ip, port, job_id, api_key=key
+            )
+
+            if poll_err or not status_data:
+                self.actionlog_widget.add_entry(
+                    f"Error checking status: {poll_err}", "warn"
+                )
+                error_count += 1
+                if error_count > MAX_NUM_DL_STATUS_ERROR:
+                    break
+                else:
+                    continue
+
+            is_downloading = True
+            status = status_data.get("status")
+            dl_bytes = status_data.get("downloaded_bytes", 0)
+            total_bytes = status_data.get("total_size_bytes", 0)
+
+            # Calculate percentage
+            if total_bytes > 0:
+                pct = (dl_bytes / total_bytes) * 100
+                self.dl_progress_bar.progress = pct
+
+            # Check termination states
+            # If status == "downloading" or "paused", continue loop
+            if status == "completed":
+                self.actionlog_widget.add_entry(
+                    f"Successfully downloaded {target}", "ok"
+                )
+                break
+            elif status == "failed":
+                self.actionlog_widget.add_entry(f"Download failed for {target}", "err")
+                break
+
     @work(exclusive=True)
     async def manage_model_download(self, target: str) -> None:
         """Triggers model download and polls status to update Dashboard progress bar."""
@@ -244,12 +292,18 @@ class DashboardScreen(Screen):
             self.actionlog_widget.add_entry(f"Download failed to start: {err}", "error")
             return
 
-        # Check for already downloaded
+        # Check for existing download / download in progress
         if initial_status == "already_downloaded":
             self.actionlog_widget.add_entry(
                 f"Model {target} is already downloaded.", "success"
             )
             self.action_refresh_models()
+            return
+        elif initial_status == "downloading":
+            self.actionlog_widget.add_entry(
+                f"Download still in progress. Aborting new download", "warn"
+            )
+            # TODO: Implement progress bar latch-on to current download process
             return
 
         if not job_id:
@@ -261,41 +315,7 @@ class DashboardScreen(Screen):
         self.dl_progress_bar.remove_class("hidden")
         self.dl_progress_bar.progress = 0.0
 
-        import asyncio
-
-        while True:
-            # self.app.set_timer(DL_CHECK_INTVL)
-            await asyncio.sleep(DL_CHECK_INTVL)  # Check every 2 seconds
-
-            status_data, poll_err = await api.check_download_progress(
-                ip, port, job_id, api_key=key
-            )
-
-            if poll_err or not status_data:
-                self.actionlog_widget.add_entry(
-                    f"Error checking status: {poll_err}", "warn"
-                )
-                break
-
-            status = status_data.get("status")
-            dl_bytes = status_data.get("downloaded_bytes", 0)
-            total_bytes = status_data.get("total_size_bytes", 0)
-
-            # Calculate percentage
-            if total_bytes > 0:
-                pct = (dl_bytes / total_bytes) * 100
-                self.dl_progress_bar.progress = pct
-
-            # Check termination states
-            if status == "completed":
-                self.actionlog_widget.add_entry(
-                    f"Successfully downloaded {target}", "ok"
-                )
-                break
-            elif status == "failed":
-                self.actionlog_widget.add_entry(f"Download failed for {target}", "err")
-                break
-            # If status == "downloading" or "paused", continue loop
+        await self._get_dl_progress(ip, port, key, job_id, target)
 
         self.dl_progress_bar.add_class("hidden")
         self.action_refresh_models()
