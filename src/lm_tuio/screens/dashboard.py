@@ -416,14 +416,15 @@ class DashboardScreen(Screen):
         self.app.push_screen(ServerSelectionModal(), callback=is_same_server)
 
     def action_refresh_models(self) -> None:
+        self.actionlog_widget.add_entry("Refreshing model lists...", "info")
         self.fetch_load_models(
             self.connection_widget.server_ip,
             self.connection_widget.server_port,
         )
 
-    def action_retry_connection(self) -> None:
+    def action_test_connection(self) -> None:
         """Default hotkey '*' to retest connection to API endpoint"""
-        self.actionlog_widget.add_entry("Retesting connection to server...")
+        self.actionlog_widget.add_entry("Retesting connection to server...", "info")
         self.connection_widget.reset_status()
         self.connection_widget.update_connection_status()
 
