@@ -140,3 +140,55 @@ async def check_server_status(
             return response.status_code == 200
         except Exception:
             return False
+
+
+async def start_download(
+    ip: str,
+    port: int,
+    model_target: str,
+    api_key: str | None = None,
+    timeout: float = API_TIMEOUT,
+) -> tuple[str | None, str | None, str | None]:
+    """Initiate API model download.
+    Return tuple(job_id, status, error).
+    """
+
+    server_url: str = f"http://{ip}:{port}{api_action['download']}"
+
+    headers: dict[str, str] = {}
+    if api_key:
+        headers["Authorization"] = f"Bearer {api_key}"
+
+    payload: dict[str, str] = {"model": model_target}
+
+    async with httpx.AsyncClient(timeout=timeout) as client:
+        try:
+            response: httpx.Response = await client.post(
+                server_url, headers=headers, json=payload
+            )
+            if response.status_code == 200:
+                data = response.json()
+                return data.get("job_id"), data.get("status"), None
+            return None, None, f"HTTP {response.status_code}: {response.text}"
+        except Exception as err:
+            return None, None, f"Download request failed: {err}"
+
+
+async def check_download_progress(
+    ip: str, port: int, job_id: str, api_key: str | None = None, timeout: float = 10.0
+) -> tuple[dict[str, Any] | None, str | None]:
+    """Check the status of a download job."""
+    server_url: str = f"http://{ip}:{port}{api_action['dl_progress']}/{job_id}"
+
+    headers: dict[str, str] = {}
+    if api_key:
+        headers["Authorization"] = f"Bearer {api_key}"
+
+    async with httpx.AsyncClient(timeout=timeout) as client:
+        try:
+            response: httpx.Response = await client.get(server_url, headers=headers)
+            if response.status_code == 200:
+                return response.json(), None
+            return None, f"HTTP {response.status_code}: {response.text}"
+        except Exception as err:
+            return None, f"Status check failed: {err}"

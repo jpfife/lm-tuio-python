@@ -15,7 +15,8 @@ DEFAULT_KEYMAP: dict[str, dict[str, dict[str, Any]]] = {
     "global": {
         "quit": {"keys": ["q", "ctrl+c"], "desc": "<quit>", "show": True},
         "change_server": {"keys": ["c"], "desc": "<change endpoint>", "show": True},
-        "refresh_models": {"keys": ["r"], "desc": "<refresh models>", "show": True},
+        "refresh_models": {"keys": ["r"], "desc": "<refresh>", "show": True},
+        "download_model": {"keys": ["d"], "desc": "<download>", "show": True},
         "filter": {"keys": ["/"], "desc": "<filter>", "show": True},
         "clear_filter": {
             "keys": ["escape", "ctrl+left_square_bracket"],
@@ -67,8 +68,8 @@ DEFAULT_KEYMAP: dict[str, dict[str, dict[str, Any]]] = {
             "show": False,
         },
         "load_model": {"keys": ["return"], "desc": "<load model>", "show": True},
-        "sort_on_name": {"keys": ["n"], "desc": "<sort name>", "show": True},
-        "sort_on_size": {"keys": ["s"], "desc": "<sort size>", "show": True},
+        "sort_on_name": {"keys": ["n"], "desc": "<sort name>", "show": False},
+        "sort_on_size": {"keys": ["s"], "desc": "<sort size>", "show": False},
     },
     "loaded_models": {
         "unload_selected": {
@@ -119,12 +120,12 @@ DEFAULT_KEYMAP: dict[str, dict[str, dict[str, Any]]] = {
         "scroll_up": {
             "keys": ["up", "k", "alt+p"],
             "desc": "<scroll up>",
-            "show": False,
+            "show": True,
         },
         "scroll_down": {
             "keys": ["down", "j", "alt+n"],
             "desc": "<scroll down>",
-            "show": False,
+            "show": True,
         },
     },
     "server_select": {
@@ -146,6 +147,13 @@ DEFAULT_KEYMAP: dict[str, dict[str, dict[str, Any]]] = {
             "keys": ["down", "j", "alt+n"],
             "desc": "<cursor down>",
             "show": False,
+        },
+    },
+    "download_models": {
+        "quit": {
+            "keys": ["q", "escape"],
+            "desc": "<cancel>",
+            "show": True,
         },
     },
 }

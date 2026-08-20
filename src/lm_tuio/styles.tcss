@@ -280,6 +280,10 @@ SelectionList:focus {
     text-style: bold;
 }
 
+#download-progress-bar {
+    width: 2fr
+}
+
 #search-bar {
     dock: bottom;
     width: 100%;
@@ -569,4 +573,49 @@ ActionLogModal {
     height: 1fr;
     background: $surface-darken-1;
     padding: 1;
+}
+
+/* ==========================================
+ * DOWNLOAD MODEL MODAL
+ * ========================================== */
+
+DownloadModelModal {
+    align: center middle;
+    background: $background 60%;
+    border: none;
+    outline: none;
+    padding: 0;
+}
+
+#download-modal-dialog {
+    width: 60%;
+    height: 55%;
+    max-height: 21;
+    background: $surface;
+    border: thick $primary;
+    padding: 1 2 0 2;
+}
+
+#download-modal-title {
+    width: 100%;
+    text-align: center;
+    text-style: bold;
+    color: $accent;
+    margin-bottom: 1;
+    border-bottom: solid $primary-muted;
+    padding-bottom: 1;
+}
+
+#download-modal-explainer {
+    margin: 1;
+}
+
+.dl-button-group {
+    align: center middle;
+}
+
+#btn-submit-dl,
+#btn-cancel-dl {
+    height: 3;
+    margin: 2 7 0 7;
 }

@@ -7,19 +7,23 @@ from typing import Any
 
 from textual import on, work
 from textual.app import ComposeResult
-from textual.containers import Horizontal
+from textual.containers import Horizontal, HorizontalGroup
 from textual.reactive import reactive
 from textual.screen import Screen
-from textual.widgets import Footer, Input, Label
+from textual.widgets import Footer, Input, Label, ProgressBar
 
 from lm_tuio import api, events, models as md
 from lm_tuio.components import ActionLog, ConnectionStatus, ContextPane, Title
 from lm_tuio.components.loaded_models import LoadedModels
 from lm_tuio.config import keymap
+from lm_tuio.screens.actionlog_modal import ActionLogModal
+from lm_tuio.screens.download_model_modal import DownloadModelModal
 from lm_tuio.screens.keybind_helper import KeybindsModal
 from lm_tuio.screens.load_model import LoadModelModal
 from lm_tuio.screens.server_select import ServerSelectionModal
-from lm_tuio.screens.actionlog_modal import ActionLogModal
+
+
+DL_CHECK_INTVL: float = 2.0
 
 
 class DashboardScreen(Screen):
@@ -84,6 +88,10 @@ class DashboardScreen(Screen):
         )
         self.search_bar.border_title = self.search_bar.name
 
+        self.dl_progress_bar: ProgressBar = ProgressBar(
+            total=100, show_eta=True, id="download-progress-bar", classes="hidden"
+        )
+
         # Filter 'toggle'
         self.filter_label: Label = Label("Filter: ", id="filter-label")
         self.filter_label_val: Label = Label("OFF", id="filter-label-val")
@@ -106,8 +114,10 @@ class DashboardScreen(Screen):
 
         # Bottom row hotkeys bar
         with Horizontal(id="filter-label-zone"):
-            yield self.filter_label
-            yield self.filter_label_val
+            with HorizontalGroup():
+                yield self.filter_label
+                yield self.filter_label_val
+            yield self.dl_progress_bar
 
         yield self.main_footer
         yield self.search_bar
@@ -119,6 +129,15 @@ class DashboardScreen(Screen):
         self.loadedmodels_widget.clear_model_list()
         self.loadedmodels_widget.refresh_groups()
         self.contextpane_widget.update_model_context(None)
+
+    def load_model_modal(self, model: md.ModelInfo) -> None:
+        """Spawn Load Model modal and send API request to LMS endpoint."""
+
+        def _on_dismiss(payload: dict[str, Any] | None) -> None:
+            if payload is not None:
+                self._api_load_request(model, payload)
+
+        self.app.push_screen(LoadModelModal(model), callback=_on_dismiss)
 
     def _get_horizontal_panes(self) -> list:
         """Returns the ordered list of primary focusable widgets from left to right."""
@@ -184,15 +203,6 @@ class DashboardScreen(Screen):
 
         self.action_refresh_models()
 
-    def load_model_modal(self, model: md.ModelInfo) -> None:
-        """Spawn Load Model modal and send API request to LMS endpoint."""
-
-        def _on_dismiss(payload: dict[str, Any] | None) -> None:
-            if payload is not None:
-                self._api_load_request(model, payload)
-
-        self.app.push_screen(LoadModelModal(model), callback=_on_dismiss)
-
     @work(exclusive=True)
     async def _api_load_request(
         self, model: md.ModelInfo, payload: dict[str, Any] | None
@@ -200,7 +210,6 @@ class DashboardScreen(Screen):
         if payload is None:
             return
 
-        # self.loadedmodels_widget.loading = True
         self.loadedmodels_widget.loading = True
         ip: str = self.connection_widget.server_ip
         port: int = self.connection_widget.server_port
@@ -216,7 +225,79 @@ class DashboardScreen(Screen):
                 "ok",
             )
 
-        # self.loadedmodels_widget.loading = False
+        self.action_refresh_models()
+
+    @work(exclusive=True)
+    async def manage_model_download(self, target: str) -> None:
+        """Triggers model download and polls status to update Dashboard progress bar."""
+        ip: str = self.connection_widget.server_ip
+        port: int = self.connection_widget.server_port
+        key: str = self.connection_widget.api_key
+
+        self.actionlog_widget.add_entry(f"Starting download for {target}...", "info")
+
+        job_id, initial_status, err = await api.start_download(
+            ip, port, target, api_key=key
+        )
+
+        if err:
+            self.actionlog_widget.add_entry(f"Download failed to start: {err}", "error")
+            return
+
+        # Check for already downloaded
+        if initial_status == "already_downloaded":
+            self.actionlog_widget.add_entry(
+                f"Model {target} is already downloaded.", "success"
+            )
+            self.action_refresh_models()
+            return
+
+        if not job_id:
+            self.actionlog_widget.add_entry(
+                "Failed to retrieve download job_id from server.", "error"
+            )
+            return
+
+        self.dl_progress_bar.remove_class("hidden")
+        self.dl_progress_bar.progress = 0.0
+
+        import asyncio
+
+        while True:
+            # self.app.set_timer(DL_CHECK_INTVL)
+            await asyncio.sleep(DL_CHECK_INTVL)  # Check every 2 seconds
+
+            status_data, poll_err = await api.check_download_progress(
+                ip, port, job_id, api_key=key
+            )
+
+            if poll_err or not status_data:
+                self.actionlog_widget.add_entry(
+                    f"Error checking status: {poll_err}", "warn"
+                )
+                break
+
+            status = status_data.get("status")
+            dl_bytes = status_data.get("downloaded_bytes", 0)
+            total_bytes = status_data.get("total_size_bytes", 0)
+
+            # Calculate percentage
+            if total_bytes > 0:
+                pct = (dl_bytes / total_bytes) * 100
+                self.dl_progress_bar.progress = pct
+
+            # Check termination states
+            if status == "completed":
+                self.actionlog_widget.add_entry(
+                    f"Successfully downloaded {target}", "ok"
+                )
+                break
+            elif status == "failed":
+                self.actionlog_widget.add_entry(f"Download failed for {target}", "err")
+                break
+            # If status == "downloading" or "paused", continue loop
+
+        self.dl_progress_bar.add_class("hidden")
         self.action_refresh_models()
 
     # ======= REACTIVE WATCHERS =======
@@ -335,14 +416,15 @@ class DashboardScreen(Screen):
         self.app.push_screen(ServerSelectionModal(), callback=is_same_server)
 
     def action_refresh_models(self) -> None:
+        self.actionlog_widget.add_entry("Refreshing model lists...", "info")
         self.fetch_load_models(
             self.connection_widget.server_ip,
             self.connection_widget.server_port,
         )
 
-    def action_retry_connection(self) -> None:
+    def action_test_connection(self) -> None:
         """Default hotkey '*' to retest connection to API endpoint"""
-        self.actionlog_widget.add_entry("Retesting connection to server...")
+        self.actionlog_widget.add_entry("Retesting connection to server...", "info")
         self.connection_widget.reset_status()
         self.connection_widget.update_connection_status()
 
@@ -357,6 +439,15 @@ class DashboardScreen(Screen):
         """Spawn full viewer Action Log."""
         log_history = self.actionlog_widget.history
         self.app.push_screen(ActionLogModal(history=log_history))
+
+    def action_download_model(self) -> None:
+        """Spawn Download Model modal."""
+
+        def _on_model_submit(target: str | None) -> None:
+            if target is not None:
+                self.manage_model_download(target)
+
+        self.app.push_screen(DownloadModelModal(), callback=_on_model_submit)
 
     # ========= EVENTS ==========
 
