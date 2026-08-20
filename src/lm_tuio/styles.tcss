@@ -280,6 +280,10 @@ SelectionList:focus {
     text-style: bold;
 }
 
+#download-progress-bar {
+    width: 2fr
+}
+
 #search-bar {
     dock: bottom;
     width: 100%;

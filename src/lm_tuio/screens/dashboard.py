@@ -7,19 +7,19 @@ from typing import Any
 
 from textual import on, work
 from textual.app import ComposeResult
-from textual.containers import Horizontal
+from textual.containers import Horizontal, HorizontalGroup
 from textual.reactive import reactive
 from textual.screen import Screen
-from textual.widgets import Footer, Input, Label
+from textual.widgets import Footer, Input, Label, ProgressBar
 
 from lm_tuio import api, events, models as md
 from lm_tuio.components import ActionLog, ConnectionStatus, ContextPane, Title
 from lm_tuio.components.loaded_models import LoadedModels
 from lm_tuio.config import keymap
+from lm_tuio.screens.actionlog_modal import ActionLogModal
 from lm_tuio.screens.keybind_helper import KeybindsModal
 from lm_tuio.screens.load_model import LoadModelModal
 from lm_tuio.screens.server_select import ServerSelectionModal
-from lm_tuio.screens.actionlog_modal import ActionLogModal
 
 
 class DashboardScreen(Screen):
@@ -84,6 +84,10 @@ class DashboardScreen(Screen):
         )
         self.search_bar.border_title = self.search_bar.name
 
+        self.dl_progress_bar: ProgressBar = ProgressBar(
+            total=100, show_eta=True, id="download-progress-bar", classes="hidden"
+        )
+
         # Filter 'toggle'
         self.filter_label: Label = Label("Filter: ", id="filter-label")
         self.filter_label_val: Label = Label("OFF", id="filter-label-val")
@@ -106,8 +110,10 @@ class DashboardScreen(Screen):
 
         # Bottom row hotkeys bar
         with Horizontal(id="filter-label-zone"):
-            yield self.filter_label
-            yield self.filter_label_val
+            with HorizontalGroup():
+                yield self.filter_label
+                yield self.filter_label_val
+            yield self.dl_progress_bar
 
         yield self.main_footer
         yield self.search_bar
