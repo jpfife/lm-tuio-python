@@ -3,7 +3,7 @@ name = "lm-tuio-python"
 version = "0.1.0"
 description = "Remote LM Studio management TUI."
 readme = "README.md"
-authors = [{ name = "redappr", email = "jpfife@redappr.com" }]
+authors = [{ name = "jpfife", email = "jpfife@redappr.com" }]
 requires-python = ">=3.13"
 dependencies = [
     "httpx>=0.28.1",
@@ -16,7 +16,7 @@ dependencies = [
 lm-tuio = "lm_tuio.main:main"
 
 [build-system]
-requires = ["uv_build>=0.11.32,<0.12.0"]
+requires = ["uv_build>=0.12.5,<0.13.0"]
 build-backend = "uv_build"
 
 [dependency-groups]
