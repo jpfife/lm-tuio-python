@@ -172,3 +172,23 @@ async def start_download(
             return None, None, f"HTTP {response.status_code}: {response.text}"
         except Exception as err:
             return None, None, f"Download request failed: {err}"
+
+
+async def check_download_progress(
+    ip: str, port: int, job_id: str, api_key: str | None = None, timeout: float = 10.0
+) -> tuple[dict[str, Any] | None, str | None]:
+    """Check the status of a download job."""
+    server_url: str = f"http://{ip}:{port}{api_action['dl_progress']}/{job_id}"
+
+    headers: dict[str, str] = {}
+    if api_key:
+        headers["Authorization"] = f"Bearer {api_key}"
+
+    async with httpx.AsyncClient(timeout=timeout) as client:
+        try:
+            response: httpx.Response = await client.get(server_url, headers=headers)
+            if response.status_code == 200:
+                return response.json(), None
+            return None, f"HTTP {response.status_code}: {response.text}"
+        except Exception as err:
+            return None, f"Status check failed: {err}"
