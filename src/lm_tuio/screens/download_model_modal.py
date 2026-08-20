@@ -19,7 +19,7 @@ class DownloadModelModal(ModalScreen[str | None]):
 
     BINDINGS = keymap.KeymapManager.get_bindings("download_models")
 
-    explainer: str = "Enter a direct HuggingFace URL or LM Studio model catalog ID, e.g.:\nhttps://huggingface.co/lmstudio-community/gpt-oss-20b-GGUF\nopenai/gpt-oss-20b"
+    explainer: str = "Enter a direct HuggingFace URL or LM Studio model catalog ID. Example:\n\thttps://huggingface.co/lmstudio-community/gpt-oss-20b-GGUF or\n\topenai/gpt-oss-20b"
 
     def compose(self) -> ComposeResult:
         self.download_model_input: Input = Input(
@@ -28,7 +28,11 @@ class DownloadModelModal(ModalScreen[str | None]):
         )
 
         with Vertical(id="download-modal-dialog"):
-            yield Label("Download Model from HuggingFace", classes="section-title")
+            yield Label(
+                "Download Model from HuggingFace",
+                id="download-modal-title",
+                classes="section-title",
+            )
             yield Label(
                 content=self.explainer,
                 id="download-modal-explainer",
@@ -36,7 +40,7 @@ class DownloadModelModal(ModalScreen[str | None]):
             )
             yield self.download_model_input
 
-            with Horizontal(classes="download-modal-button-group"):
+            with Horizontal(classes="dl-button-group"):
                 yield Button("Download", variant="success", id="btn-submit-dl")
                 yield Button("Cancel", variant="error", id="btn-cancel-dl")
 
