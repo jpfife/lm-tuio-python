@@ -148,6 +148,13 @@ DEFAULT_KEYMAP: dict[str, dict[str, dict[str, Any]]] = {
             "show": False,
         },
     },
+    "download_models": {
+        "quit": {
+            "keys": ["q", "escape"],
+            "desc": "<cancel>",
+            "show": True,
+        },
+    },
 }
 
 
