@@ -323,7 +323,7 @@ class DownloadedModels(BaseModelTable):
         for col_key, pct in zip(self.table.columns.keys(), self.COL_WIDTH_PCTS):
             column = self.table.columns[col_key]
             column.auto_width = False
-            column.width = int(total_width * pct)
+            column.width = (total_width * pct).__ceil__()
 
         self.show_horizontal_scrollbar = False
         self.refresh()
