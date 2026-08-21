@@ -589,8 +589,8 @@ DownloadModelModal {
 
 #download-modal-dialog {
     width: 60%;
-    height: 55%;
-    max-height: 21;
+    height: 60%;
+    max-height: 25;
     background: $surface;
     border: thick $primary;
     padding: 1 2 0 2;
