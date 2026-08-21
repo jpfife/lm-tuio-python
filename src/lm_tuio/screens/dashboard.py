@@ -249,12 +249,11 @@ class DashboardScreen(Screen):
                     f"Error checking status: {poll_err}", "warn"
                 )
                 error_count += 1
-                if error_count > MAX_NUM_DL_STATUS_ERROR:
+                if error_count >= MAX_NUM_DL_STATUS_ERROR:
                     break
                 else:
                     continue
 
-            is_downloading = True
             status = status_data.get("status")
             dl_bytes = status_data.get("downloaded_bytes", 0)
             total_bytes = status_data.get("total_size_bytes", 0)
@@ -265,14 +264,25 @@ class DashboardScreen(Screen):
                 self.dl_progress_bar.progress = pct
 
             # Check termination states
-            # If status == "downloading" or "paused", continue loop
             if status == "completed":
                 self.actionlog_widget.add_entry(
                     f"Successfully downloaded {target}", "ok"
                 )
+                is_downloading = False
                 break
             elif status == "failed":
                 self.actionlog_widget.add_entry(f"Download failed for {target}", "err")
+                is_downloading = False
+                break
+            elif status == "downloading" or status == "paused":
+                is_downloading = True
+                continue
+            else:
+                self.actionlog_widget.add_entry(
+                    f"Unknown download status for {target}. Check server for details",
+                    "err",
+                )
+                is_downloading = True
                 break
 
     @work(exclusive=True)
