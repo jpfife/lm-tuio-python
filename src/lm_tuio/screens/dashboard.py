@@ -168,7 +168,10 @@ class DashboardScreen(Screen):
             self.actionlog_widget.add_entry(f"Failed to fetch models: {err}", "error")
             return
 
-        assert models
+        if models is None:
+            self.actionlog_widget.add_entry(f"Found 0 downloaded models at {ip}:{port}")
+            return
+
         self.downloadedmodels_widget.load_models(models)
         self.downloadedmodels_widget.table.focus()
         self.actionlog_widget.add_entry(
