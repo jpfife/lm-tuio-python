@@ -44,7 +44,7 @@ class ConnectionStatus(Static):
     """Main dashboard widget to asynchronously poll LMS API connectivity and display status."""
 
     status: reactive[str] = reactive(Connection.YELLOW)
-    server_ip: reactive[str] = reactive("192.168.1.1")
+    server_ip: reactive[str] = reactive("127.0.0.1")
     server_port: reactive[int] = reactive(1234)
     api_key: str = ""
 
@@ -58,8 +58,10 @@ class ConnectionStatus(Static):
             self.server_ip = app_config.target
             self.server_port = app_config.port
         else:
-            self.post_message(ActionLogUpdate("Could not load config.toml", "warn"))
-            default_config = AppConfig().load()
+            self.post_message(
+                ActionLogUpdate("Could not load config.toml. Using defaults...", "warn")
+            )
+            default_config, _ = AppConfig().load()
             assert isinstance(default_config, AppConfig)
             self.server_ip = default_config.target
             self.server_port = default_config.port

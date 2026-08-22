@@ -16,7 +16,7 @@ from lm_tuio.models import ModelInfo, format_bytes
 
 
 @dataclass
-class LoadedInstance:
+class LoadedDisplayInstance:
     """Running instance representation of a model."""
 
     instance_id: str
@@ -30,7 +30,7 @@ class LoadedModelGroup:
 
     base_model_key: str
     display_name: str
-    instances: list[LoadedInstance]
+    instances: list[LoadedDisplayInstance]
 
 
 class LoadedModels(Static):
@@ -46,7 +46,7 @@ class LoadedModels(Static):
         **kwargs,
     ) -> None:
         self._groups: dict[str, LoadedModelGroup] = {}
-        self._instance_map: dict[str, LoadedInstance] = {}
+        self._instance_map: dict[str, LoadedDisplayInstance] = {}
         self.current_filter: str = ""
 
         # Post message callback for event bus
@@ -82,7 +82,7 @@ class LoadedModels(Static):
             if not model.loaded_instances:
                 continue
 
-            ui_instances: list[LoadedInstance] = []
+            ui_instances: list[LoadedDisplayInstance] = []
             for inst in model.loaded_instances:
                 ctx_str = (
                     f"{format_bytes(inst.config.context_length)}"
@@ -98,7 +98,7 @@ class LoadedModels(Static):
                 display_label = " | ".join(label_parts)
 
                 ui_instances.append(
-                    LoadedInstance(
+                    LoadedDisplayInstance(
                         instance_id=inst.id,
                         display_label=display_label,
                         model_info=model,

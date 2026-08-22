@@ -12,7 +12,7 @@ logo: str = r"""
 
 
 class Title(Static):
-    """Logo wigdet for primary dashboard."""
+    """Logo widget for primary dashboard."""
 
     def on_mount(self) -> None:
         self.update(logo)

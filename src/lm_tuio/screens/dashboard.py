@@ -5,7 +5,7 @@ Container for interactive and display components.
 
 from typing import Any
 
-from textual import on, work
+from textual import on, work, events as t_events
 from textual.app import ComposeResult
 from textual.containers import Horizontal, HorizontalGroup
 from textual.reactive import reactive
@@ -538,7 +538,7 @@ class DashboardScreen(Screen):
         sev: str = event.severity
         self.actionlog_widget.add_entry(msg, sev)
 
-    def on_key(self, event) -> None:
+    def on_key(self, event: t_events.Key) -> None:
         """Esc key listener for filter search."""
 
         if self.search_bar.display and (

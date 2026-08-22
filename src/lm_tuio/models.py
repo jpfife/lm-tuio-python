@@ -23,6 +23,9 @@ def format_bytes(size: int) -> str:
     MB: int = 1024**2
     KB: int = 1024
 
+    if size == 0:
+        return "0 B"
+
     if size >= TB:
         return f"{size / TB:.2f} TB"
     elif size >= GB:
@@ -32,7 +35,7 @@ def format_bytes(size: int) -> str:
     return f"{int(size / KB)}K"
 
 
-def estimate_context_cache_memory(file_size_bytes: int, context_size_bytes) -> int:
+def estimate_context_cache_memory(file_size_bytes: int, context_size_bytes: int) -> int:
     """Loose estimation of context memory cache cost based on typical GQA model setups.
 
     Estimated number of model layers based on base size of the model to determine

@@ -53,7 +53,6 @@ class AppConfig:
 
     # Internal vars, no TOML map
     is_network: bool = False
-    # config_path: Path = Path("~/.config/lm-tuio")
 
     # NOTE: Using tomlkit to preserve structure, don't use tomllib functions for saving
     def save(self) -> str:
@@ -132,11 +131,8 @@ class AppConfig:
         config_data["config_path"] = str(conf_path)
 
         # NOTE: Add class attributes separate from dataclass fields
-        config = cls(
-            **config_data,
-        )
+        config = cls(**config_data)  # Write config out if file was missing
 
-        # Write config out if file was missing
         if missing_config:
             logs.append(cls.save(config))
 
@@ -180,10 +176,11 @@ class AppConfig:
                     table_name = fld.metadata.get("table")
                     key_name = fld.metadata.get("key")
 
-                    if table_name and key_name:
-                        table_data = toml_data.get(table_name, {})
-                        if key_name in table_data:
-                            updates[fld.name] = table_data[key_name]
+                    if table_name is None or key_name is None:
+                        continue
+                    table_data = toml_data.get(table_name, {})
+                    if key_name in table_data:
+                        updates[fld.name] = table_data[key_name]
             return updates, None
 
         except Exception as err:
