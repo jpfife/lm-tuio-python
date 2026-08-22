@@ -35,7 +35,8 @@ class ActionLog(RichLog):
         self.zone_tz = ZoneInfo(timezone)
 
     def add_entry(self, message: str, severity: str = "info") -> None:
-        """Write timestamped/color-coded entry to the log."""
+        """Write formatted entry to the log."""
+
         timestamp = datetime.now(tz=self.zone_tz).strftime("%H:%M:%S")
 
         match severity.lower():

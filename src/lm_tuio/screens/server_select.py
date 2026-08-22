@@ -1,4 +1,4 @@
-"""Secondary pop-up modal used to connect to specified LMS API server.
+"""Pop-up modal used to set connection to specified LMS API server.
 
 Spawned from primary dashboard on launch (if no CLI IP supplied), or manual launch via hotkey.
 Displays current listing of active servers on network and cached IPs.
@@ -24,7 +24,7 @@ class ServerSelectionModal(
     """Modal to select, scan, and set active LMS API endpoints.
 
     Returns tuple(IP, Port, and logs, if any were generated.
-    If modal is closed without setting new endpoints, None is passed with any logs
+    If modal is closed without setting new endpoints, None is passed along with any logs
     to update ActionLog on the Dashboard.
     """
 
@@ -157,16 +157,17 @@ class ServerSelectionModal(
         self.api_key_widget.value = SecretsManager.get_api_key(
             self.current_ip, self.current_port
         )
-        self.exectute_network_scan(self.default_subnet, self.current_port)
+        self.execute_network_scan(self.default_subnet, self.current_port)
 
     @work(exclusive=True)
-    async def exectute_network_scan(
+    async def execute_network_scan(
         self, target_network: str, target_port: int | str
     ) -> None:
-        """Async network scan. Updates Active Servers list on SelectServer modal.
+        """Async network scan. Update Active Servers list on SelectServer modal.
 
         Args: target_network: str, target_port: int | str
         """
+
         active_list = self.active_ips
         active_list.clear_options()
         valid_net, err = validate_ip_net(target_network)
@@ -238,7 +239,8 @@ class ServerSelectionModal(
     def _validate_connection_input(
         raw_input: str, is_subnet: bool = False
     ) -> tuple[str, int, str] | tuple[None, None, str]:
-        """Parses raw connection field input and returns tuple IP[str], Port[int] and response, or error."""
+        """Parse raw connection field input and return tuple IP[str], Port[int] and response, or error."""
+
         ip: str
         port_str: str
 
@@ -295,7 +297,7 @@ class ServerSelectionModal(
     @on(Input.Submitted, "#api-key-input")
     @on(Button.Pressed, "#connect-btn")
     def connect_to_new_server(self) -> None:
-        """Parses and validates manual input; updates IP cache on submission."""
+        """Parse and validate manual input; update IP cache on submission."""
 
         target: str = self.input_widget.value.strip()
         api_key: str = self.api_key_widget.value.strip()
@@ -333,7 +335,8 @@ class ServerSelectionModal(
 
     @on(Button.Pressed, "#default-connect-btn")
     def set_default_connection(self) -> None:
-        """Saves manual connect target to config.toml"""
+        """Save manual connect target to config.toml"""
+
         target: str = self.input_widget.value.strip()
         api_key: str = self.api_key_widget.value.strip()
         ip, port, response = self._validate_connection_input(target, is_subnet=False)
@@ -378,14 +381,16 @@ class ServerSelectionModal(
     @on(Input.Submitted, "#scan-input")
     @on(Button.Pressed, "#scan-btn")
     def run_network_scan(self) -> None:
-        """Provides list of all servers responding on subnet to HTTP Head request on selected port."""
+        """Provide list of all servers responding on subnet to HTTP Head request on selected port."""
+
         target_net = self.scan_widget.value.strip()
         target_port = self.scan_port_widget.value.strip()
-        self.exectute_network_scan(target_net, target_port)
+        self.execute_network_scan(target_net, target_port)
 
     @on(Button.Pressed, "#default-network-btn")
     def set_default_network(self) -> None:
         """Placeholder for TOML configuration writing."""
+
         target_net: str = self.scan_widget.value.strip()
         target_port: str = self.scan_port_widget.value.strip()
         raw_ip_str: str = f"{target_net}:{target_port}"
@@ -475,7 +480,7 @@ class ServerSelectionModal(
 
     @on(Button.Pressed, "#clear-cache-btn")
     def clear_ip_cache(self) -> None:
-        """Clears IP cache list and updates saved config."""
+        """Clear IP cache list and update saved config."""
 
         app_config = getattr(self.app, "config", None)
         if isinstance(app_config, AppConfig):
@@ -500,7 +505,8 @@ class ServerSelectionModal(
 
     @on(Button.Pressed, "#cancel-btn")
     def cancel_modal(self) -> None:
-        """Closes the modal without making changes"""
+        """Close the modal without making changes."""
+
         self.dismiss((None, self.logs))
 
     # ======= ACTIONS =======
@@ -518,22 +524,27 @@ class ServerSelectionModal(
             widget.action_cursor_down()
 
     def action_connect_input_submit(self) -> None:
-        """Default 'c' hotkey"""
+        """Default 'c' hotkey."""
+
         self.connect_to_new_server()
 
     def action_scan_network(self) -> None:
-        """Default 's' hotkey"""
+        """Default 's' hotkey."""
+
         self.run_network_scan()
 
     def action_save_defaults(self) -> None:
-        """Default 'S' hotkey"""
+        """Default 'S' hotkey."""
+
         self.set_default_connection()
         self.set_default_network()
 
     def action_clear_cache(self) -> None:
-        """Default 'x' hotkey"""
+        """Default 'x' hotkey."""
+
         self.clear_ip_cache()
 
     def action_quit(self) -> None:
-        """Default 'q' hotkey"""
+        """Default 'q' hotkey."""
+
         self.dismiss((None, self.logs))

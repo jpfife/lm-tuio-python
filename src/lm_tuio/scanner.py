@@ -1,7 +1,7 @@
-"""Scans provided network for active LM Studio API endpoints.
+"""Scan provided network for active LM Studio API endpoints.
 
 User provided IP and port information via CLI or server change screen.
-Uses ./config.py AppConfig structure for parallel network checks.
+Uses ./settings.py AppConfig structure for parallel network checks.
 Default scan parameters: 192.168.1.0/24, port 1234.
 """
 
@@ -12,8 +12,8 @@ from lm_tuio.config import AppConfig
 
 
 async def check_host(ip: str, port: int, timeout: float = 2.0) -> str | None:
-    """
-    Attempts a TCP connection to specific IP and port.
+    """Attempts a TCP connection to specific IP and port.
+
     Returns IP string if success, None on fail.
     """
 
@@ -29,7 +29,7 @@ async def check_host(ip: str, port: int, timeout: float = 2.0) -> str | None:
 
 
 async def scan_targets(config: AppConfig) -> tuple[list[str] | None, str | None]:
-    """Scans target in AppConfig concurrently."""
+    """Scan target in AppConfig concurrently."""
 
     network: ipaddress.IPv4Network = ipaddress.IPv4Network(config.target, strict=False)
     tasks: list[asyncio.Task[str | None]] = []

@@ -78,7 +78,8 @@ class ConnectionStatus(Static):
 
     @work(exclusive=True)
     async def update_connection_status(self) -> None:
-        """Check server API status and update reactive state"""
+        """Check server API status and update reactive state."""
+
         is_connected: bool = await check_server_status(
             self.server_ip, self.server_port, self.api_key, timeout=PING_INTERVAL
         )
@@ -91,7 +92,8 @@ class ConnectionStatus(Static):
             self.status = Connection.RED
 
     def apply_new_server(self, ip_conf: tuple[str, int] | None) -> None:
-        """Updates ConnectionStatus display widget with passed net config"""
+        """Update ConnectionStatus display widget with passed net config."""
+
         if not ip_conf:
             return
 
@@ -103,7 +105,8 @@ class ConnectionStatus(Static):
         self.update_connection_status()
 
     def reset_status(self) -> None:
-        """Force yellow status when switching servers"""
+        """Force yellow status when switching servers."""
+
         self.status = Connection.YELLOW
 
     # ========== ACTIONS ==========

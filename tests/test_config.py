@@ -1,4 +1,4 @@
-"""Tests for ../src/lm_tuio/config.py.
+"""Tests for ../src/lm_tuio/config/settings.py.
 
 Tests parsing and validation functionality for CLI args.
 """
@@ -42,7 +42,7 @@ def test_validate_ip_net_with_subnet() -> None:
 
 
 def test_parse_arguments_defaults() -> None:
-    """No positional args uses default subnet and port."""
+    """Use default subnet and port when positional args are absent."""
     config: AppConfig | None
     err: str | None
     config, err = AppConfig._parse_arguments([])
@@ -67,7 +67,7 @@ def test_parse_arguments_positional_ip() -> None:
 
 
 def test_parse_arguments_flags() -> None:
-    """Test passing a custom network and port via CLI flags."""
+    """Pass a custom network and port via CLI flags."""
     config: AppConfig | None
     err: str | None
     config, err = AppConfig._parse_arguments(["-n", "10.0.0.0/8", "-p", "8080"])

@@ -1,4 +1,4 @@
-"""Loads keybinds.toml from config directory, or creates defaults if missing."""
+"""Load keybinds.toml from config directory, or creates defaults if missing."""
 
 from pathlib import Path
 from typing import Any
@@ -160,13 +160,14 @@ DEFAULT_KEYMAP: dict[str, dict[str, dict[str, Any]]] = {
 
 
 class KeymapManager:
-    """Loads and manages application keybinds from keybinds.toml."""
+    """Load and manage application keybinds from keybinds.toml."""
 
     _keymap_cache: dict[str, Any] | None = None
 
     @classmethod
     def load_keymap(cls) -> dict[str, Any]:
-        """Loads keybinds.toml or initializes default keybinds if missing."""
+        """Load keybinds.toml or initialize default keybinds if missing."""
+
         if cls._keymap_cache is not None:
             return cls._keymap_cache
 
@@ -188,7 +189,8 @@ class KeymapManager:
 
     @classmethod
     def get_bindings(cls, scope: str) -> list[Binding]:
-        """Returns list of Binding objects for a specific scope."""
+        """Return list of Binding objects for a specific scope."""
+
         keymap = cls.load_keymap()
         scope_data = keymap.get(scope, DEFAULT_KEYMAP.get(scope, {}))
 
@@ -219,7 +221,8 @@ class KeymapManager:
 
     @classmethod
     def _write_default_file(cls, path: Path) -> None:
-        """Writes the default keymap to disk if it doesn't exist."""
+        """Write the default keymap to disk if it doesn't exist."""
+
         try:
             doc = tomlkit.document()
             for scope, actions in DEFAULT_KEYMAP.items():

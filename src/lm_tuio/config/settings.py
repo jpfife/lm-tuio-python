@@ -57,7 +57,7 @@ class AppConfig:
 
     # NOTE: Using tomlkit to preserve structure, don't use tomllib functions for saving
     def save(self) -> str:
-        """Saves current state data to config_path, returns response string"""
+        """Save current state data to config_path, returns response string."""
 
         config_path: Path = paths.get_config_path(SETTINGS_CONFIG)
 
@@ -81,7 +81,7 @@ class AppConfig:
     def load(
         cls, args_list: list[str] | None = None, custom_path: str | None = None
     ) -> tuple["AppConfig | None", str | None]:
-        """Method for loading configs into AppConfig instance."""
+        """Load configs into AppConfig instance."""
 
         conf_path: Path = (
             Path(custom_path) if custom_path else paths.get_config_path(SETTINGS_CONFIG)
@@ -145,7 +145,8 @@ class AppConfig:
         return config, status_msg
 
     def _build_toml_config(self, doc: tomlkit.TOMLDocument) -> None:
-        """Dynamically builds TOML structure based on dataclass metadata."""
+        """Dynamically build TOML structure based on dataclass metadata."""
+
         logs: list[str] = []
 
         # Map fields from dataclass
@@ -168,7 +169,8 @@ class AppConfig:
 
     @staticmethod
     def _parse_toml(conf_path: Path) -> tuple[dict[str, Any], str | None]:
-        """Reads TOML and returns a dictionary of valid updates."""
+        """Read TOML data and return a dictionary of valid updates."""
+
         updates: dict[str, Any] = {}
         try:
             with open(conf_path, "rb") as file:
@@ -189,7 +191,8 @@ class AppConfig:
 
     @staticmethod
     def _parse_arguments(args_list: list[str]) -> dict[str, Any]:
-        """Parses CLI args and returns a dictionary of valid updates."""
+        """Parse CLI args and return a dictionary of valid updates."""
+
         parser = argparse.ArgumentParser(
             description="LM Studio remote server management and TUI interface."
         )
@@ -214,7 +217,7 @@ class AppConfig:
 
 
 def validate_ip_net(target: str) -> tuple[str | None, str | None]:
-    """Validates passed IP or subnet.
+    """Validate passed IP or subnet.
 
     Returns (valid_target_string, err)
         Success: err = None

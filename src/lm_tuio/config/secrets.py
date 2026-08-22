@@ -20,7 +20,7 @@ SERVERS_TABLE: str = "servers"
 
 
 class SecretsManager:
-    """Handle read/write ops for SECRETS_FILE and sets 0600 POSIX permissions."""
+    """Handle read/write ops for SECRETS_FILE and set 0600 POSIX permissions."""
 
     _secrets_cache: dict[str, Any] | None = None
     header_str: str = "# LM TUIO API keys\n\n[servers]\n"
@@ -107,7 +107,7 @@ class SecretsManager:
 
     @classmethod
     def remove_endpoints(cls, endpoints: list[str]) -> None:
-        """Removes the specified endpoints from secrets.toml."""
+        """Remove the specified endpoints from secrets.toml."""
 
         secrets_path = paths.get_config_path(SECRETS_FILE)
         if not secrets_path.exists():

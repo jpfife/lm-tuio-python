@@ -116,7 +116,8 @@ class DashboardScreen(Screen):
         yield self.search_bar
 
     def clear_fetched_data(self) -> None:
-        """Clears all data dependent on connected server"""
+        """Clear all data dependent on connected server."""
+
         self.downloadedmodels_widget.clear_model_list()
         self.downloadedmodels_widget.refresh_table()
         self.loadedmodels_widget.clear_model_list()
@@ -133,7 +134,8 @@ class DashboardScreen(Screen):
         self.app.push_screen(screens.LoadModelModal(model), callback=_on_dismiss)
 
     def _get_horizontal_panes(self) -> list:
-        """Returns the ordered list of primary focusable widgets from left to right."""
+        """Return the ordered list of primary focusable widgets from left to right."""
+
         panes = []
 
         try:
@@ -149,7 +151,8 @@ class DashboardScreen(Screen):
 
     @work(exclusive=True)
     async def fetch_load_models(self, ip: str, port: int) -> None:
-        """Fetch models from LMS API endpoint and populate UI"""
+        """Fetch models from LMS API endpoint and populate UI."""
+
         self.downloadedmodels_widget.clear_model_list()
         self.downloadedmodels_widget.refresh_table()
 
@@ -175,6 +178,7 @@ class DashboardScreen(Screen):
     @work(exclusive=True)
     async def unload_models(self, instance_ids: list[str]) -> None:
         """Execute API unload requests and refresh dashboard."""
+
         count = len(instance_ids)
         self.actionlog_widget.add_entry(
             f"Unloading {count} model instance{'s' if count > 1 else ''}..."
@@ -226,7 +230,7 @@ class DashboardScreen(Screen):
     async def _get_dl_progress(
         self, ip: str, port: int, key: str, job_id: str, target: str
     ) -> None:
-        """Polls API endpoint for model download status updates."""
+        """Poll API endpoint for model download status updates."""
 
         import asyncio
 
@@ -282,7 +286,8 @@ class DashboardScreen(Screen):
 
     @work(exclusive=True)
     async def manage_model_download(self, target: str) -> None:
-        """Triggers model download and polls status to update Dashboard progress bar."""
+        """Trigger model download and poll status to update Dashboard progress bar."""
+
         ip: str = self.connection_widget.server_ip
         port: int = self.connection_widget.server_port
         key: str = self.connection_widget.api_key
@@ -347,6 +352,7 @@ class DashboardScreen(Screen):
 
     def action_focus_left(self) -> None:
         """Move focus one pane to the left (ctrl+h / ctrl+left)."""
+
         panes = self._get_horizontal_panes()
         focused = self.app.focused
 
@@ -364,6 +370,7 @@ class DashboardScreen(Screen):
 
     def action_focus_right(self) -> None:
         """Move focus one pane to the right (ctrl+l / ctrl+right)."""
+
         panes = self._get_horizontal_panes()
         focused = self.app.focused
 
@@ -380,39 +387,44 @@ class DashboardScreen(Screen):
 
     def action_focus_up(self) -> None:
         """Jump focus up to the header ActionLog (ctrl+k / ctrl+up)."""
+
         self.actionlog_widget.focus()
 
     def action_focus_down(self) -> None:
         """Jump focus down from the header back to the main models table (ctrl+j / ctrl+down)."""
+
         self.downloadedmodels_widget.table.focus()
 
     def action_filter(self) -> None:
-        """Default hotkey '/' to filter display lists"""
+        """Default hotkey '/' to filter display lists."""
+
         self.main_footer.display = False
         self.search_bar.display = True
         self.search_bar.value = self.filter_str
         self.search_bar.focus()
 
     def action_clear_filter(self) -> None:
-        """Default hotkey 'Esc' to clear filter"""
+        """Default hotkey 'Esc' to clear filter."""
+
         self.filter_str = ""
         self._hide_search_bar()
 
     def action_quit(self) -> None:
-        """Default hotkey 'q' to quit application"""
+        """Default hotkey 'q' to quit application."""
+
         self.app.exit()
 
     def action_change_server(self) -> None:
-        """Default hotkey 'c' to connect to server"""
+        """Default hotkey 'c' to connect to server."""
 
         # Track if endpoint actually changes
         def is_same_server(
             result: tuple[str, int, str, list[tuple[str, str]]]
             | tuple[None, list[tuple[str, str]]],
         ) -> None:
-            """Returns result of Server Selection modal and rebuilds logs to ActionLog.
+            """Return result of Server Selection modal and rebuild logs to ActionLog.
 
-            result = (IP, Port, API Key, Logs) | (None, Logs)
+            Result = (IP, Port, API Key, Logs) | (None, Logs)
             """
 
             if result[0] is None and isinstance(result[1], list):
@@ -448,13 +460,15 @@ class DashboardScreen(Screen):
         )
 
     def action_test_connection(self) -> None:
-        """Default hotkey '*' to retest connection to API endpoint"""
+        """Default hotkey '*' to retest connection to API endpoint."""
+
         self.actionlog_widget.add_entry("Retesting connection to server...", "info")
         self.connection_widget.reset_status()
         self.connection_widget.update_connection_status()
 
     def action_show_keybinds(self) -> None:
         """Open keybinds help screen."""
+
         self.app.push_screen(screens.KeybindsModal())
 
     def action_unload_all(self) -> None:
@@ -462,6 +476,7 @@ class DashboardScreen(Screen):
 
     def action_show_action_log(self) -> None:
         """Spawn full viewer Action Log."""
+
         log_history = self.actionlog_widget.history
         self.app.push_screen(screens.ActionLogModal(history=log_history))
 
@@ -479,17 +494,19 @@ class DashboardScreen(Screen):
     @on(events.UnloadInstancesRequested)
     def handle_unload_request(self, event: events.UnloadInstancesRequested) -> None:
         """Listen for unload requests and dispatch async worker."""
+
         if event.instance_ids:
             self.unload_models(event.instance_ids)
 
     @on(events.ServerConnected)
     def handle_server_connected(self, event: events.ServerConnected) -> None:
-        """Trigger fetch models on successful server connection"""
+        """Trigger fetch models on successful server connection."""
+
         self.fetch_load_models(event.ip, event.port)
 
     @on(events.ServerEndpointUpdated)
     def handle_server_changed(self) -> None:
-        """Clears models when server changes, only fetch models on successful connection"""
+        """Clear models when server changes, only fetch models on successful connection."""
         self.clear_fetched_data()
 
     @on(events.ModelSelected)
@@ -503,24 +520,27 @@ class DashboardScreen(Screen):
 
     @on(Input.Submitted, "#search-bar")
     def apply_search(self) -> None:
-        """Filters active widget DataTable"""
+        """Filter active widget DataTable."""
+
         self._hide_search_bar()
         self.downloadedmodels_widget.table.focus()
 
     @on(Input.Changed, "#search-bar")
     def real_time_search(self, event: Input.Changed) -> None:
-        """Real-time text filtering"""
+        """Real-time text filtering."""
+
         self.filter_str = event.value
 
     @on(events.ActionLogUpdate)
     def update_action_log(self, event: events.ActionLogUpdate) -> None:
-        """Passes fired messages to ActionLog."""
+        """Pass fired messages to ActionLog."""
         msg: str = event.msg
         sev: str = event.severity
         self.actionlog_widget.add_entry(msg, sev)
 
     def on_key(self, event) -> None:
-        """Esc key listener for filter search"""
+        """Esc key listener for filter search."""
+
         if self.search_bar.display and (
             event.key == "escape" or event.key == "ctrl+left_square_bracket"
         ):
@@ -528,6 +548,7 @@ class DashboardScreen(Screen):
             self.downloadedmodels_widget.table.focus()
 
     def _hide_search_bar(self) -> None:
-        """Helper to swap main footer back"""
+        """Helper to swap main footer back."""
+
         self.search_bar.display = False
         self.main_footer.display = True

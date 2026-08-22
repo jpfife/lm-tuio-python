@@ -74,7 +74,7 @@ class LoadedModels(Static):
         yield self.loaded_models_scroll
 
     def load_model_groups(self, models: list[ModelInfo]) -> None:
-        """Populates model groups with loaded base models/instances."""
+        """Populate model groups with loaded base models/instances."""
 
         groups: list[LoadedModelGroup] = []
 
@@ -130,12 +130,14 @@ class LoadedModels(Static):
 
     def clear_model_list(self) -> None:
         """Clear model instance listings."""
+
         self.total_model_mem_val.update("0.00 MB")
         self._groups.clear()
         self._instance_map.clear()
 
     def refresh_groups(self) -> None:
-        """Rebuilds collapsible group listing based on current filter."""
+        """Rebuild collapsible group listing based on current filter."""
+
         self.loaded_models_scroll.remove_children()
         self.mount(self.total_model_mem, self.total_model_mem_val)
 
@@ -193,13 +195,15 @@ class LoadedModels(Static):
 
     def apply_filter(self, search_term: str) -> None:
         """Apply Dashboard search filter term to groups/instances."""
+
         self.current_filter = search_term
         self.refresh_groups()
 
     # ======= ACTIONS =======
 
     def action_toggle_group(self) -> None:
-        """Toggles all checkboxes in the currently focused SelectionList."""
+        """Toggle all checkboxes in the currently focused Loaded Models group."""
+
         focused = self.app.focused
         if isinstance(focused, SelectionList):
             all_selected = len(focused.selected) == len(focused.options)
@@ -209,7 +213,8 @@ class LoadedModels(Static):
                 focused.select_all()
 
     def action_unload_selected(self) -> None:
-        """Gathers all checkboxes across all collapsible groups and fires unload."""
+        """Gather all checkboxes across all collapsible groups and fires unload."""
+
         selected_ids: list[str] = []
         for sel_list in self.query(SelectionList):
             selected_ids.extend(sel_list.selected)
@@ -222,7 +227,8 @@ class LoadedModels(Static):
             )
 
     def action_unload_all(self) -> None:
-        """Sends all currently loaded model instances for unload."""
+        """Send all currently loaded model instances for unload."""
+
         all_ids = list(self._instance_map.keys())
         if all_ids:
             self.post_message(events.UnloadInstancesRequested(all_ids))
@@ -241,7 +247,8 @@ class LoadedModels(Static):
     def handle_instance_highlight(
         self, event: SelectionList.SelectionHighlighted
     ) -> None:
-        """Updates ContextPane when cursor moves over a specific loaded instance."""
+        """Update ContextPane when cursor moves over a specific loaded instance."""
+
         if not self.has_focus_within:
             return
 
@@ -252,6 +259,7 @@ class LoadedModels(Static):
     @on(DescendantFocus)
     def on_list_focus(self, event: DescendantFocus) -> None:
         """Restore cursor and re-emit selection when table gains focus."""
+
         focused = event.widget
         if not isinstance(focused, SelectionList):
             return

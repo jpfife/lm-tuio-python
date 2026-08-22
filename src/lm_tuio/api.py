@@ -29,10 +29,12 @@ api_action: dict[str, str] = {
 async def fetch_available_models(
     ip: str, port: int, api_key: str | None = None, timeout: float = API_TIMEOUT
 ) -> tuple[list[ModelInfo] | None, str | None]:
-    """Calls LM Studio /api/v1/models API to list downloaded models, does not describe model load config
+    """Call LM Studio /api/v1/models API to list downloaded models
 
-    Returns tuple: (List of ModelInfo objects, err)
+    Does not describe model load config.
+    Return tuple: (List of ModelInfo objects, err)
     """
+
     server_url: str = f"http://{ip}:{port}{api_action['models']}"
 
     headers: dict[str, str] = {}
@@ -65,6 +67,7 @@ async def unload_model_instances(
     ip: str, port: int, instance_ids: list[str], api_key: str | None = None
 ) -> tuple[bool, str | None]:
     """Send one or more model instances to be unloaded via LMS API /api/v1/unload endpoint."""
+
     if not instance_ids:
         return True, None
 
@@ -102,6 +105,7 @@ async def load_model_instance(
     timeout: float = API_TIMEOUT,
 ) -> tuple[dict[str, Any] | None, str | None]:
     """Send load request to LMS REST API and return response."""
+
     server_url: str = f"http://{ip}:{port}{api_action['load']}"
 
     headers: dict[str, str] = {}
@@ -125,7 +129,8 @@ async def load_model_instance(
 async def check_server_status(
     ip: str, port: int, api_key: str | None = None, timeout: float = API_TIMEOUT
 ) -> bool:
-    """Lightweight http ping to LMS server endpoint"""
+    """Lightweight http ping to LMS server endpoint."""
+
     server_url: str = f"http://{ip}:{port}{api_action['models']}"
 
     headers: dict[str, str] = {}
@@ -150,6 +155,7 @@ async def start_download(
     timeout: float = API_TIMEOUT,
 ) -> tuple[str | None, str | None, str | None]:
     """Initiate API model download.
+
     Return tuple(job_id, status, error).
     """
 
@@ -177,7 +183,8 @@ async def start_download(
 async def check_download_progress(
     ip: str, port: int, job_id: str, api_key: str | None = None, timeout: float = 10.0
 ) -> tuple[dict[str, Any] | None, str | None]:
-    """Check the status of a download job."""
+    """Check status of a download job."""
+
     server_url: str = f"http://{ip}:{port}{api_action['dl_progress']}/{job_id}"
 
     headers: dict[str, str] = {}

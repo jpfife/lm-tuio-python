@@ -184,6 +184,7 @@ class ContextPane(Static):
 
     def update_model_context(self, model: mdl.ModelInfo | None) -> None:
         """Update context value fields based on highlighted model"""
+
         self.ctx_insts_table.clear()
         labels = self.query(Label).exclude("#ctx-placeholder")
 

@@ -13,7 +13,7 @@ from lm_tuio.config import KeymapManager
 
 
 class KeybindSection(Static):
-    """Renders single TOML table section from keymap config file."""
+    """Render single TOML table section from keymap config file."""
 
     def __init__(self, title: str, bindings_data: dict[str, Any]) -> None:
         super().__init__()
@@ -21,7 +21,8 @@ class KeybindSection(Static):
         self.bindings_data = bindings_data
 
     def render(self) -> Table:
-        """Builds a two-column table for each section in keymap config file."""
+        """Build a two-column table for each section in keymap config file."""
+
         table = Table(
             title=f"[bold cyan][ {self.section_title} ][/]".replace("_", " "),
             title_justify="left",

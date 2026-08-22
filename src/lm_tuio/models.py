@@ -1,4 +1,4 @@
-"""Establishes data structures for LMS Native v1 REST API GET Models response and display.
+"""Establish data structures for LMS Native v1 REST API GET Models response and display.
 
 Optional JSON fields from API response may be 'None'.
 """
@@ -16,7 +16,8 @@ from lm_tuio.config import KeymapManager
 
 
 def format_bytes(size: int) -> str:
-    """Converts bytes to MB or GB for model listing"""
+    """Convert bytes to KB|MB|GB|TB."""
+
     TB: int = 1024**4
     GB: int = 1024**3
     MB: int = 1024**2
@@ -47,6 +48,7 @@ def estimate_context_cache_memory(file_size_bytes: int, context_size_bytes) -> i
 
     Assume 1GB per 8K context at 32 layers.
     """
+
     GB: int = 1024**3
     tier1_token: int = 32 * 4096
     tier2_token: int = 64 * 4096
@@ -129,7 +131,7 @@ class ModelListResponse(BaseModel):
 
 
 class BaseModelTable(Static):
-    """Base class for model display tables (Loaded/Downloaded models)"""
+    """Base class for model display tables (Loaded/Downloaded models)."""
 
     BINDINGS = KeymapManager.get_bindings("tables")
 
@@ -169,18 +171,21 @@ class BaseModelTable(Static):
         self._all_models.clear()
 
     def load_models(self, models: list[ModelInfo]) -> None:
-        """Populate downloaded models dataset"""
+        """Populate downloaded models dataset."""
+
         self.clear_model_list()
         self._all_models = {m.key: m for m in models}
         self.refresh_table()
 
     def apply_filter(self, search_term: str) -> None:
-        """Updates filter criteria and refreshes display"""
+        """Update filter criteria and refreshes display."""
+
         self.current_filter = search_term.lower()
         self.refresh_table()
 
     def refresh_table(self) -> None:
-        """Filter, sort, and model table"""
+        """Filter, sort, and display model table."""
+
         self.table.clear()
 
         filtered_models = [
@@ -222,6 +227,7 @@ class BaseModelTable(Static):
 
     def action_sort_on_name(self) -> None:
         """Sort model table by display name, or reverse sort if already sorted on name."""
+
         if self.current_sort == self.SortType.NAME:
             self.sort_reverse = not self.sort_reverse
         else:
@@ -231,6 +237,7 @@ class BaseModelTable(Static):
 
     def action_sort_on_size(self) -> None:
         """Sort model table by size of model, or reverse sort if already sorted on size."""
+
         if self.current_sort == self.SortType.SIZE:
             self.sort_reverse = not self.sort_reverse
         else:
@@ -242,7 +249,8 @@ class BaseModelTable(Static):
 
     @on(DataTable.RowHighlighted)
     def handle_row_highlight(self, event: DataTable.RowHighlighted) -> None:
-        """Fires when navigating through table."""
+        """Fires when navigating through focused table."""
+
         if not self.has_focus_within or not self.table.row_count > 0:
             return
 
@@ -254,6 +262,7 @@ class BaseModelTable(Static):
     @on(DescendantFocus)
     def on_table_focus(self) -> None:
         """Restore cursor and re-emit selection when table gains focus."""
+
         self.table.show_cursor = True
 
         if self.table.row_count > 0 and self.table.cursor_row is not None:
@@ -269,6 +278,7 @@ class BaseModelTable(Static):
     @on(DescendantBlur)
     def on_table_blur(self) -> None:
         """Hide table cursor when focus moves to another pane."""
+
         self.table.show_cursor = False
 
 
@@ -318,6 +328,7 @@ class DownloadedModels(BaseModelTable):
 
     def on_resize(self, event: Resize) -> None:
         """Set table column widths dynamically to fit terminal size."""
+
         total_width: int = event.container_size.width
 
         for col_key, pct in zip(self.table.columns.keys(), self.COL_WIDTH_PCTS):
@@ -346,6 +357,7 @@ class ModelInstanceTable(DataTable):
 
     def on_resize(self, event: Resize) -> None:
         """Set table column widths dynamically to fit terminal size."""
+
         total_width: int = event.container_size.width
 
         for col_key, pct in zip(self.columns.keys(), self.COL_WIDTH_PCTS):

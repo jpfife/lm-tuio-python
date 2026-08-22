@@ -6,7 +6,7 @@ from lm_tuio.models import ModelInfo
 
 
 class ActionLogUpdate(Message):
-    """Relays message for Dashboard ActionLog logging system."""
+    """Relay message for Dashboard ActionLog logging system."""
 
     def __init__(self, msg: str, severity: str = "info") -> None:
         super().__init__()
@@ -15,7 +15,7 @@ class ActionLogUpdate(Message):
 
 
 class ServerEndpointUpdated(Message):
-    """Fires when selecting new server or network config changes."""
+    """Fire when selecting new server or network config changes."""
 
     def __init__(self, ip: str, port: int) -> None:
         super().__init__()
@@ -24,7 +24,7 @@ class ServerEndpointUpdated(Message):
 
 
 class ServerConnected(Message):
-    """Fired when ConnectionStatus widget successfully pings server."""
+    """Fire when ConnectionStatus widget successfully pings server."""
 
     def __init__(self, ip: str, port: int) -> None:
         super().__init__()
@@ -33,7 +33,7 @@ class ServerConnected(Message):
 
 
 class ModelSelected(Message):
-    """Fired when model is highlighted in Loaded/Downloaded Models lists."""
+    """Fire when model is highlighted in Loaded/Downloaded Models lists."""
 
     def __init__(self, model: ModelInfo | None) -> None:
         super().__init__()
@@ -41,7 +41,7 @@ class ModelSelected(Message):
 
 
 class ModelLoadRequest(Message):
-    """Fired when model selected for load in Downloaded Models table."""
+    """Fire when model selected for load in Downloaded Models table."""
 
     def __init__(self, model: ModelInfo | None) -> None:
         super().__init__()
@@ -49,7 +49,7 @@ class ModelLoadRequest(Message):
 
 
 class UnloadInstancesRequested(Message):
-    """Fired when user requests unload of one or more instances."""
+    """Fire when user requests unload of one or more instances."""
 
     def __init__(self, instance_ids: list[str]) -> None:
         super().__init__()

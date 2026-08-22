@@ -164,6 +164,7 @@ class LoadModelModal(ModalScreen[dict[str, Any] | None]):
 
     def on_mount(self) -> None:
         """Hide advanced LLM options completely if an embedding model is selected."""
+
         self.query_one("#check-defaults").focus()
 
         if self.model_type == "embedding":
@@ -177,6 +178,7 @@ class LoadModelModal(ModalScreen[dict[str, Any] | None]):
 
     def action_dismiss_modal(self) -> None:
         """Cancel and dismiss modal."""
+
         self.dismiss(None)
 
     def action_submit_load_model(self) -> None:
@@ -187,6 +189,7 @@ class LoadModelModal(ModalScreen[dict[str, Any] | None]):
     @on(Checkbox.Changed, "#check-defaults")
     def handle_defaults_toggle(self, event: Checkbox.Changed) -> None:
         """Enable or disable input controls based on whether defaults is checked."""
+
         advanced_section = self.query_one("#advanced-options-group", VerticalGroup)
         advanced_section.disabled = event.value
 
@@ -202,6 +205,7 @@ class LoadModelModal(ModalScreen[dict[str, Any] | None]):
     @on(Input.Changed, "#input-context-length")
     def handle_context_changed(self, event: Input.Changed) -> None:
         """Update the ASCII context progress bar in real time."""
+
         val_str: str = event.value.strip()
         new_val: int = int(val_str) if val_str.isdigit() else 0
         new_val = min(new_val, self.max_context)
@@ -218,6 +222,7 @@ class LoadModelModal(ModalScreen[dict[str, Any] | None]):
     @on(Button.Pressed, "#btn-load-submit")
     def handle_submit(self) -> None:
         """Build the API payload and pass it back to Dashboard via dismiss callback."""
+
         use_defaults = self.query_one("#check-defaults", Checkbox).value
         override_context = self.query_one("#check-context-override", Checkbox).value
 
