@@ -11,13 +11,13 @@ from textual.containers import Horizontal, Vertical
 from textual.screen import ModalScreen
 from textual.widgets import Button, Footer, Input, Label
 
-from lm_tuio.config import keymap
+from lm_tuio.config import KeymapManager
 
 
 class DownloadModelModal(ModalScreen[str | None]):
     """Capture model download target and pass back to Dashboard."""
 
-    BINDINGS = keymap.KeymapManager.get_bindings("download_models")
+    BINDINGS = KeymapManager.get_bindings("download_models")
 
     explainer: str = "Enter a direct HuggingFace URL or LM Studio model catalog ID. Example:\n\thttps://huggingface.co/lmstudio-community/gpt-oss-20b-GGUF or\n\topenai/gpt-oss-20b"
 

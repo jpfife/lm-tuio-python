@@ -9,7 +9,7 @@ from textual.containers import Grid, VerticalScroll
 from textual.screen import ModalScreen
 from textual.widgets import Footer, Label, Static
 
-from lm_tuio.config.keymap import KeymapManager
+from lm_tuio.config import KeymapManager
 
 
 class KeybindSection(Static):

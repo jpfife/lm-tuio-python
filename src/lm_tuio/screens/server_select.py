@@ -11,8 +11,7 @@ from textual.containers import Horizontal, Vertical
 from textual.screen import ModalScreen
 from textual.widgets import Button, Footer, Input, Label, OptionList
 
-from lm_tuio.config import keymap, secrets
-from lm_tuio.config.settings import AppConfig, validate_ip_net
+from lm_tuio.config import AppConfig, KeymapManager, SecretsManager, validate_ip_net
 from lm_tuio.events import ServerEndpointUpdated
 from lm_tuio.scanner import scan_targets
 
@@ -29,7 +28,7 @@ class ServerSelectionModal(
     to update ActionLog on the Dashboard.
     """
 
-    BINDINGS = keymap.KeymapManager.get_bindings("server_select")
+    BINDINGS = KeymapManager.get_bindings("server_select")
 
     current_ip: str
     current_port: int
@@ -155,7 +154,7 @@ class ServerSelectionModal(
         if isinstance(app_config, AppConfig) and app_config.cached_ips:
             self.cache_list.add_options(app_config.cached_ips)
 
-        self.api_key_widget.value = secrets.SecretsManager.get_api_key(
+        self.api_key_widget.value = SecretsManager.get_api_key(
             self.current_ip, self.current_port
         )
         self.exectute_network_scan(self.default_subnet, self.current_port)
@@ -306,7 +305,7 @@ class ServerSelectionModal(
         if (ip and port) is not None:
             assert isinstance(ip, str)
             assert isinstance(port, int)
-            secrets.SecretsManager.save_api_key(ip, port, api_key)
+            SecretsManager.save_api_key(ip, port, api_key)
             self.post_message(ServerEndpointUpdated(ip, port))
 
             endpoint_str: str = f"{ip}:{port}"
@@ -343,7 +342,7 @@ class ServerSelectionModal(
         if (ip and port) is not None:
             assert isinstance(ip, str)
             assert isinstance(port, int)
-            secrets.SecretsManager.save_api_key(ip, port, api_key)
+            SecretsManager.save_api_key(ip, port, api_key)
 
         else:
             err_msg: str = "Error validating network enpoint."
@@ -448,9 +447,7 @@ class ServerSelectionModal(
         )
         key: str = ""
         if ip and port:
-            key = secrets.SecretsManager.get_api_key(
-                ip, port
-            )  # Returns empty str if None
+            key = SecretsManager.get_api_key(ip, port)  # Returns empty str if None
 
         return selected_endpoint, key
 
@@ -490,7 +487,7 @@ class ServerSelectionModal(
 
             # Clear endpoints from SECRETS_FILE
             if purge_endpoints:
-                secrets.SecretsManager.remove_endpoints(purge_endpoints)
+                SecretsManager.remove_endpoints(purge_endpoints)
 
             app_config.cached_ips.clear()
             app_config.save()

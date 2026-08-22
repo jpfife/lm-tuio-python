@@ -12,16 +12,8 @@ from textual.reactive import reactive
 from textual.screen import Screen
 from textual.widgets import Footer, Input, Label, ProgressBar
 
-from lm_tuio import api, events, models as md
-from lm_tuio.components import ActionLog, ConnectionStatus, ContextPane, Title
-from lm_tuio.components.loaded_models import LoadedModels
-from lm_tuio.config import keymap
-from lm_tuio.screens.actionlog_modal import ActionLogModal
-from lm_tuio.screens.download_model_modal import DownloadModelModal
-from lm_tuio.screens.keybind_helper import KeybindsModal
-from lm_tuio.screens.load_model import LoadModelModal
-from lm_tuio.screens.server_select import ServerSelectionModal
-
+from lm_tuio import api, components as comp, events, models as mdl, screens
+from lm_tuio.config import KeymapManager
 
 DL_CHECK_INTVL: float = 2.0
 MAX_NUM_DL_STATUS_ERROR = 5
@@ -32,30 +24,30 @@ class DashboardScreen(Screen):
 
     AUTO_FOCUS = "#downloaded_models"
 
-    BINDINGS = keymap.KeymapManager.get_bindings("global")
+    BINDINGS = KeymapManager.get_bindings("global")
 
     filter_str: reactive[str] = reactive("")
 
     def compose(self) -> ComposeResult:
         # Set widget instances
-        self.connection_widget: ConnectionStatus = ConnectionStatus(
+        self.connection_widget: comp.ConnectionStatus = comp.ConnectionStatus(
             "Connection Status", id="conn-status", classes="box"
         )
         self.connection_widget.border_title = self.connection_widget.name
 
-        self.title_widget: Title = Title(
+        self.title_widget: comp.Title = comp.Title(
             name="LM Studio Dashboard", id="logo-title", classes="box"
         )
         self.title_widget.border_subtitle = self.title_widget.name
 
-        self.actionlog_widget: ActionLog = ActionLog(
+        self.actionlog_widget: comp.ActionLog = comp.ActionLog(
             name="Actions / Logs",
             id="action-log",
             classes="box",
         )
         self.actionlog_widget.border_title = self.actionlog_widget.name
 
-        self.loadedmodels_widget: LoadedModels = LoadedModels(
+        self.loadedmodels_widget: comp.LoadedModels = comp.LoadedModels(
             post_unload_model_request_callback=events.UnloadInstancesRequested,
             post_highlighted_model_callback=events.ModelSelected,
             name="Actively Loaded Models",
@@ -64,7 +56,7 @@ class DashboardScreen(Screen):
         )
         self.loadedmodels_widget.border_title = self.loadedmodels_widget.name
 
-        self.downloadedmodels_widget: md.DownloadedModels = md.DownloadedModels(
+        self.downloadedmodels_widget: mdl.DownloadedModels = mdl.DownloadedModels(
             post_highlighted_model_callback=events.ModelSelected,
             post_model_load_callback=events.ModelLoadRequest,
             post_action_logger_update_callback=events.ActionLogUpdate,
@@ -74,7 +66,7 @@ class DashboardScreen(Screen):
         )
         self.downloadedmodels_widget.border_title = self.downloadedmodels_widget.name
 
-        self.contextpane_widget: ContextPane = ContextPane(
+        self.contextpane_widget: comp.ContextPane = comp.ContextPane(
             name="Details",
             id="context-pane",
             classes="box",
@@ -131,14 +123,14 @@ class DashboardScreen(Screen):
         self.loadedmodels_widget.refresh_groups()
         self.contextpane_widget.update_model_context(None)
 
-    def load_model_modal(self, model: md.ModelInfo) -> None:
+    def load_model_modal(self, model: mdl.ModelInfo) -> None:
         """Spawn Load Model modal and send API request to LMS endpoint."""
 
         def _on_dismiss(payload: dict[str, Any] | None) -> None:
             if payload is not None:
                 self._api_load_request(model, payload)
 
-        self.app.push_screen(LoadModelModal(model), callback=_on_dismiss)
+        self.app.push_screen(screens.LoadModelModal(model), callback=_on_dismiss)
 
     def _get_horizontal_panes(self) -> list:
         """Returns the ordered list of primary focusable widgets from left to right."""
@@ -209,7 +201,7 @@ class DashboardScreen(Screen):
 
     @work(exclusive=True)
     async def _api_load_request(
-        self, model: md.ModelInfo, payload: dict[str, Any] | None
+        self, model: mdl.ModelInfo, payload: dict[str, Any] | None
     ):
         if payload is None:
             return
@@ -446,7 +438,7 @@ class DashboardScreen(Screen):
             for log in logs:
                 self.post_message(events.ActionLogUpdate(log[0], log[1]))
 
-        self.app.push_screen(ServerSelectionModal(), callback=is_same_server)
+        self.app.push_screen(screens.ServerSelectionModal(), callback=is_same_server)
 
     def action_refresh_models(self) -> None:
         self.actionlog_widget.add_entry("Refreshing model lists...", "info")
@@ -463,7 +455,7 @@ class DashboardScreen(Screen):
 
     def action_show_keybinds(self) -> None:
         """Open keybinds help screen."""
-        self.app.push_screen(KeybindsModal())
+        self.app.push_screen(screens.KeybindsModal())
 
     def action_unload_all(self) -> None:
         self.loadedmodels_widget.action_unload_all()
@@ -471,7 +463,7 @@ class DashboardScreen(Screen):
     def action_show_action_log(self) -> None:
         """Spawn full viewer Action Log."""
         log_history = self.actionlog_widget.history
-        self.app.push_screen(ActionLogModal(history=log_history))
+        self.app.push_screen(screens.ActionLogModal(history=log_history))
 
     def action_download_model(self) -> None:
         """Spawn Download Model modal."""
@@ -480,7 +472,7 @@ class DashboardScreen(Screen):
             if target is not None:
                 self.manage_model_download(target)
 
-        self.app.push_screen(DownloadModelModal(), callback=_on_model_submit)
+        self.app.push_screen(screens.DownloadModelModal(), callback=_on_model_submit)
 
     # ========= EVENTS ==========
 

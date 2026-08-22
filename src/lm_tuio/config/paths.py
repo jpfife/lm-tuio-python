@@ -6,7 +6,10 @@ from pathlib import Path
 
 def get_config_path(filename: str) -> Path:
     """Resolve config path for settings functions.
-    Prefer local file in current working directory, else use ~/.config/lm-tuio"""
+
+    Prefer local file in current working directory, else use ~/.config/lm-tuio
+    """
+
     local_path = Path.cwd() / filename
     if local_path.exists():
         return local_path

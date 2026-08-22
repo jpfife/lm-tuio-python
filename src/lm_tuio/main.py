@@ -6,9 +6,9 @@ Spawns TUI if script flags not passed.
 
 from textual.app import App
 
-from lm_tuio.config.settings import AppConfig
+from lm_tuio.config import AppConfig
 from lm_tuio.events import ActionLogUpdate
-from lm_tuio.screens.dashboard import DashboardScreen
+from lm_tuio.screens import DashboardScreen
 
 
 class LMTuioApp(App):

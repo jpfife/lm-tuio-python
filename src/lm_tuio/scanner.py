@@ -8,7 +8,7 @@ Default scan parameters: 192.168.1.0/24, port 1234.
 import asyncio
 import ipaddress
 
-from lm_tuio.config.settings import AppConfig
+from lm_tuio.config import AppConfig
 
 
 async def check_host(ip: str, port: int, timeout: float = 2.0) -> str | None:

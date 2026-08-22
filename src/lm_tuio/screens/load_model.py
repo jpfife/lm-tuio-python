@@ -3,21 +3,12 @@
 from typing import Any
 
 from textual import on
-from textual.reactive import reactive
 from textual.app import ComposeResult
 from textual.binding import Binding
-from textual.containers import Grid, Horizontal, Vertical, VerticalGroup, VerticalScroll
+from textual.containers import Horizontal, Vertical, VerticalGroup
+from textual.reactive import reactive
 from textual.screen import ModalScreen
-from textual.widgets import (
-    Button,
-    Checkbox,
-    Collapsible,
-    Footer,
-    Input,
-    Label,
-    Rule,
-    Static,
-)
+from textual.widgets import Button, Checkbox, Footer, Input, Label, Rule, Static
 
 from lm_tuio.models import ModelInfo, estimate_context_cache_memory, format_bytes
 

@@ -6,13 +6,13 @@ from textual.screen import ModalScreen
 from textual.widgets import Footer, Label, RichLog
 
 from lm_tuio.components.action_log import LogColor
-from lm_tuio.config import keymap
+from lm_tuio.config import KeymapManager
 
 
 class ActionLogModal(ModalScreen[None]):
     """A larger, scrollable view of the ActionLog with clipboard support."""
 
-    BINDINGS = keymap.KeymapManager.get_bindings("action_log_viewer")
+    BINDINGS = KeymapManager.get_bindings("action_log_viewer")
 
     def __init__(self, history: list[tuple[str, str, str]], *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)

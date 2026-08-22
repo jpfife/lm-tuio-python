@@ -3,7 +3,7 @@
 Optional JSON fields from API response may be 'None'.
 """
 
-from _collections_abc import Callable
+from collections.abc import Callable
 from enum import StrEnum
 
 from pydantic import BaseModel
@@ -12,7 +12,7 @@ from textual.app import ComposeResult
 from textual.events import DescendantBlur, DescendantFocus, Resize
 from textual.widgets import DataTable, Static
 
-from lm_tuio.config import keymap
+from lm_tuio.config import KeymapManager
 
 
 def format_bytes(size: int) -> str:
@@ -131,7 +131,7 @@ class ModelListResponse(BaseModel):
 class BaseModelTable(Static):
     """Base class for model display tables (Loaded/Downloaded models)"""
 
-    BINDINGS = keymap.KeymapManager.get_bindings("tables")
+    BINDINGS = KeymapManager.get_bindings("tables")
 
     MAX_MOD_COL_WIDTH: int = 40
     MAX_SIZE_COL_WIDTH: int = 9
@@ -334,7 +334,7 @@ class DownloadedModels(BaseModelTable):
 class ModelInstanceTable(DataTable):
     """Widget to display current running instances and associated context."""
 
-    BINDINGS = keymap.KeymapManager.get_bindings("tables")
+    BINDINGS = KeymapManager.get_bindings("tables")
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)

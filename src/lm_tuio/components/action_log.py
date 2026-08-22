@@ -6,7 +6,7 @@ from zoneinfo import ZoneInfo
 
 from textual.widgets import RichLog
 
-from lm_tuio.config import keymap
+from lm_tuio.config import KeymapManager
 
 
 class LogColor(StrEnum):
@@ -19,7 +19,7 @@ class LogColor(StrEnum):
 class ActionLog(RichLog):
     """Header widget for real-time app and API telemetry."""
 
-    BINDINGS = keymap.KeymapManager.get_bindings("action_log")
+    BINDINGS = KeymapManager.get_bindings("action_log")
 
     history: list[tuple[str, str, str]]
     timezone: str

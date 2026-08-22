@@ -11,7 +11,7 @@ from textual.widgets import Collapsible, Label, SelectionList, Static
 from textual.widgets.selection_list import Selection
 
 from lm_tuio import events
-from lm_tuio.config import keymap
+from lm_tuio.config import KeymapManager
 from lm_tuio.models import ModelInfo, format_bytes
 
 
@@ -36,7 +36,7 @@ class LoadedModelGroup:
 class LoadedModels(Static):
     """Collapsible view of running instances."""
 
-    BINDINGS = keymap.KeymapManager.get_bindings("loaded_models")
+    BINDINGS = KeymapManager.get_bindings("loaded_models")
 
     def __init__(
         self,
