@@ -11,7 +11,13 @@ from textual.containers import Horizontal, Vertical
 from textual.screen import ModalScreen
 from textual.widgets import Button, Footer, Input, Label, OptionList
 
-from lm_tuio.config import AppConfig, KeymapManager, SecretsManager, validate_ip_net
+from lm_tuio.config import (
+    AppConfig,
+    KeymapManager,
+    SecretsManager,
+    validate_ip_net,
+    validate_port,
+)
 from lm_tuio.events import ServerEndpointUpdated
 from lm_tuio.scanner import scan_targets
 
@@ -184,23 +190,17 @@ class ServerSelectionModal(
             active_list.disabled = True
             return
 
-        try:
+        port_msg, port_severity = validate_port(target_port)
+        if isinstance(port_msg, str) and isinstance(port_severity, str):
+            self.notify(
+                port_msg,
+                severity="error",
+                timeout=AppConfig.NOTIFY_TIMEOUT,
+            )
+            self.logs.append((port_msg, port_severity))
+            port_num = 1234
+        else:
             port_num: int = int(target_port)
-            assert 1 <= port_num <= 65535
-        except ValueError as err:
-            self.notify(
-                "Scan port must be a number between 1-65535",
-                severity="error",
-                timeout=AppConfig.NOTIFY_TIMEOUT,
-            )
-            return
-        except AssertionError as _err:
-            self.notify(
-                "Invalid port number. Must be between 1-65535",
-                severity="error",
-                timeout=AppConfig.NOTIFY_TIMEOUT,
-            )
-            return
 
         self.logs.append((f"Scanned {valid_net}", "info"))
         active_list.add_option("Scanning...")

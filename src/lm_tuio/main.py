@@ -4,9 +4,11 @@ Spawns TUI if script flags not passed.
 """
 # TODO: Add TUI vs Script detection and launch options
 
+import sys
+
 from textual.app import App
 
-from lm_tuio.config import AppConfig
+from lm_tuio.config import AppConfig, parse_cli
 from lm_tuio.events import ActionLogUpdate
 from lm_tuio.screens import DashboardScreen
 
@@ -15,8 +17,12 @@ class LMTuioApp(App):
     CSS_PATH = "styles.tcss"
     config: AppConfig
 
+    def __init__(self, cli_args: dict[str, str | int] | None = None) -> None:
+        super().__init__()
+        self._cli_args = cli_args
+
     def on_mount(self) -> None:
-        loaded_config, err = AppConfig.load()
+        loaded_config, err = AppConfig.load(cli_args=self._cli_args)
         self.config = loaded_config if loaded_config else AppConfig()
 
         if err:
@@ -32,7 +38,8 @@ class LMTuioApp(App):
 
 
 def main():
-    app = LMTuioApp()
+    cli_args = parse_cli()
+    app = LMTuioApp(cli_args)
     app.run()
 
 

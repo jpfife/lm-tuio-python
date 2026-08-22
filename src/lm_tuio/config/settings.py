@@ -78,9 +78,16 @@ class AppConfig:
 
     @classmethod
     def load(
-        cls, args_list: list[str] | None = None, custom_path: str | None = None
+        cls,
+        cli_args: dict[str, str | int] | None = None,
+        custom_path: str | None = None,
     ) -> tuple["AppConfig | None", str | None]:
-        """Load configs into AppConfig instance."""
+        """Load configs into AppConfig instance.
+        Args:
+            cli_args: pre-parsed CLI args dict from config parse_cli().
+                Overrides defaults and config.toml. Pass None to skip.
+            custom_path: Optional path to config.toml override.
+        """
 
         conf_path: Path = (
             Path(custom_path) if custom_path else paths.get_config_path(SETTINGS_CONFIG)
@@ -110,24 +117,30 @@ class AppConfig:
 
         # CLI args override defaults and config.toml
         # Parser handles err independently, only returns dict
-        if args_list:
-            assert isinstance(args_list, list)
-            cli_updates = cls._parse_arguments(args_list)
-            config_data.update(cli_updates)
+        if cli_args:
+            config_data.update(cli_args)
 
-        valid_target, err = validate_ip_net(config_data["target"])
+        valid_target, target_err = validate_ip_net(config_data["target"])
         valid_network, net_err = validate_ip_net(config_data["scan_subnet"])
+        port_err, _ = validate_port(config_data["port"])
 
-        # Check for fatal validation error
-        if err is not None:
-            return None, err
+        # Check for fatal validation errors
+        if target_err is not None:
+            logs.append(target_err)
+        else:
+            assert isinstance(valid_target, str)
+            config_data["is_network"] = "/32" not in valid_target
+
         if net_err is not None:
-            return None, net_err
+            logs.append(net_err)
+        else:
+            assert isinstance(valid_network, str)
+            config_data["scan_subnet"] = valid_network
 
-        assert isinstance(valid_target, str)
-        assert isinstance(valid_network, str)
-        config_data["is_network"] = "/32" not in valid_target
-        config_data["scan_subnet"] = valid_network
+        if port_err is not None:
+            logs.append(port_err)
+            config_data["port"] = 1234
+
         config_data["config_path"] = str(conf_path)
 
         # NOTE: Add class attributes separate from dataclass fields
@@ -186,31 +199,27 @@ class AppConfig:
         except Exception as err:
             return updates, f"Error reading config.toml: {err}"
 
-    @staticmethod
-    def _parse_arguments(args_list: list[str]) -> dict[str, Any]:
-        """Parse CLI args and return a dictionary of valid updates."""
 
-        parser = argparse.ArgumentParser(
-            description="LM Studio remote server management and TUI interface."
-        )
-        parser.add_argument(
-            "target_ip", nargs="?", type=str, help="Target IP address or subnet"
-        )
-        parser.add_argument("-n", "--network", type=str, help="Target network subnet")
-        parser.add_argument("-p", "--port", type=int, help="Target port")
+def validate_port(port: int | str) -> tuple[str | None, str | None]:
+    """Validate passed server port number.
+    Arg type is validated by CLI parser on load, so ValueError should occur.
+    """
 
-        parsed_args = vars(parser.parse_args(args_list))
-        updates: dict[str, Any] = {}
-
-        # Apply CLI overrides
-        if parsed_args.get("target_ip"):
-            updates["target"] = str(parsed_args["target_ip"])
-        if parsed_args.get("port"):
-            updates["port"] = int(parsed_args["port"])
-        if parsed_args.get("network"):
-            updates["scan_subnet"] = str(parsed_args["network"])
-
-        return updates
+    try:
+        if isinstance(port, str):
+            port_num: int = int(port)
+        else:
+            port_num: int = port
+        assert 1 <= port_num <= 65535
+    except ValueError:
+        msg: str = "Scan port must be a number between 1-65535"
+        severity = "error"
+        return msg, severity
+    except AssertionError:
+        msg: str = "Invalid port number. Must be between 1-65535"
+        severity = "error"
+        return msg, severity
+    return None, None
 
 
 def validate_ip_net(target: str) -> tuple[str | None, str | None]:
@@ -222,6 +231,7 @@ def validate_ip_net(target: str) -> tuple[str | None, str | None]:
 
     IPv4Network strict=False allows for host bits to be set for subnet scan.
     """
+
     try:
         network_obj: ipaddress.IPv4Network = ipaddress.IPv4Network(target, strict=False)
         return str(network_obj), None

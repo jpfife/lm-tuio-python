@@ -46,6 +46,8 @@ class ConnectionStatus(Static):
     status: reactive[str] = reactive(Connection.YELLOW)
     server_ip: reactive[str] = reactive("127.0.0.1")
     server_port: reactive[int] = reactive(1234)
+
+    scan_subnet: str = "192.168.1.0/24"
     api_key: str = ""
 
     def __init__(self, *args, **kwargs):
@@ -57,6 +59,7 @@ class ConnectionStatus(Static):
             assert isinstance(app_config, AppConfig)
             self.server_ip = app_config.target
             self.server_port = app_config.port
+            self.scan_subnet = app_config.scan_subnet
         else:
             self.post_message(
                 ActionLogUpdate("Could not load config.toml. Using defaults...", "warn")
@@ -65,6 +68,7 @@ class ConnectionStatus(Static):
             assert isinstance(default_config, AppConfig)
             self.server_ip = default_config.target
             self.server_port = default_config.port
+            self.scan_subnet = default_config.scan_subnet
 
         self.api_key = SecretsManager.get_api_key(self.server_ip, self.server_port)
 

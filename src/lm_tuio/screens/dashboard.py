@@ -450,7 +450,14 @@ class DashboardScreen(Screen):
             for log in logs:
                 self.post_message(events.ActionLogUpdate(log[0], log[1]))
 
-        self.app.push_screen(screens.ServerSelectionModal(), callback=is_same_server)
+        self.app.push_screen(
+            screens.ServerSelectionModal(
+                ip=self.connection_widget.server_ip,
+                port=self.connection_widget.server_port,
+                subnet=self.connection_widget.scan_subnet,
+            ),
+            callback=is_same_server,
+        )
 
     def action_refresh_models(self) -> None:
         self.actionlog_widget.add_entry("Refreshing model lists...", "info")
