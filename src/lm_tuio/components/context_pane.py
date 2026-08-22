@@ -4,7 +4,7 @@ from textual.app import ComposeResult
 from textual.containers import Horizontal, Vertical
 from textual.widgets import Label, Static
 
-from lm_tuio import models as mdl
+from lm_tuio import models
 
 
 class ContextPane(Static):
@@ -76,7 +76,7 @@ class ContextPane(Static):
             "", id="ctx-kv-memory-val", classes="ctx-values hidden"
         )
 
-        self.ctx_insts_table: mdl.ModelInstanceTable = mdl.ModelInstanceTable(
+        self.ctx_insts_table: models.ModelInstanceTable = models.ModelInstanceTable(
             id="ctx-insts-table"
         )
 
@@ -133,13 +133,15 @@ class ContextPane(Static):
         separator = self.query_one("#ctx-separator", Horizontal)
         separator.border_title = " Loaded "
 
-    def _update_base_model_info(self, model: mdl.ModelInfo) -> None:
+    def _update_base_model_info(self, model: models.ModelInfo) -> None:
         """Helper to update base model details pane widgets."""
 
         self.ctx_name_val.update(f"{model.key}")
         self.ctx_publisher_val.update(f"{model.publisher}")
         self.ctx_arch_val.update(f"{model.architecture}")
-        self.ctx_max_context_val.update(f"{mdl.format_bytes(model.max_context_length)}")
+        self.ctx_max_context_val.update(
+            f"{models.format_bytes(model.max_context_length)}"
+        )
 
         quant = (
             f"{model.quantization.bits_per_weight}-bit: {model.quantization.name}"
@@ -151,7 +153,7 @@ class ContextPane(Static):
 
         self.ctx_num_loaded_insts_val.update(f"{len(model.loaded_instances)}")
 
-    def _update_loaded_model_info(self, model: mdl.ModelInfo) -> None:
+    def _update_loaded_model_info(self, model: models.ModelInfo) -> None:
         """Helper to update loaded model instance details pane widgets."""
 
         size_bytes: int = model.size_bytes * len(model.loaded_instances)
@@ -164,25 +166,29 @@ class ContextPane(Static):
             else:
                 ids_str = f"{mdl.id}"
 
-            ctx_str = f"{mdl.format_bytes(mdl.config.context_length)} ({mdl.config.context_length})"
+            ctx_str = f"{models.format_bytes(mdl.config.context_length)} ({mdl.config.context_length})"
 
-            context_bytes += mdl.estimate_context_cache_memory(
+            context_bytes += models.estimate_context_cache_memory(
                 model.size_bytes, mdl.config.context_length
             )
 
             self.ctx_insts_table.add_row(ids_str, ctx_str)
 
-        memory_str: str = f"{mdl.format_bytes(size_bytes)}"
-        kv_mem_str: str = f"KV Q16 - {mdl.format_bytes(context_bytes + size_bytes)}\n"
-        kv_mem_str += (
-            f"KV Q8  - {mdl.format_bytes((context_bytes // 2) + size_bytes)}\n"
+        memory_str: str = f"{models.format_bytes(size_bytes)}"
+        kv_mem_str: str = (
+            f"KV Q16 - {models.format_bytes(context_bytes + size_bytes)}\n"
         )
-        kv_mem_str += f"KV Q4  - {mdl.format_bytes((context_bytes // 4) + size_bytes)}"
+        kv_mem_str += (
+            f"KV Q8  - {models.format_bytes((context_bytes // 2) + size_bytes)}\n"
+        )
+        kv_mem_str += (
+            f"KV Q4  - {models.format_bytes((context_bytes // 4) + size_bytes)}"
+        )
 
         self.ctx_total_memory_val.update(memory_str)
         self.ctx_kv_memory_val.update(kv_mem_str)
 
-    def update_model_context(self, model: mdl.ModelInfo | None) -> None:
+    def update_model_context(self, model: models.ModelInfo | None) -> None:
         """Update context value fields based on highlighted model"""
 
         self.ctx_insts_table.clear()
