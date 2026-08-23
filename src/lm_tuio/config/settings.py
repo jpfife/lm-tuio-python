@@ -54,11 +54,23 @@ class AppConfig:
     # Internal vars, no TOML map
     is_network: bool = False
 
+    def _resolve_config_file(self) -> Path:
+        """Resolve config file path from self.config_path.
+        Handles file paths directly and appends config.toml to directories.
+        """
+
+        path: Path = Path(self.config_path)
+        if path.is_file():
+            return path
+
+        path.mkdir(parents=True, exist_ok=True)
+        return path / SETTINGS_CONFIG
+
     # NOTE: Using tomlkit to preserve structure, don't use tomllib functions for saving
     def save(self) -> str:
         """Save current state data to config_path, returns response string."""
 
-        config_path: Path = paths.get_config_path(SETTINGS_CONFIG)
+        config_path: Path = self._resolve_config_file()
 
         try:
             if config_path.exists():

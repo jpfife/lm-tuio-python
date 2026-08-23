@@ -20,9 +20,27 @@ class LMTuioApp(App):
     def __init__(self, cli_args: dict[str, str | int] | None = None) -> None:
         super().__init__()
         self._cli_args = cli_args
+        self._cli_api_key: str | None = None
+        self._cli_config_path: str | None = None
+
+        if not cli_args:
+            return
+
+        # Pop API key so it doesn't get written to the config on save/load
+        if cli_args.get("api_key", None):
+            key = cli_args.pop("api_key", None) or None
+            if isinstance(key, str):
+                self._cli_api_key = key
+
+        if cli_args.get("config_path", None):
+            path = cli_args.pop("config_path", None) or None
+            if isinstance(path, str):
+                self._cli_config_path = path
 
     def on_mount(self) -> None:
-        loaded_config, err = AppConfig.load(cli_args=self._cli_args)
+        loaded_config, err = AppConfig.load(
+            cli_args=self._cli_args, custom_path=self._cli_config_path
+        )
         self.config = loaded_config if loaded_config else AppConfig()
 
         if err:

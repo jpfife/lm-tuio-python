@@ -70,7 +70,11 @@ class ConnectionStatus(Static):
             self.server_port = default_config.port
             self.scan_subnet = default_config.scan_subnet
 
-        self.api_key = SecretsManager.get_api_key(self.server_ip, self.server_port)
+        cli_key = getattr(self.app, "_cli_api_key", None)
+        if cli_key:
+            self.api_key = cli_key
+        else:
+            self.api_key = SecretsManager.get_api_key(self.server_ip, self.server_port)
 
         self.update_connection_status()
         self.set_interval(PING_INTERVAL, self.update_connection_status)
