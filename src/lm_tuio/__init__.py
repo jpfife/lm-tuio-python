@@ -3,7 +3,7 @@
 Exposes application entry point and public modules.
 """
 
-from lm_tuio import api, events, models, scanner
+from lm_tuio import api, events, main, models, scanner
 from lm_tuio.config import keymap, secrets, settings
 from lm_tuio.main import LMTuioApp
 
@@ -12,6 +12,7 @@ __all__ = [
     "api",
     "events",
     "keymap",
+    "main",
     "models",
     "scanner",
     "secrets",

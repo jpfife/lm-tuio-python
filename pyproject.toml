@@ -1,13 +1,13 @@
 [project]
-name = "lm-tuio-python"
+name = "lm-tuio"
 version = "0.1.0"
 homepage = "https://github.com/jpfife/lm-tuio-python"
 description = "Remote LM Studio management TUI."
 readme = "README.md"
+license = "MIT"
+license-file = "LICENSE"
 authors = [{ name = "jpfife", email = "jpfife@redappr.com" }]
-license = "LICENSE.txt"
-
-requires-python = ">=3.13"
+requires-python = ">=3.10"
 dependencies = [
     "httpx>=0.28.1",
     "pydantic>=2.13.4",
@@ -16,8 +16,45 @@ dependencies = [
     "tomlkit>=0.15.1",
 ]
 
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.14",
+    "Environment :: Console",
+    "Intended Audience :: System Administrators",
+    "Intended Audience :: End Users/Desktop",
+    "License :: OSI Approved :: MIT License",
+    "Topic :: Terminals",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Operating System :: OS Independent",
+]
+
+keywords = [
+    "LM Studio",
+    "lm-tuio",
+    "lmtuio",
+    "lms",
+    "lms server",
+    "tui",
+    "terminal user interface",
+    "cli",
+    "command line",
+    "textual",
+    "terminal",
+    "management",
+    "api",
+    "ai",
+    "model",
+    "ai model",
+    "huggingface",
+    "hf",
+]
+
 [project.scripts]
 lm-tuio = "lm_tuio.main:main"
+
+[project.urls]
+Homepage = "https://github.com/jpfife/lm-tuio-python"
+Issues = "https://github.com/jpfife/lm-tuio-python/issues"
 
 [build-system]
 requires = ["uv_build>=0.12.5,<0.13.0"]
