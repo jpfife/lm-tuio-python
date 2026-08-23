@@ -3,6 +3,10 @@
 Return parsed args as dict for downstream use by AppConfig."""
 
 import argparse
+from functools import partial
+
+from rich_argparse import RawTextRichHelpFormatter
+
 
 # Map arg names to AppConfig field names and types
 CLI_OVERRIDE_MAP: dict[str, tuple[list[str], type]] = {
@@ -12,6 +16,21 @@ CLI_OVERRIDE_MAP: dict[str, tuple[list[str], type]] = {
     "api_key": (["api_key"], str),
     "config_file": (["config_path"], str),
 }
+
+WideFormatter = partial(RawTextRichHelpFormatter, max_help_position=40, width=120)
+
+desc: str = (
+    "LM Studio remote server management and TUI interface.\n\n"
+    "Connect on launch to API endpoint:\n  lm-tuio -t 192.168.1.10 -p 10100 -k 'my-api-key'\n"
+)
+
+epilog: str = "Jordan Fife <jpfife@redappr.com>"
+
+cust_usage: str = (
+    "%(prog)s\t[-h|--help]\n "
+    "\t\t[-c|--config-file FILE|PATH] [-n|--network IP/CIDR] \n"
+    "\t\t[-t|--target IP -p|--port NUM [-k|--api-key KEY]]"
+)
 
 
 class RequiresTargetAndPort(argparse.Action):
@@ -33,7 +52,11 @@ def parse_cli() -> dict[str, str | int] | None:
     """
 
     parser = argparse.ArgumentParser(
-        description="LM Studio remote server management and TUI interface."
+        prog="lm-tuio",
+        # usage=cust_usage,
+        description=desc,
+        epilog=epilog,
+        formatter_class=WideFormatter,
     )
 
     # Args list
@@ -41,12 +64,14 @@ def parse_cli() -> dict[str, str | int] | None:
         "-c",
         "--config-file",
         type=str,
+        metavar="FILE|PATH",
         help="Use specified configuration file, or create config directory by specifying path",
     )
     parser.add_argument(
         "-k",
         "--api-key",
         type=str,
+        metavar="KEY",
         action=RequiresTargetAndPort,
         help="API key for target server (requires --target and --port)",
     )
@@ -54,10 +79,15 @@ def parse_cli() -> dict[str, str | int] | None:
         "-n",
         "--network",
         type=str,
+        metavar="IP_CIDR",
         help="Set server network subnet with CIDR notation (Ex: 192.168.1.25/24)",
     )
-    parser.add_argument("-p", "--port", type=int, help="Set server port")
-    parser.add_argument("-t", "--target", type=str, help="Set target server IP address")
+    parser.add_argument(
+        "-p", "--port", type=int, metavar="PORT", help="Set server port"
+    )
+    parser.add_argument(
+        "-t", "--target", type=str, metavar="IP", help="Set target server IP address"
+    )
 
     raw: dict[str, str | int] = vars(parser.parse_args())
     updates: dict[str, str | int] = {}
