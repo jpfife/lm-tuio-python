@@ -109,7 +109,7 @@ class ServerSelectionModal(
             id="scan-port-input",
             classes="input-field",
         )
-        self.input_widget.border_subtitle = "Server IP"
+        self.input_widget.border_subtitle = "IP:Port"
         self.api_key_widget.border_subtitle = "API Key"
         self.scan_widget.border_subtitle = "Subnet"
         self.scan_port_widget.border_subtitle = "Port"
