@@ -1,9 +1,12 @@
 [project]
 name = "lm-tuio-python"
 version = "0.1.0"
+homepage = "https://github.com/jpfife/lm-tuio-python"
 description = "Remote LM Studio management TUI."
 readme = "README.md"
 authors = [{ name = "jpfife", email = "jpfife@redappr.com" }]
+license = "LICENSE.txt"
+
 requires-python = ">=3.13"
 dependencies = [
     "httpx>=0.28.1",
