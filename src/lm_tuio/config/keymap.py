@@ -18,6 +18,7 @@ DEFAULT_KEYMAP: dict[str, dict[str, dict[str, Any]]] = {
         "refresh_models": {"keys": ["r"], "desc": "<refresh>", "show": True},
         "download_model": {"keys": ["d"], "desc": "<download>", "show": True},
         "filter": {"keys": ["/"], "desc": "<filter>", "show": True},
+        "settings": {"keys": ["g"], "desc": "<settings>", "show": True},
         "clear_filter": {
             "keys": ["escape", "ctrl+left_square_bracket"],
             "desc": "<clr filter>",

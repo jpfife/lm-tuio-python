@@ -54,3 +54,12 @@ class UnloadInstancesRequested(Message):
     def __init__(self, instance_ids: list[str]) -> None:
         super().__init__()
         self.instance_ids = instance_ids
+
+
+class SettingsSaved(Message):
+    """Fire when user saves settings from Settings modal."""
+
+    def __init__(self, theme: str, timezone: str) -> None:
+        super().__init__()
+        self.theme = theme
+        self.timezone = timezone
