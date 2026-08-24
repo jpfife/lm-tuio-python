@@ -5,6 +5,7 @@ Optional JSON fields from API response may be 'None'.
 
 from collections.abc import Callable
 from enum import StrEnum
+from typing import Any, Optional
 
 from pydantic import BaseModel
 from textual import on
@@ -148,7 +149,9 @@ class BaseModelTable(Static):
     def __init__(
         self,
         table_id: str,
-        post_highlighted_model_callback: Callable[[ModelInfo | None]],
+        post_highlighted_model_callback: Callable[
+            [Optional[ModelInfo]], Any
+        ],  # Not 'X | None' for type annotation due to backwards compatibility python < 3.14, ignore ruff
         *args,
         **kwargs,
     ) -> None:
@@ -293,8 +296,10 @@ class DownloadedModels(BaseModelTable):
 
     def __init__(
         self,
-        post_model_load_callback: Callable[[ModelInfo | None]],
-        post_action_logger_update_callback: Callable[[str, str]],
+        post_model_load_callback: Callable[
+            [Optional[ModelInfo]], Any
+        ],  # Not 'X | None' for type annotation due to backwards compatibility python < 3.14, ignore ruff
+        post_action_logger_update_callback: Callable[[str, str], Any],
         **kwargs,
     ) -> None:
         super().__init__(table_id="dl-models-table", **kwargs)

@@ -2,6 +2,7 @@
 
 from collections.abc import Callable
 from dataclasses import dataclass
+from typing import Any, Optional
 
 from textual import on
 from textual.app import ComposeResult
@@ -40,8 +41,10 @@ class LoadedModels(Static):
 
     def __init__(
         self,
-        post_unload_model_request_callback: Callable[[list[str]]],
-        post_highlighted_model_callback: Callable[[ModelInfo | None]],
+        post_unload_model_request_callback: Callable[[list[str]], Any],
+        post_highlighted_model_callback: Callable[
+            [Optional[ModelInfo]], Any
+        ],  # Not 'X | None' for type annotation due to backwards compatibility python < 3.14, ignore ruff
         *args,
         **kwargs,
     ) -> None:

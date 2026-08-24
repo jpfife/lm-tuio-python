@@ -2,9 +2,6 @@
 
 Spawns TUI if script flags not passed.
 """
-# TODO: Add TUI vs Script detection and launch options
-
-import sys
 
 from textual.app import App
 
@@ -51,8 +48,8 @@ class LMTuioApp(App):
         dashboard: DashboardScreen = DashboardScreen()
         self.push_screen(dashboard)
 
-        # Push logs to ActionLog
-        dashboard.update_action_log(event=ActionLogUpdate(logs, ntfy))
+        # Delay push logs to ActionLog with message for py<3.14 backwards compatibility safe mount
+        dashboard.post_message(ActionLogUpdate(logs, ntfy))
 
 
 def main():
