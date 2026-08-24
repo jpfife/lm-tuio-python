@@ -28,7 +28,7 @@ epilog: str = "Jordan Fife <jpfife@redappr.com>"
 
 cust_usage: str = (
     "%(prog)s\t[-h|--help]\n "
-    "\t\t[-c|--config-file FILE|PATH] [-n|--network IP/CIDR] \n"
+    "\t\t[-c|--config-file FILE|PATH] [-n|--network SUBNET] \n"
     "\t\t[-t|--target IP -p|--port NUM [-k|--api-key KEY]]"
 )
 
@@ -79,8 +79,8 @@ def parse_cli() -> dict[str, str | int] | None:
         "-n",
         "--network",
         type=str,
-        metavar="IP_CIDR",
-        help="Set server network subnet with CIDR notation (Ex: 192.168.1.25/24)",
+        metavar="SUBNET",
+        help="Set scan network subnet with CIDR notation (Ex: 192.168.2.0/24)",
     )
     parser.add_argument(
         "-p", "--port", type=int, metavar="PORT", help="Set server port"
