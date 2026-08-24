@@ -88,7 +88,7 @@ Subsequent launches will reference your defaults set in `config.toml`
 | `-n, --network SUBNET` | Scan this subnet for active LM Studio instances |
 | `-p, --port PORT` | Specify port to scan/connect on (default: 1234) |
 | `-T, --theme THEME` | Set theme (textual-dark, gruvbox, dracula, etc. |
-| `-Z, --timezone TZ` | Set timezone for log timestamps (e.g., America/Los_Angeles |
+| `-Z, --timezone TZ` | Set timezone for log timestamps (e.g., America/Los_Angeles) |
 
 #### Examples:
 
@@ -115,10 +115,12 @@ alias lm-tuio='lm-tuio -c ~/new/dir/'
 
 ## Configuration
 
-Configuration Path: $XDG_CONFIG_HOME/lm-tuio/ (typically ~/.config/lm-tuio/)
+Configuration Path: `$XDG_CONFIG_HOME/lm-tuio/` (typically `~/.config/lm-tuio/`)
+
+Configuration files are written on first launch. Use CLI args to override launch defaults
 
 ```
-~/.config/lm-tuio/
+$XDG_CONFIG_HOME/.config/lm-tuio/
 ├── config.toml     # Default connection settings, scan subnets
 ├── keymap.toml     # Custom keybind mappings per screen scope
 └── secrets.toml    # Per-endpoint API keys
@@ -126,7 +128,7 @@ Configuration Path: $XDG_CONFIG_HOME/lm-tuio/ (typically ~/.config/lm-tuio/)
 
 ### Config Schema (`config.toml`)
 
-Default configurations are grouped by table. 
+Default configurations are grouped by TOML table. 
 
 ### Keymap Schema (`keybinds.toml`)
 
@@ -144,6 +146,7 @@ show = true
 keys = ["c"]
 desc = "<change endpoint>"
 show = true
+# ...
 ```
 
 However, this format is equally valid and can be parsed by LM TUIO just fine:
@@ -152,6 +155,7 @@ However, this format is equally valid and can be parsed by LM TUIO just fine:
 quit = { keys = ["q", "ctrl+c"], desc = "quit", show = true }
 change_server = { keys = ["c"], desc = "change endpoint", show = true }
 download_model = { keys = ["d"], desc = "download", show = true }
+# ...
 ```
 
 ### Secrets Schema (`secrets.toml`)
@@ -164,6 +168,7 @@ api_key = "sk-xxxxxxxxxxxxxx"
 
 [192.168.1.11:8080]
 api_key = "sk-yyyyyyyyyyyyyy"
+#...
 ```
 
 > **Security Note:** The secrets file is stored unencrypted, but sets read/write permissions for the user only.
