@@ -184,6 +184,11 @@ Button {
     color: $primary;
 }
 
+#ctx-insts-table {
+    height: auto;
+    min-height: 3;
+}
+
 /* DataTable List Styling */
 DataTable {
     background: transparent;
@@ -293,11 +298,13 @@ SelectionList:focus {
 }
 
 /* =========================================
-   MODAL - SERVER SELECTION
+   SERVER SELECTION MODAL
    ========================================= */
 ServerSelectionModal {
     align: center middle;
-    background: rgba(0, 0, 0, 0.5);
+    background: $background 60%;
+    border: none;
+    outline: none;
     padding: 0;
 }
 
@@ -353,6 +360,11 @@ ServerSelectionModal {
     align: center middle;
 }
 
+.server-input-fields {
+    min-width: 42;
+}
+
+
 #connect-btn,
 #default-connect-btn,
 #scan-btn,
@@ -388,7 +400,7 @@ KeybindsModal {
     max-height: 36;
     background: $surface;
     border: thick $primary;
-    padding: 1 2;
+    padding: 1 2 0 2;
 }
 
 #keybind-title {
@@ -419,7 +431,7 @@ KeybindsModal {
 KeybindSection {
     width: 100%;
     height: auto;
-    margin-bottom: 1;
+    margin-bottom: 0;
 }
 
 #keybinds-footer {

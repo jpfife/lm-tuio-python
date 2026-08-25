@@ -357,7 +357,7 @@ class ModelInstanceTable(DataTable):
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
-        self.COL_WIDTH_PCTS: list[float] = [0.70, 0.22]
+        self.COL_WIDTH_PCTS: list[float] = [0.60, 0.30]
         self.add_column(label="Instance ID")
         self.add_column(label="Context")
         self.show_horizontal_scrollbar = False

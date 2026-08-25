@@ -89,25 +89,25 @@ class ServerSelectionModal(
             value=f"{self.current_ip}:{self.current_port}",
             placeholder="IP:[Port]",
             id="manual-ip-input",
-            classes="input-field",
+            classes="input-field server-input-fields",
         )
         self.api_key_widget: Input = Input(
             placeholder="API Key (Optional)",
             password=True,
             id="api-key-input",
-            classes="input-field",
+            classes="input-field server-input-fields",
         )
         self.scan_widget: Input = Input(
             value=self.default_subnet,
             placeholder="Subnet (e.g., 192.168.1.0/24)",
             id="scan-input",
-            classes="input-field",
+            classes="input-field server-input-fields",
         )
         self.scan_port_widget: Input = Input(
             value=str(self.current_port),
             placeholder="Port (e.g., 1234)",
             id="scan-port-input",
-            classes="input-field",
+            classes="input-field server-input-fields",
         )
         self.input_widget.border_subtitle = "IP:Port"
         self.api_key_widget.border_subtitle = "API Key"
