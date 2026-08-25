@@ -348,6 +348,11 @@ class DashboardScreen(Screen):
             ]
             self.filter_label_val.styles.color = self.app.theme_variables["foreground"]
 
+    def apply_timezone(self, timezone: str) -> None:
+        """Apply configured timezone to ActionLog."""
+
+        self.actionlog_widget.set_timezone(timezone)
+
     # ========== ACTIONS ==========
 
     def action_focus_left(self) -> None:
@@ -577,6 +582,7 @@ class DashboardScreen(Screen):
         if isinstance(config, AppConfig):
             config.theme = new_theme
             config.timezone = new_timezone
+            self.apply_timezone(new_timezone)
             msg = config.save()
             self.actionlog_widget.add_entry(msg, "ok")
         else:
