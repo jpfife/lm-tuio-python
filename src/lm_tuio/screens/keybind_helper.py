@@ -45,6 +45,10 @@ class KeybindSection(Static):
                 " / ".join(f"[green]{k}[/]" for k in keys)
                 .replace("left_square_bracket", "[")
                 .replace("right_square_bracket", "]")
+                .replace("left", "← ")
+                .replace("right", "→ ")
+                .replace("up", "↑")
+                .replace("down", "↓")
             )
             formatted_desc = desc.replace("<", "").replace(">", "")
 
