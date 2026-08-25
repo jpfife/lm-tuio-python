@@ -13,7 +13,7 @@ from textual.screen import Screen
 from textual.widgets import Footer, Input, Label, ProgressBar
 
 from lm_tuio import api, components as comp, events, models as mdl, screens
-from lm_tuio.config import KeymapManager
+from lm_tuio.config import AppConfig, KeymapManager
 
 DL_CHECK_INTVL: float = 2.0
 MAX_NUM_DL_STATUS_ERROR = 5
@@ -311,7 +311,7 @@ class DashboardScreen(Screen):
             return
         elif initial_status == "downloading":
             self.actionlog_widget.add_entry(
-                f"Download still in progress. Aborting new download", "warn"
+                "Download still in progress. Aborting new download", "warn"
             )
             # TODO: Implement progress bar latch-on to current download process
             return
@@ -496,6 +496,18 @@ class DashboardScreen(Screen):
 
         self.app.push_screen(screens.DownloadModelModal(), callback=_on_model_submit)
 
+    def action_settings(self) -> None:
+        """Open Settings modal."""
+
+        config = getattr(self.app, "config", None)
+        if isinstance(config, AppConfig):
+            theme = getattr(config, "theme", "textual-dark")
+            timezone = getattr(config, "timezone", "America/New_York")
+        self.app.push_screen(
+            screens.SettingsScreen(theme=theme, timezone=timezone),
+            callback=self._on_settings_saved,
+        )
+
     # ========= EVENTS ==========
 
     @on(events.UnloadInstancesRequested)
@@ -553,6 +565,22 @@ class DashboardScreen(Screen):
         ):
             self._hide_search_bar()
             self.downloadedmodels_widget.table.focus()
+
+    def _on_settings_saved(self, result: tuple[str, str] | None) -> None:
+        """Handle settings save from Settings modal."""
+
+        if result is None:
+            return
+
+        new_theme, new_timezone = result
+        config = getattr(self.app, "config", None)
+        if isinstance(config, AppConfig):
+            config.theme = new_theme
+            config.timezone = new_timezone
+            msg = config.save()
+            self.actionlog_widget.add_entry(msg, "ok")
+        else:
+            self.actionlog_widget.add_entry("Error: Configuration not found", "err")
 
     def _hide_search_bar(self) -> None:
         """Helper to swap main footer back."""

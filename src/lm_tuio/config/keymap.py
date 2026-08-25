@@ -109,7 +109,7 @@ DEFAULT_KEYMAP: dict[str, dict[str, dict[str, Any]]] = {
     },
     "action_log_viewer": {
         "quit": {
-            "keys": ["q", "escape"],
+            "keys": ["q", "escape", "ctrl+left_square_bracket"],
             "desc": "<close>",
             "show": True,
         },
@@ -131,7 +131,7 @@ DEFAULT_KEYMAP: dict[str, dict[str, dict[str, Any]]] = {
     },
     "server_select": {
         "quit": {
-            "keys": ["q", "escape"],
+            "keys": ["q", "escape", "ctrl+left_square_bracket"],
             "desc": "<cancel>",
             "show": True,
         },
@@ -152,7 +152,14 @@ DEFAULT_KEYMAP: dict[str, dict[str, dict[str, Any]]] = {
     },
     "download_models": {
         "quit": {
-            "keys": ["q", "escape"],
+            "keys": ["q", "escape", "ctrl+left_square_bracket"],
+            "desc": "<cancel>",
+            "show": True,
+        },
+    },
+    "settings_screen": {
+        "quit": {
+            "keys": ["q", "escape", "ctrl+left_square_bracket"],
             "desc": "<cancel>",
             "show": True,
         },

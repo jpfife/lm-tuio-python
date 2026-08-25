@@ -1,6 +1,6 @@
 """Entry point for LM TUIO application.
 
-Spawns TUI if script flags not passed.
+Spawns TUI unless --help is passed via CLI.
 """
 
 from textual.app import App
@@ -43,6 +43,8 @@ class LMTuioApp(App):
         if err:
             logs, ntfy = err, "warn"
         else:
+            self.theme = self.config.theme
+            self.timezone = self.config.timezone
             logs, ntfy = "Configuration loaded successfully", "ok"
 
         dashboard: DashboardScreen = DashboardScreen()
