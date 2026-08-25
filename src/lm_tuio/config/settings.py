@@ -71,6 +71,16 @@ class AppConfig:
         if path.is_file():
             return path
 
+        if path.is_dir():
+            path.mkdir(parents=True, exist_ok=True)
+            return path / SETTINGS_CONFIG
+
+        if path.suffix:
+            # Non-existent file path (e.g., "config.toml") — create parent dirs, return as-is
+            path.parent.mkdir(parents=True, exist_ok=True)
+            return path
+
+        # Non-existent directory path (no suffix) — create it, append config.toml
         path.mkdir(parents=True, exist_ok=True)
         return path / SETTINGS_CONFIG
 
