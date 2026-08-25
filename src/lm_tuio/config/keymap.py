@@ -163,6 +163,16 @@ DEFAULT_KEYMAP: dict[str, dict[str, dict[str, Any]]] = {
             "desc": "<cancel>",
             "show": True,
         },
+        "cursor_up": {
+            "keys": ["up", "alt+p"],
+            "desc": "<cursor up>",
+            "show": False,
+        },
+        "cursor_down": {
+            "keys": ["down", "alt+n"],
+            "desc": "<cursor down>",
+            "show": False,
+        },
     },
 }
 

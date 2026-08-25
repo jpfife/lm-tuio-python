@@ -619,3 +619,50 @@ DownloadModelModal {
     height: 3;
     margin: 2 7 0 7;
 }
+
+/* ==========================================
+ * SETTINGS MODAL
+ * ========================================== */
+
+SettingsScreen {
+    align: center middle;
+    background: $background 60%;
+    border: none;
+    outline: none;
+    padding: 0;
+}
+
+#settings-modal {
+    width: 60%;
+    height: 70%;
+    max-height: 35;
+    background: $surface;
+    border: thick $primary;
+    padding: 1 2 0 2;
+}
+
+#settings-modal-title {
+    width: 100%;
+    text-align: center;
+    text-style: bold;
+    color: $accent;
+    margin-bottom: 1;
+    border-bottom: solid $primary-muted;
+    padding-bottom: 1;
+}
+
+#settings-theme-select,
+#settings-timezone-select {
+    width: 1fr;
+    margin: 0 0 1 0;
+}
+
+.settings-button-group {
+    align: center middle;
+}
+
+#settings-button-save,
+#settings-button-cancel {
+    height: 3;
+    margin: 2 7 0 7;
+}
