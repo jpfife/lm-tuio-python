@@ -221,7 +221,7 @@ class DashboardScreen(Screen):
             self.actionlog_widget.add_entry(f"Load error: {err}", "error")
         else:
             self.actionlog_widget.add_entry(
-                f"Successfully loaded {model} instance",
+                f"Successfully loaded {model.display_name} instance\nLOADED PARAMETERS: {model}",
                 "ok",
             )
 

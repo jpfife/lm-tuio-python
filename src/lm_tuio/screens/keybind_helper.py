@@ -60,11 +60,7 @@ class KeybindSection(Static):
 class KeybindsModal(ModalScreen):
     """A floating modal screen displaying all app keybinds."""
 
-    BINDINGS = [
-        Binding("q,escape,?", "dismiss_modal", "<close>", show=True),
-        Binding("up,k,alt+p", "scroll_up", "<scroll up>", show=True),
-        Binding("down,j,alt+n", "scroll_down", "<scroll down>", show=True),
-    ]
+    BINDINGS = KeymapManager.get_bindings("keymap_screen")
 
     explanation: str = "General navigation with 'Tab' to move between panes and arrow keys within panes.\nVIM-style window/selections are available for more precise movement control using 'ctrl+h/j/k/l' to move between panes and 'h/j/k/l' within panes.\nUse 'alt+h/j/k/l/p/n' instead if terminal emulators/multiplexers are swallowing inputs."
 
@@ -82,7 +78,7 @@ class KeybindsModal(ModalScreen):
 
             yield Footer(id="keybinds-footer")
 
-    def action_dismiss_modal(self) -> None:
+    def action_quit(self) -> None:
         self.dismiss()
 
     def action_scroll_up(self) -> None:

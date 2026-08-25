@@ -4,22 +4,19 @@ from typing import Any
 
 from textual import on
 from textual.app import ComposeResult
-from textual.binding import Binding
 from textual.containers import Horizontal, Vertical, VerticalGroup
 from textual.reactive import reactive
 from textual.screen import ModalScreen
 from textual.widgets import Button, Checkbox, Footer, Input, Label, Rule, Static
 
+from lm_tuio.config import KeymapManager
 from lm_tuio.models import ModelInfo, estimate_context_cache_memory, format_bytes
 
 
 class LoadModelModal(ModalScreen[dict[str, Any] | None]):
     """Modal dialog for configuring parameters before loading a model via REST API."""
 
-    BINDINGS = [
-        Binding("q,escape", "dismiss_modal", "<cancel>", show=True),
-        Binding("l", "submit_load_model", "<load>", show=True),
-    ]
+    BINDINGS = KeymapManager.get_bindings("load_model_screen")
 
     current_context: reactive[int]
     default_ctx: int
@@ -176,12 +173,12 @@ class LoadModelModal(ModalScreen[dict[str, Any] | None]):
 
     # ======= ACTIONS =======
 
-    def action_dismiss_modal(self) -> None:
+    def action_quit(self) -> None:
         """Cancel and dismiss modal."""
 
         self.dismiss(None)
 
-    def action_submit_load_model(self) -> None:
+    def action_load_model(self) -> None:
         self.handle_submit()
 
     # ======= EVENTS =======

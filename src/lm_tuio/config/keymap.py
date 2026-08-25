@@ -150,6 +150,18 @@ DEFAULT_KEYMAP: dict[str, dict[str, dict[str, Any]]] = {
             "show": False,
         },
     },
+    "load_model_screen": {
+        "quit": {
+            "keys": ["q", "escape", "ctrl+left_square_bracket"],
+            "desc": "<cancel>",
+            "show": True,
+        },
+        "load_model": {
+            "keys": ["l"],
+            "desc": "<load model>",
+            "show": True,
+        },
+    },
     "download_models": {
         "quit": {
             "keys": ["q", "escape", "ctrl+left_square_bracket"],
@@ -172,6 +184,23 @@ DEFAULT_KEYMAP: dict[str, dict[str, dict[str, Any]]] = {
             "keys": ["down", "alt+n"],
             "desc": "<cursor down>",
             "show": False,
+        },
+    },
+    "keymap_screen": {
+        "quit": {
+            "keys": ["q", "escape", "ctrl+left_square_bracket", "?"],
+            "desc": "<close>",
+            "show": True,
+        },
+        "scroll_up": {
+            "keys": ["up", "k", "alt+p"],
+            "desc": "<scroll up>",
+            "show": True,
+        },
+        "scroll_down": {
+            "keys": ["down", "j", "alt+n"],
+            "desc": "<scroll down>",
+            "show": True,
         },
     },
 }
