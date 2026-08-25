@@ -34,6 +34,12 @@ class ActionLog(RichLog):
         self.timezone = timezone
         self.zone_tz = ZoneInfo(timezone)
 
+    def set_timezone(self, timezone: str) -> None:
+        """Update timezone for log timestamp formatting."""
+
+        self.timezone = timezone
+        self.zone_tz = ZoneInfo(timezone)
+
     def add_entry(self, message: str, severity: str = "info") -> None:
         """Write formatted entry to the log."""
 

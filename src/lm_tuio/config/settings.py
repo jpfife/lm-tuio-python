@@ -50,6 +50,14 @@ class AppConfig:
         default="~/.config/lm-tuio",
         metadata={"table": "app", "key": "config_path"},
     )
+    theme: str = field(
+        default="textual-dark",
+        metadata={"table": "app", "key": "theme"},
+    )
+    timezone: str = field(
+        default="America/New_York",
+        metadata={"table": "app", "key": "timezone"},
+    )
 
     # Internal vars, no TOML map
     is_network: bool = False

@@ -18,6 +18,7 @@ DEFAULT_KEYMAP: dict[str, dict[str, dict[str, Any]]] = {
         "refresh_models": {"keys": ["r"], "desc": "<refresh>", "show": True},
         "download_model": {"keys": ["d"], "desc": "<download>", "show": True},
         "filter": {"keys": ["/"], "desc": "<filter>", "show": True},
+        "settings": {"keys": ["g"], "desc": "<settings>", "show": True},
         "clear_filter": {
             "keys": ["escape", "ctrl+left_square_bracket"],
             "desc": "<clr filter>",
@@ -108,7 +109,7 @@ DEFAULT_KEYMAP: dict[str, dict[str, dict[str, Any]]] = {
     },
     "action_log_viewer": {
         "quit": {
-            "keys": ["q", "escape"],
+            "keys": ["q", "escape", "ctrl+left_square_bracket"],
             "desc": "<close>",
             "show": True,
         },
@@ -130,7 +131,7 @@ DEFAULT_KEYMAP: dict[str, dict[str, dict[str, Any]]] = {
     },
     "server_select": {
         "quit": {
-            "keys": ["q", "escape"],
+            "keys": ["q", "escape", "ctrl+left_square_bracket"],
             "desc": "<cancel>",
             "show": True,
         },
@@ -151,9 +152,26 @@ DEFAULT_KEYMAP: dict[str, dict[str, dict[str, Any]]] = {
     },
     "download_models": {
         "quit": {
-            "keys": ["q", "escape"],
+            "keys": ["q", "escape", "ctrl+left_square_bracket"],
             "desc": "<cancel>",
             "show": True,
+        },
+    },
+    "settings_screen": {
+        "quit": {
+            "keys": ["q", "escape", "ctrl+left_square_bracket"],
+            "desc": "<cancel>",
+            "show": True,
+        },
+        "cursor_up": {
+            "keys": ["up", "alt+p"],
+            "desc": "<cursor up>",
+            "show": False,
+        },
+        "cursor_down": {
+            "keys": ["down", "alt+n"],
+            "desc": "<cursor down>",
+            "show": False,
         },
     },
 }

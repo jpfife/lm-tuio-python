@@ -15,13 +15,15 @@ CLI_OVERRIDE_MAP: dict[str, tuple[list[str], type]] = {
     "port": (["port"], int),
     "api_key": (["api_key"], str),
     "config_file": (["config_path"], str),
+    "theme": (["theme"], str),
+    "timezone": (["timezone"], str),
 }
 
 WideFormatter = partial(RawTextRichHelpFormatter, max_help_position=40, width=120)
 
 desc: str = (
     "LM Studio remote server management and TUI interface.\n\n"
-    "Connect on launch to API endpoint:\n  lm-tuio -t 192.168.1.10 -p 10100 -k 'my-api-key'\n"
+    "Connect on launch to API endpoint:\n  lm-tuio -t 192.168.1.10 -p 10100 # (optional) -k 'my-api-key'\n"
 )
 
 epilog: str = "Jordan Fife <jpfife@redappr.com>"
@@ -87,6 +89,20 @@ def parse_cli() -> dict[str, str | int] | None:
     )
     parser.add_argument(
         "-t", "--target", type=str, metavar="IP", help="Set target server IP address"
+    )
+    parser.add_argument(
+        "-T",
+        "--theme",
+        type=str,
+        metavar="THEME",
+        help="Set application theme (e.g. textual-dark, gruvbox, dracula, etc.)",
+    )
+    parser.add_argument(
+        "-Z",
+        "--timezone",
+        type=str,
+        metavar="TZ",
+        help="Set timezone for log timestamps (e.g. America/Los_Angeles)",
     )
 
     raw: dict[str, str | int] = vars(parser.parse_args())
