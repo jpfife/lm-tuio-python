@@ -196,9 +196,16 @@ class TestKeymapManagerWriteDefaultFile:
         KeymapManager._write_default_file(kb_file)
 
         content = kb_file.read_text()
-        for scope in ["global", "tables", "loaded_models", "action_log",
-                       "action_log_viewer", "server_select", "download_models",
-                       "settings_screen"]:
+        for scope in [
+            "global",
+            "tables",
+            "loaded_models",
+            "action_log",
+            "action_log_viewer",
+            "server_select",
+            "download_models",
+            "settings_screen",
+        ]:
             assert f"[{scope}." in content
 
     def test_writes_action_definitions(self, tmp_config_dir: Path):
@@ -227,7 +234,9 @@ class TestKeymapManagerCacheInvalidate:
 
         kb_file = tmp_config_dir / "keybinds.toml"
         kb_file.parent.mkdir(parents=True, exist_ok=True)
-        kb_file.write_text('[global]\nquit = { keys = ["q"], desc = "<quit>", show = true }\n')
+        kb_file.write_text(
+            '[global]\nquit = { keys = ["q"], desc = "<quit>", show = true }\n'
+        )
 
         with patch(
             "lm_tuio.config.paths.get_config_path",
@@ -261,9 +270,16 @@ class TestKeymapManagerHeader:
         from lm_tuio.config.keymap import DEFAULT_KEYMAP
 
         expected_scopes = {
-            "global", "tables", "loaded_models", "action_log",
-            "action_log_viewer", "server_select", "download_models",
+            "global",
+            "tables",
+            "loaded_models",
+            "action_log",
+            "action_log_viewer",
+            "server_select",
+            "load_model_screen",
+            "download_models",
             "settings_screen",
+            "keymap_screen",
         }
         assert set(DEFAULT_KEYMAP.keys()) == expected_scopes
 
