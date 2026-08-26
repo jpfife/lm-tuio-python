@@ -1,6 +1,5 @@
 """Shared pytest fixtures for lm-tuio tests."""
 
-import os
 from pathlib import Path
 from unittest.mock import patch
 
@@ -49,6 +48,7 @@ def secrets_manager(secrets_manager_class, tmp_config_dir: Path):
 def secrets_manager_class():
     """Provide the SecretsManager class for testing."""
     from lm_tuio.config.secrets import SecretsManager
+
     return SecretsManager
 
 

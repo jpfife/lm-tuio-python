@@ -3,14 +3,16 @@
 Tests each Message subclass verifies msg/severity/ip/port/model/instance_ids are set correctly.
 """
 
+from textual.message import Message
+
 from lm_tuio.events import (
     ActionLogUpdate,
-    ServerEndpointUpdated,
-    ServerConnected,
-    ModelSelected,
     ModelLoadRequest,
-    UnloadInstancesRequested,
+    ModelSelected,
+    ServerConnected,
+    ServerEndpointUpdated,
     SettingsSaved,
+    UnloadInstancesRequested,
 )
 from lm_tuio.models import ModelInfo
 
@@ -41,7 +43,6 @@ class TestActionLogUpdate:
 
     def test_is_textual_message(self):
         """Inherits from textual.message.Message."""
-        from textual.message import Message
         msg = ActionLogUpdate("test")
         assert isinstance(msg, Message)
 
@@ -72,7 +73,7 @@ class TestServerEndpointUpdated:
 
     def test_is_textual_message(self):
         """Inherits from textual.message.Message."""
-        from textual.message import Message
+
         msg = ServerEndpointUpdated("127.0.0.1", 1234)
         assert isinstance(msg, Message)
 
@@ -91,7 +92,7 @@ class TestServerConnected:
 
     def test_is_textual_message(self):
         """Inherits from textual.message.Message."""
-        from textual.message import Message
+
         msg = ServerConnected("127.0.0.1", 1234)
         assert isinstance(msg, Message)
 
@@ -130,7 +131,7 @@ class TestModelSelected:
 
     def test_is_textual_message(self):
         """Inherits from textual.message.Message."""
-        from textual.message import Message
+
         msg = ModelSelected(None)
         assert isinstance(msg, Message)
 
@@ -168,7 +169,7 @@ class TestModelLoadRequest:
 
     def test_is_textual_message(self):
         """Inherits from textual.message.Message."""
-        from textual.message import Message
+
         msg = ModelLoadRequest(None)
         assert isinstance(msg, Message)
 
@@ -197,7 +198,7 @@ class TestUnloadInstancesRequested:
 
     def test_is_textual_message(self):
         """Inherits from textual.message.Message."""
-        from textual.message import Message
+
         msg = UnloadInstancesRequested(["inst-1"])
         assert isinstance(msg, Message)
 
@@ -222,7 +223,7 @@ class TestSettingsSaved:
 
     def test_is_textual_message(self):
         """Inherits from textual.message.Message."""
-        from textual.message import Message
+
         msg = SettingsSaved("textual-dark", "UTC")
         assert isinstance(msg, Message)
 
@@ -235,7 +236,6 @@ class TestAllEventsInheritMessage:
 
     def test_all_events_are_messages(self):
         """Each event class is a subclass of Message."""
-        from textual.message import Message
 
         events = [
             ActionLogUpdate("test"),

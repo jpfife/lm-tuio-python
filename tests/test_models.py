@@ -3,7 +3,7 @@
 Tests format_bytes() and estimate_context_cache_memory().
 """
 
-from lm_tuio.models import format_bytes, estimate_context_cache_memory
+from lm_tuio.models import estimate_context_cache_memory, format_bytes
 
 
 # ===== format_bytes =====

@@ -5,10 +5,12 @@ Tests SecretsManager file I/O operations.
 
 import os
 from pathlib import Path
-from unittest.mock import patch, MagicMock
+import stat as stat_module
+from unittest.mock import patch
 
-import tomlkit
 import pytest
+
+from lm_tuio.config import SecretsManager
 
 
 @pytest.fixture
@@ -42,7 +44,9 @@ class TestSecretsManager:
         return secrets_path
 
     @patch("lm_tuio.config.paths.get_config_path")
-    def test_load_empty_file(self, mock_get_path, secrets_manager: SecretsManager, tmp_config_dir: Path):
+    def test_load_empty_file(
+        self, mock_get_path, secrets_manager: SecretsManager, tmp_config_dir: Path
+    ):
         """Empty secrets file should return empty servers dict."""
         mock_get_path.return_value = tmp_config_dir / "secrets.toml"
         self._write_secrets(tmp_config_dir, "[servers]\n")
@@ -52,9 +56,10 @@ class TestSecretsManager:
         assert "servers" in result or len(result) == 0
 
     @patch("lm_tuio.config.paths.get_config_path")
-    def test_load_missing_file(self, mock_get_path, secrets_manager: SecretsManager, tmp_path: Path):
+    def test_load_missing_file(
+        self, mock_get_path, secrets_manager: SecretsManager, tmp_path: Path
+    ):
         """Missing secrets file should return empty servers dict."""
-        from pathlib import Path as PPath
         mock_get_path.return_value = tmp_path / "nonexistent" / "secrets.toml"
 
         result = secrets_manager.load_secrets()
@@ -62,7 +67,9 @@ class TestSecretsManager:
         assert "servers" in result or len(result) == 0
 
     @patch("lm_tuio.config.paths.get_config_path")
-    def test_get_api_key_existing(self, mock_get_path, secrets_manager: SecretsManager, tmp_config_dir: Path):
+    def test_get_api_key_existing(
+        self, mock_get_path, secrets_manager: SecretsManager, tmp_config_dir: Path
+    ):
         """Existing API key should be returned."""
         mock_get_path.return_value = tmp_config_dir / "secrets.toml"
 
@@ -74,16 +81,19 @@ class TestSecretsManager:
         assert result == "my-secret-key"
 
     @patch("lm_tuio.config.paths.get_config_path")
-    def test_get_api_key_missing(self, mock_get_path, secrets_manager: SecretsManager, tmp_path: Path):
+    def test_get_api_key_missing(
+        self, mock_get_path, secrets_manager: SecretsManager, tmp_path: Path
+    ):
         """Missing endpoint should return empty string."""
-        from pathlib import Path as PPath
         mock_get_path.return_value = tmp_path / "nonexistent" / "secrets.toml"
 
         result = secrets_manager.get_api_key("192.168.1.10", 1234)
         assert result == ""
 
     @patch("lm_tuio.config.paths.get_config_path")
-    def test_save_api_key_new(self, mock_get_path, secrets_manager: SecretsManager, tmp_config_dir: Path):
+    def test_save_api_key_new(
+        self, mock_get_path, secrets_manager: SecretsManager, tmp_config_dir: Path
+    ):
         """Saving a new API key should create the entry."""
         mock_get_path.return_value = tmp_config_dir / "secrets.toml"
 
@@ -94,7 +104,9 @@ class TestSecretsManager:
         assert result == "new-key"
 
     @patch("lm_tuio.config.paths.get_config_path")
-    def test_save_api_key_update(self, mock_get_path, secrets_manager: SecretsManager, tmp_config_dir: Path):
+    def test_save_api_key_update(
+        self, mock_get_path, secrets_manager: SecretsManager, tmp_config_dir: Path
+    ):
         """Updating an existing API key should replace it."""
         mock_get_path.return_value = tmp_config_dir / "secrets.toml"
 
@@ -108,7 +120,9 @@ class TestSecretsManager:
         assert result == "new-key"
 
     @patch("lm_tuio.config.paths.get_config_path")
-    def test_save_empty_string_removes_key(self, mock_get_path, secrets_manager: SecretsManager, tmp_config_dir: Path):
+    def test_save_empty_string_removes_key(
+        self, mock_get_path, secrets_manager: SecretsManager, tmp_config_dir: Path
+    ):
         """Saving empty string should remove the key."""
         mock_get_path.return_value = tmp_config_dir / "secrets.toml"
 
@@ -122,7 +136,9 @@ class TestSecretsManager:
         assert result == ""
 
     @patch("lm_tuio.config.paths.get_config_path")
-    def test_remove_endpoints(self, mock_get_path, secrets_manager: SecretsManager, tmp_config_dir: Path):
+    def test_remove_endpoints(
+        self, mock_get_path, secrets_manager: SecretsManager, tmp_config_dir: Path
+    ):
         """Removing endpoints should delete them from the file."""
         mock_get_path.return_value = tmp_config_dir / "secrets.toml"
 
@@ -150,7 +166,9 @@ class TestSecretsManager:
         secrets_manager.remove_endpoints(["nonexistent"])
 
     @patch("lm_tuio.config.paths.get_config_path")
-    def test_cache_invalidation(self, mock_get_path, secrets_manager: SecretsManager, tmp_config_dir: Path):
+    def test_cache_invalidation(
+        self, mock_get_path, secrets_manager: SecretsManager, tmp_config_dir: Path
+    ):
         """Saving should invalidate the cache."""
         mock_get_path.return_value = tmp_config_dir / "secrets.toml"
 
@@ -185,9 +203,6 @@ class TestSecretsManagerPermissions:
         self, mock_get_path, secrets_manager: SecretsManager, tmp_config_dir: Path
     ):
         """Creating a new secrets file should set 0600 permissions."""
-        import stat as stat_module
-
-        from pathlib import Path as PPath
         mock_get_path.return_value = tmp_config_dir / "secrets.toml"
 
         # Ensure no file exists
@@ -206,9 +221,6 @@ class TestSecretsManagerPermissions:
         self, mock_get_path, secrets_manager: SecretsManager, tmp_config_dir: Path
     ):
         """Updating an existing file with wrong permissions should fix them."""
-        import stat as stat_module
-
-        from pathlib import Path as PPath
         mock_get_path.return_value = tmp_config_dir / "secrets.toml"
 
         secrets_path = tmp_config_dir / "secrets.toml"
@@ -228,4 +240,5 @@ class TestSecretsManagerHeader:
     def test_header_format(self):
         """Default header should have expected format."""
         from lm_tuio.config.secrets import SecretsManager as SM
+
         assert "# LM TUIO API keys\n\n[servers]\n" == SM.header_str

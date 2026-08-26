@@ -3,14 +3,12 @@
 Tests validate_port(), AppConfig.load/save, _parse_toml, _resolve_config_file.
 """
 
-import os
 from pathlib import Path
 from unittest.mock import patch
 
-import pytest
 import tomlkit
 
-from lm_tuio.config.settings import validate_port
+from lm_tuio.config.settings import AppConfig, validate_ip_net, validate_port
 
 
 # ===== validate_port =====
@@ -90,7 +88,6 @@ class TestResolveConfigFile:
         """If config_path points to a file, return it as-is."""
         cfg_file = tmp_path / "my_config.toml"
         cfg_file.write_text("[server]\n")
-        from lm_tuio.config.settings import AppConfig
 
         ac = AppConfig(config_path=str(cfg_file))
         resolved = ac._resolve_config_file()
@@ -100,7 +97,6 @@ class TestResolveConfigFile:
         """If config_path is a directory, append config.toml."""
         cfg_dir = tmp_path / "config_dir"
         cfg_dir.mkdir()
-        from lm_tuio.config.settings import AppConfig
 
         ac = AppConfig(config_path=str(cfg_dir))
         resolved = ac._resolve_config_file()
@@ -109,7 +105,6 @@ class TestResolveConfigFile:
     def test_creates_missing_directory(self, tmp_path: Path):
         """Non-existent directory is created."""
         deep = tmp_path / "a" / "b" / "c"
-        from lm_tuio.config.settings import AppConfig
 
         ac = AppConfig(config_path=str(deep))
         resolved = ac._resolve_config_file()
@@ -119,7 +114,6 @@ class TestResolveConfigFile:
     def test_resolves_nonexistent_file_with_suffix(self, tmp_path: Path):
         """Non-existent file path (with suffix) creates parent dirs, returns file path — not a directory."""
         cfg_file = tmp_path / "lm-tuio" / "config.toml"
-        from lm_tuio.config.settings import AppConfig
 
         ac = AppConfig(config_path=str(cfg_file))
         resolved = ac._resolve_config_file()
@@ -143,7 +137,6 @@ class TestParseToml:
             '[server]\ndefault_ip = "10.0.0.1"\ndefault_port = 8080\n'
             '[app]\ntheme = "textual-dracula"\n'
         )
-        from lm_tuio.config.settings import AppConfig
 
         updates, err = AppConfig._parse_toml(cfg)
         assert err is None
@@ -155,7 +148,6 @@ class TestParseToml:
         """TOML with only one section returns only that section's fields."""
         cfg = tmp_path / "config.toml"
         cfg.write_text('[server]\ndefault_ip = "10.0.0.1"\n')
-        from lm_tuio.config.settings import AppConfig
 
         updates, err = AppConfig._parse_toml(cfg)
         assert err is None
@@ -166,7 +158,6 @@ class TestParseToml:
         """Empty file returns empty updates, no error."""
         cfg = tmp_path / "config.toml"
         cfg.write_text("")
-        from lm_tuio.config.settings import AppConfig
 
         updates, err = AppConfig._parse_toml(cfg)
         assert err is None
@@ -175,8 +166,7 @@ class TestParseToml:
     def test_parses_malformed_toml(self, tmp_path: Path):
         """Malformed TOML returns error message, empty updates."""
         cfg = tmp_path / "config.toml"
-        cfg.write_text("[server\ndefault_ip = \"bad\"\n")
-        from lm_tuio.config.settings import AppConfig
+        cfg.write_text('[server\ndefault_ip = "bad"\n')
 
         updates, err = AppConfig._parse_toml(cfg)
         assert err is not None
@@ -186,7 +176,6 @@ class TestParseToml:
     def test_parses_nonexistent_file(self, tmp_path: Path):
         """Non-existent file returns error."""
         cfg = tmp_path / "nope.toml"
-        from lm_tuio.config.settings import AppConfig
 
         updates, err = AppConfig._parse_toml(cfg)
         assert err is not None
@@ -210,7 +199,6 @@ class TestAppConfigLoad:
     def test_load_defaults_only(self, tmp_path: Path):
         """No config.toml → defaults + creates file."""
         cfg_dir = self._make_cfg_dir(tmp_path)
-        from lm_tuio.config.settings import AppConfig
 
         with patch(
             "lm_tuio.config.settings.paths.get_config_path",
@@ -223,6 +211,7 @@ class TestAppConfigLoad:
         assert config.port == 1234
         assert config.scan_subnet == "192.168.1.0/24"
         assert config.theme == "textual-dark"
+        assert isinstance(status, str)
         assert "config.toml not found" in status
 
     def test_load_overrides_from_toml(self, tmp_path: Path):
@@ -232,13 +221,12 @@ class TestAppConfigLoad:
             '[server]\ndefault_ip = "10.0.0.5"\ndefault_port = 9999\n'
             '[app]\ntheme = "textual-nord"\n',
         )
-        from lm_tuio.config.settings import AppConfig
 
         with patch(
             "lm_tuio.config.paths.get_config_path",
             return_value=cfg_dir / "config.toml",
         ):
-            config, status = AppConfig.load()
+            config, _status = AppConfig.load()
 
         assert config is not None
         assert config.target == "10.0.0.5"
@@ -247,16 +235,15 @@ class TestAppConfigLoad:
 
     def test_cli_overrides_toml(self, tmp_path: Path):
         """CLI args override both defaults and config.toml."""
-        cfg_dir = self._make_cfg_dir(
-            tmp_path, '[server]\ndefault_ip = "10.0.0.5"\n'
-        )
-        from lm_tuio.config.settings import AppConfig
+        cfg_dir = self._make_cfg_dir(tmp_path, '[server]\ndefault_ip = "10.0.0.5"\n')
 
         with patch(
             "lm_tuio.config.paths.get_config_path",
             return_value=cfg_dir / "config.toml",
         ):
-            config, status = AppConfig.load(cli_args={"target": "192.168.0.1", "port": 443})
+            config, _status = AppConfig.load(
+                cli_args={"target": "192.168.0.1", "port": 443}
+            )
 
         assert config is not None
         assert config.target == "192.168.0.1"
@@ -264,10 +251,7 @@ class TestAppConfigLoad:
 
     def test_load_invalid_port_falls_back(self, tmp_path: Path):
         """Invalid port in config.toml falls back to 1234."""
-        cfg_dir = self._make_cfg_dir(
-            tmp_path, '[server]\ndefault_port = 99999\n'
-        )
-        from lm_tuio.config.settings import AppConfig
+        cfg_dir = self._make_cfg_dir(tmp_path, "[server]\ndefault_port = 99999\n")
 
         with patch(
             "lm_tuio.config.paths.get_config_path",
@@ -277,14 +261,12 @@ class TestAppConfigLoad:
 
         assert config is not None
         assert config.port == 1234  # fallback
+        assert isinstance(status, str)
         assert "Invalid port number" in status
 
     def test_load_invalid_ip_adds_error(self, tmp_path: Path):
         """Invalid IP in config.toml adds error to logs."""
-        cfg_dir = self._make_cfg_dir(
-            tmp_path, '[server]\ndefault_ip = "999.0.0.1"\n'
-        )
-        from lm_tuio.config.settings import AppConfig
+        cfg_dir = self._make_cfg_dir(tmp_path, '[server]\ndefault_ip = "999.0.0.1"\n')
 
         with patch(
             "lm_tuio.config.paths.get_config_path",
@@ -293,28 +275,27 @@ class TestAppConfigLoad:
             config, status = AppConfig.load()
 
         assert config is not None
+        assert isinstance(status, str)
         assert "Invalid IP or network format" in status
 
     def test_load_with_custom_path(self, tmp_path: Path):
         """custom_path bypasses get_config_path."""
         cfg = tmp_path / "custom.toml"
         cfg.write_text('[server]\ndefault_ip = "10.10.10.10"\n')
-        from lm_tuio.config.settings import AppConfig
 
-        config, status = AppConfig.load(custom_path=str(cfg))
+        config, _status = AppConfig.load(custom_path=str(cfg))
         assert config is not None
         assert config.target == "10.10.10.10"
 
     def test_load_with_none_cli_args(self, tmp_path: Path):
         """cli_args=None skips CLI override."""
         cfg_dir = self._make_cfg_dir(tmp_path, '[server]\ndefault_ip = "10.0.0.1"\n')
-        from lm_tuio.config.settings import AppConfig
 
         with patch(
             "lm_tuio.config.paths.get_config_path",
             return_value=cfg_dir / "config.toml",
         ):
-            config, status = AppConfig.load(cli_args=None)
+            config, _status = AppConfig.load(cli_args=None)
 
         assert config is not None
         assert config.target == "10.0.0.1"
@@ -332,8 +313,6 @@ class TestAppConfigSave:
         cfg_dir.mkdir(parents=True, exist_ok=True)
         cfg_file = cfg_dir / "config.toml"
 
-        from lm_tuio.config.settings import AppConfig
-
         ac = AppConfig(config_path=str(cfg_dir))
         result = ac.save()
 
@@ -344,8 +323,6 @@ class TestAppConfigSave:
         """All dataclass fields are written to TOML."""
         cfg_dir = tmp_path / ".config" / "lm-tuio"
         cfg_dir.mkdir(parents=True, exist_ok=True)
-
-        from lm_tuio.config.settings import AppConfig
 
         ac = AppConfig(config_path=str(cfg_dir))
         ac.save()
@@ -364,9 +341,7 @@ class TestAppConfigSave:
         cfg_file = cfg_dir / "config.toml"
 
         # Write a custom section
-        cfg_file.write_text("[custom]\nmy_key = \"hello\"\n")
-
-        from lm_tuio.config.settings import AppConfig
+        cfg_file.write_text('[custom]\nmy_key = "hello"\n')
 
         ac = AppConfig(config_path=str(cfg_dir))
         ac.save()
@@ -378,7 +353,6 @@ class TestAppConfigSave:
     def test_save_handles_missing_parent_dir(self, tmp_path: Path):
         """Parent directories are created before writing."""
         deep = tmp_path / "a" / "b" / "c"
-        from lm_tuio.config.settings import AppConfig
 
         ac = AppConfig(config_path=str(deep))
         result = ac.save()
@@ -388,7 +362,6 @@ class TestAppConfigSave:
 
     def test_save_returns_error_on_failure(self, tmp_path: Path):
         """If write fails (e.g. read-only), returns error string."""
-        from lm_tuio.config.settings import AppConfig
 
         deep = tmp_path / "deep" / "path" / "config.toml"
         ac = AppConfig(config_path=str(deep))
@@ -407,8 +380,6 @@ class TestBuildTomlConfig:
 
     def test_builds_correct_structure(self):
         """_build_toml_config produces correct TOML keys."""
-        from lm_tuio.config.settings import AppConfig
-        import tomlkit
 
         ac = AppConfig()
         doc = tomlkit.document()
@@ -424,8 +395,6 @@ class TestBuildTomlConfig:
 
     def test_builds_empty_list_field(self):
         """cached_ips defaults to empty list."""
-        from lm_tuio.config.settings import AppConfig
-        import tomlkit
 
         ac = AppConfig()
         doc = tomlkit.document()
@@ -442,7 +411,6 @@ class TestValidateIpNetEdgeCases:
 
     def test_valid_subnet_24(self):
         """Valid /24 subnet normalizes correctly."""
-        from lm_tuio.config.settings import validate_ip_net
 
         result, err = validate_ip_net("192.168.1.0/24")
         assert err is None
@@ -450,7 +418,6 @@ class TestValidateIpNetEdgeCases:
 
     def test_valid_subnet_8(self):
         """Valid /8 subnet."""
-        from lm_tuio.config.settings import validate_ip_net
 
         result, err = validate_ip_net("10.0.0.0/8")
         assert err is None
@@ -458,7 +425,6 @@ class TestValidateIpNetEdgeCases:
 
     def test_invalid_ip_all_octets_max(self):
         """All octets at 255 is valid."""
-        from lm_tuio.config.settings import validate_ip_net
 
         result, err = validate_ip_net("255.255.255.255")
         assert err is None
@@ -466,7 +432,6 @@ class TestValidateIpNetEdgeCases:
 
     def test_invalid_ip_with_trailing_dot(self):
         """IP with trailing dot is invalid."""
-        from lm_tuio.config.settings import validate_ip_net
 
         result, err = validate_ip_net("192.168.1.")
         assert err is not None
@@ -474,7 +439,6 @@ class TestValidateIpNetEdgeCases:
 
     def test_invalid_ip_with_leading_zeros(self):
         """IP with leading zeros is invalid."""
-        from lm_tuio.config.settings import validate_ip_net
 
         result, err = validate_ip_net("010.000.000.001")
         assert err is not None
@@ -482,7 +446,6 @@ class TestValidateIpNetEdgeCases:
 
     def test_invalid_host_bits_on_subnet(self):
         """Host bits are allowed with strict=False."""
-        from lm_tuio.config.settings import validate_ip_net
 
         result, err = validate_ip_net("192.168.1.0/24")
         assert err is None
@@ -490,7 +453,6 @@ class TestValidateIpNetEdgeCases:
 
     def test_empty_string(self):
         """Empty string is invalid."""
-        from lm_tuio.config.settings import validate_ip_net
 
         result, err = validate_ip_net("")
         assert err is not None
@@ -498,7 +460,6 @@ class TestValidateIpNetEdgeCases:
 
     def test_hostname_not_ip(self):
         """Hostname is not a valid IP."""
-        from lm_tuio.config.settings import validate_ip_net
 
         result, err = validate_ip_net("localhost")
         assert err is not None

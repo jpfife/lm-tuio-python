@@ -8,6 +8,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
+from lm_tuio.config.settings import AppConfig
 
 # ===== check_host =====
 
@@ -112,7 +113,6 @@ class TestScanTargets:
     @pytest.mark.anyio
     async def test_scan_single_ip_success(self):
         """Single IP mode returns active host."""
-        from lm_tuio.config.settings import AppConfig
 
         config = AppConfig(target="192.168.1.10", port=1234)
         config.is_network = False  # single IP
@@ -140,8 +140,6 @@ class TestScanTargets:
     @pytest.mark.anyio
     async def test_scan_single_ip_failure(self):
         """Single IP mode with no response returns None hosts."""
-        from lm_tuio.config.settings import AppConfig
-
         config = AppConfig(target="192.168.1.10", port=1234)
         config.is_network = False
 
@@ -162,8 +160,6 @@ class TestScanTargets:
     @pytest.mark.anyio
     async def test_scan_network_multiple_hosts(self):
         """Network scan returns all active hosts."""
-        from lm_tuio.config.settings import AppConfig
-
         config = AppConfig(target="192.168.1.0/24", port=1234)
         config.is_network = True
 
@@ -198,8 +194,6 @@ class TestScanTargets:
     @pytest.mark.anyio
     async def test_scan_network_no_active_hosts(self):
         """All hosts down returns None and error message."""
-        from lm_tuio.config.settings import AppConfig
-
         config = AppConfig(target="192.168.1.255/30", port=1234)
         config.is_network = True
 
@@ -220,8 +214,6 @@ class TestScanTargets:
     @pytest.mark.anyio
     async def test_scan_network_all_hosts_active(self):
         """All hosts in a small subnet are active."""
-        from lm_tuio.config.settings import AppConfig
-
         config = AppConfig(target="192.168.1.252/30", port=1234)
         config.is_network = True
 
@@ -250,8 +242,6 @@ class TestScanTargets:
     @pytest.mark.anyio
     async def test_scan_single_ip_with_subnet_notation(self):
         """Single IP with /32 notation still scans one host."""
-        from lm_tuio.config.settings import AppConfig
-
         config = AppConfig(target="10.0.0.1/32", port=1234)
         config.is_network = False
 

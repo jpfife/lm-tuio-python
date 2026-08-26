@@ -3,12 +3,13 @@
 Tests KeymapManager load, fallback, get_bindings, _write_default_file.
 """
 
-import stat
 from pathlib import Path
 from unittest.mock import patch
 
-import pytest
-import tomlkit
+from textual.binding import Binding
+
+from lm_tuio.config import KeymapManager
+from lm_tuio.config.keymap import DEFAULT_KEYMAP
 
 
 class TestKeymapManagerLoad:
@@ -16,16 +17,12 @@ class TestKeymapManagerLoad:
 
     def test_returns_cache_on_second_call(self):
         """Second call returns cached value without re-reading."""
-        from lm_tuio.config.keymap import KeymapManager
-
         result1 = KeymapManager.load_keymap()
         result2 = KeymapManager.load_keymap()
         assert result1 is result2  # same object (cached)
 
     def test_loads_default_when_file_missing(self, tmp_config_dir: Path):
         """Missing keybinds.toml returns DEFAULT_KEYMAP."""
-        from lm_tuio.config.keymap import KeymapManager
-
         with patch(
             "lm_tuio.config.paths.get_config_path",
             return_value=tmp_config_dir / "keybinds.toml",
@@ -39,8 +36,6 @@ class TestKeymapManagerLoad:
 
     def test_loads_from_file_when_exists(self, tmp_config_dir: Path):
         """Existing keybinds.toml is parsed and returned."""
-        from lm_tuio.config.keymap import KeymapManager
-
         kb_file = tmp_config_dir / "keybinds.toml"
         kb_file.parent.mkdir(parents=True, exist_ok=True)
         kb_file.write_text(
@@ -60,8 +55,6 @@ class TestKeymapManagerLoad:
 
     def test_fallback_on_malformed_toml(self, tmp_config_dir: Path):
         """Malformed TOML falls back to DEFAULT_KEYMAP."""
-        from lm_tuio.config.keymap import KeymapManager
-
         kb_file = tmp_config_dir / "keybinds.toml"
         kb_file.parent.mkdir(parents=True, exist_ok=True)
         kb_file.write_text("[global\n")  # missing ]
@@ -78,8 +71,6 @@ class TestKeymapManagerLoad:
 
     def test_fallback_on_empty_file(self, tmp_config_dir: Path):
         """Empty file returns default keymap."""
-        from lm_tuio.config.keymap import KeymapManager
-
         kb_file = tmp_config_dir / "keybinds.toml"
         kb_file.parent.mkdir(parents=True, exist_ok=True)
         kb_file.write_text("")
@@ -99,9 +90,6 @@ class TestKeymapManagerGetBindings:
 
     def test_returns_bindings_for_global_scope(self):
         """get_bindings('global') returns Binding objects."""
-        from lm_tuio.config.keymap import KeymapManager
-        from textual.binding import Binding
-
         bindings = KeymapManager.get_bindings("global")
         assert isinstance(bindings, list)
         assert len(bindings) > 0
@@ -110,9 +98,6 @@ class TestKeymapManagerGetBindings:
 
     def test_returns_bindings_for_tables_scope(self):
         """get_bindings('tables') returns Binding objects."""
-        from lm_tuio.config.keymap import KeymapManager
-        from textual.binding import Binding
-
         bindings = KeymapManager.get_bindings("tables")
         assert isinstance(bindings, list)
         assert len(bindings) > 0
@@ -121,9 +106,6 @@ class TestKeymapManagerGetBindings:
 
     def test_returns_bindings_for_loaded_models_scope(self):
         """get_bindings('loaded_models') returns Binding objects."""
-        from lm_tuio.config.keymap import KeymapManager
-        from textual.binding import Binding
-
         bindings = KeymapManager.get_bindings("loaded_models")
         assert isinstance(bindings, list)
         assert len(bindings) > 0
@@ -132,9 +114,6 @@ class TestKeymapManagerGetBindings:
 
     def test_returns_bindings_for_action_log_scope(self):
         """get_bindings('action_log') returns Binding objects."""
-        from lm_tuio.config.keymap import KeymapManager
-        from textual.binding import Binding
-
         bindings = KeymapManager.get_bindings("action_log")
         assert isinstance(bindings, list)
         assert len(bindings) > 0
@@ -143,16 +122,12 @@ class TestKeymapManagerGetBindings:
 
     def test_returns_bindings_for_unknown_scope(self):
         """Unknown scope returns empty list."""
-        from lm_tuio.config.keymap import KeymapManager
-
         bindings = KeymapManager.get_bindings("nonexistent_scope")
         assert isinstance(bindings, list)
         assert len(bindings) == 0
 
     def test_binding_has_correct_attributes(self):
         """Each Binding has key, action, description, show."""
-        from lm_tuio.config.keymap import KeymapManager
-
         bindings = KeymapManager.get_bindings("global")
         quit_bindings = [b for b in bindings if b.action == "quit"]
         assert len(quit_bindings) > 0
@@ -163,8 +138,6 @@ class TestKeymapManagerGetBindings:
 
     def test_multiple_keys_per_action(self):
         """Actions with multiple keys each get separate Binding objects."""
-        from lm_tuio.config.keymap import KeymapManager
-
         bindings = KeymapManager.get_bindings("global")
         focus_left_bindings = [b for b in bindings if b.action == "focus_left"]
         # focus_left has 4 keys: ctrl+h, left, ctrl+left, alt+h
@@ -176,8 +149,6 @@ class TestKeymapManagerWriteDefaultFile:
 
     def test_writes_default_file(self, tmp_config_dir: Path):
         """_write_default_file creates a valid TOML file."""
-        from lm_tuio.config.keymap import KeymapManager
-
         kb_file = tmp_config_dir / "keybinds.toml"
         kb_file.parent.mkdir(parents=True, exist_ok=True)
         KeymapManager._write_default_file(kb_file)
@@ -189,8 +160,6 @@ class TestKeymapManagerWriteDefaultFile:
 
     def test_writes_all_scopes(self, tmp_config_dir: Path):
         """All DEFAULT_KEYMAP scopes are written."""
-        from lm_tuio.config.keymap import KeymapManager
-
         kb_file = tmp_config_dir / "keybinds.toml"
         kb_file.parent.mkdir(parents=True, exist_ok=True)
         KeymapManager._write_default_file(kb_file)
@@ -210,8 +179,6 @@ class TestKeymapManagerWriteDefaultFile:
 
     def test_writes_action_definitions(self, tmp_config_dir: Path):
         """Each scope's actions are written with correct structure."""
-        from lm_tuio.config.keymap import KeymapManager
-
         kb_file = tmp_config_dir / "keybinds.toml"
         kb_file.parent.mkdir(parents=True, exist_ok=True)
         KeymapManager._write_default_file(kb_file)
@@ -227,8 +194,6 @@ class TestKeymapManagerCacheInvalidate:
 
     def test_cache_invalidation_allows_update(self, tmp_config_dir: Path):
         """Clearing cache allows re-loading from disk."""
-        from lm_tuio.config.keymap import KeymapManager
-
         # Clear any cached value from prior tests
         KeymapManager._keymap_cache = None
 
@@ -267,7 +232,6 @@ class TestKeymapManagerHeader:
 
     def test_all_expected_scopes_present(self):
         """All expected scopes are in DEFAULT_KEYMAP."""
-        from lm_tuio.config.keymap import DEFAULT_KEYMAP
 
         expected_scopes = {
             "global",
@@ -285,8 +249,6 @@ class TestKeymapManagerHeader:
 
     def test_each_action_has_required_fields(self):
         """Each action has keys, desc, and show fields."""
-        from lm_tuio.config.keymap import DEFAULT_KEYMAP
-
         for scope, actions in DEFAULT_KEYMAP.items():
             for action_name, data in actions.items():
                 assert "keys" in data, f"{scope}.{action_name} missing 'keys'"
