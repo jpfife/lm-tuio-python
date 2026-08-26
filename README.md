@@ -7,6 +7,8 @@ A TUI for managing LM Studio Servers over the network via API - load, unload, an
 [![Python 3.10+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
+<img width="1920" height="1080" alt="intro" src="https://github.com/user-attachments/assets/fe5bd864-08d6-4dc2-8550-a9eb8f31a9d7" />
+
 ## Quick Start
 
 **Install uv**
@@ -111,7 +113,7 @@ alias lm-tuio='lm-tuio -c ~/new/dir/'
 > [!NOTE]
 > If connect via CLI flags, open the `change server` screen with `c` and save your defaults for persistence
 
-!!!! ADD GIF EXAMPLE SET CONFIG !!!!
+<img width="1920" height="1080" alt="connect" src="https://github.com/user-attachments/assets/a2ef3d0e-e0c3-4817-bdc9-c7b6d9a85ef0" />
 
 ## Configuration
 
@@ -171,6 +173,18 @@ api_key = "sk-yyyyyyyyyyyyyy"
 #...
 ```
 
+### Themes
+<img width="1920" height="1080" alt="themes" src="https://github.com/user-attachments/assets/3af482a2-62b7-45e5-aaab-7b8820b5be20" />
+
+Themes are included with Textual by default and come with many popular presets.
+
+Themes are set via the settings menu `g` and written to `config.toml`. 
+
+Alternatively, `config.toml` may be edited directly.
+
+>[!NOTE]
+>The ANSI Dark/Light themes are compatible with transparent terminal setups.
+
 > **Security Note:** The secrets file is stored unencrypted, but sets read/write permissions for the user only.
 
 ## Keybinds
@@ -201,6 +215,15 @@ Press `?` at any time to view the full keybind reference. Here are the most comm
 | `↑` / `↓` / `j` / `k` | Navigate within tables/lists |
 | `Tab` / `Shift+Tab` | Move focus between widgets |
 
+## Troubleshooting
+Some terminals may not render certain features (such as italics) correctly without proper $TERM vars set.
+
+### TMUX
+Ensure 256-color is set in your tmux.conf file:
+```tmux
+set -g default-terminal "tmux-256color"
+```
+
 ## Contributing
 
 Contributions welcome! How you can help:
@@ -222,5 +245,9 @@ Contributions welcome! How you can help:
 ## License
 
 This project is licensed under the MIT License — see [LICENSE.txt](LICENSE.txt) for details.
+
+## Thanks
+
+**Demo gif recordings created using [vhs from CharmBracelet](https://github.com/charmbracelet/vhs)**
 
 **Made using [Textual](https://textual.textualize.io/) and Python.**
