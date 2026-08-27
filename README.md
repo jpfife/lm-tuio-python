@@ -2,7 +2,7 @@
 
 A TUI for managing LM Studio Servers over the network via API - load, unload, and download models without SSH.
 
-> **Built with [Textual](https://textual.textualize.io/)**
+> **Built with [Textual](https://textual.textualize.io/)** and **[Python](https://www.python.org)**
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -263,4 +263,4 @@ This project is licensed under the MIT License — see [LICENSE.txt](LICENSE.txt
 
 **LM Studio Team** for keeping good API documentation
 
-Made using **[Textual](https://textual.textualize.io/)** and **Python.**
+Made using **[Textual](https://textual.textualize.io/)**, **[uv](https://github.com/astral-sh/uv)** and **[Python](https://www.python.org)**
