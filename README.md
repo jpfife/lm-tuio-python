@@ -1,4 +1,4 @@
-# lm-tuio
+# LM TUIO
 
 A TUI for managing LM Studio Servers over the network via API - load, unload, and download models without SSH.
 
@@ -46,6 +46,14 @@ lm-tuio
 - **Configurable** - TOML-based configuration for defaults, network scan subnets, and custom keybinds
 - **Cross-Platform** - Works on Windows, macOS, and Linux, and anywhere you can install python
 
+## Why Use LM TUIO?
+
+Good for managing multiple endpoints, scanning the network for endpoints automatically, or for cases where SSH-ing into an endpoint to run native `lms` is unavailable.
+
+Originally developed because SSH-ing into my Windows machine would sometimes cause strange artifacts in my Linux terminals, so I decided to leverage the API endpoints available to LM Studio to make a platform agnostic solution.
+
+While the actions available via the LM Studio API are limited compared those available via `lms`, the LM Studio Native v1 REST API endpoints still allow for loading, unloading, downloading, and setting basic model configurations.
+
 ## Installation
 
 ```bash
@@ -78,6 +86,9 @@ Once in the app, hotkey `c` brings up the Select Server screen to connect to you
 Alternatively, you can set your endpoint IP, port, and API key (optional) via the CLI.
 
 Subsequent launches will reference your defaults set in `config.toml`
+
+>[!NOTE]
+>**Recommended Flow:** If you use a specific configuration for running models more efficiently on your hardware, load the model via the *LM Studio* application first to set your default launch configurations. Then load the model through `lm-tuio` using *server defaults* configs to maintain your custom load configurations.
 
 ### Command-Line Interface
 
@@ -248,6 +259,8 @@ This project is licensed under the MIT License — see [LICENSE.txt](LICENSE.txt
 
 ## Thanks
 
-**Demo gif recordings created using [vhs from CharmBracelet](https://github.com/charmbracelet/vhs)**
+**Demo gif recordings** created using **[vhs from CharmBracelet](https://github.com/charmbracelet/vhs)**
 
-**Made using [Textual](https://textual.textualize.io/) and Python.**
+**LM Studio Team** for keeping good API documentation
+
+Made using **[Textual](https://textual.textualize.io/)** and **Python.**
