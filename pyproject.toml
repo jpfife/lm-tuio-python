@@ -1,30 +1,72 @@
 [project]
-name = "lm-tui"
+name = "lm-tuio"
 version = "0.1.0"
-description = "TUI application for monitoring and interfacing with LM Studio server endpoints on the local network."
+homepage = "https://github.com/jpfife/lm-tuio-python"
+description = "Remote LM Studio management TUI."
 readme = "README.md"
-authors = [
-    { name = "redappr", email = "jpfife@redappr.com" }
-]
+license = "MIT"
+license-file = "LICENSE"
+authors = [{ name = "jpfife", email = "jpfife@redappr.com" }]
 requires-python = ">=3.11"
 dependencies = [
     "httpx>=0.28.1",
     "pydantic>=2.13.4",
+    "rich-argparse>=1.8.0",
     "textual>=8.2.8",
+    "tomlkit>=0.15.1",
+    "tzdata>=2026.3",
+]
+
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Environment :: Console",
+    "Intended Audience :: System Administrators",
+    "Intended Audience :: End Users/Desktop",
+    "Topic :: Terminals",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Operating System :: OS Independent",
+]
+
+keywords = [
+    "LM Studio",
+    "lms",
+    "lms server",
+    "tui",
+    "terminal user interface",
+    "cli",
+    "command line",
+    "textual",
+    "terminal",
+    "management",
+    "api",
+    "ai",
+    "ai model",
+    "model",
+    "huggingface",
+    "hf",
 ]
 
 [project.scripts]
-lm-tui = "lm_tui:main"
+lm-tuio = "lm_tuio.main:main"
+
+[project.urls]
+Homepage = "https://github.com/jpfife/lm-tuio-python"
+Issues = "https://github.com/jpfife/lm-tuio-python/issues"
 
 [build-system]
-requires = ["uv_build>=0.11.32,<0.12.0"]
+requires = ["uv_build>=0.12.5,<0.13.0"]
 build-backend = "uv_build"
 
 [dependency-groups]
-dev = [
-    "pytest>=9.1.1",
-]
+dev = ["pytest>=9.1.1", "textual-dev>=1.8.0"]
 
 [tool.pyright]
 venvPath = '.'
 venv = '.venv'
+
+[tool.uv.build-backend]
+module-name = 'lm_tuio'

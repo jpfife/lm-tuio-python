@@ -1,0 +1,65 @@
+"""Event manager for application updates and state changes."""
+
+from textual.message import Message
+
+from lm_tuio.models import ModelInfo
+
+
+class ActionLogUpdate(Message):
+    """Relay message for Dashboard ActionLog logging system."""
+
+    def __init__(self, msg: str, severity: str = "info") -> None:
+        super().__init__()
+        self.msg = msg
+        self.severity = severity
+
+
+class ServerEndpointUpdated(Message):
+    """Fire when selecting new server or network config changes."""
+
+    def __init__(self, ip: str, port: int) -> None:
+        super().__init__()
+        self.ip = ip
+        self.port = port
+
+
+class ServerConnected(Message):
+    """Fire when ConnectionStatus widget successfully pings server."""
+
+    def __init__(self, ip: str, port: int) -> None:
+        super().__init__()
+        self.ip = ip
+        self.port = port
+
+
+class ModelSelected(Message):
+    """Fire when model is highlighted in Loaded/Downloaded Models lists."""
+
+    def __init__(self, model: ModelInfo | None) -> None:
+        super().__init__()
+        self.model = model
+
+
+class ModelLoadRequest(Message):
+    """Fire when model selected for load in Downloaded Models table."""
+
+    def __init__(self, model: ModelInfo | None) -> None:
+        super().__init__()
+        self.model = model
+
+
+class UnloadInstancesRequested(Message):
+    """Fire when user requests unload of one or more instances."""
+
+    def __init__(self, instance_ids: list[str]) -> None:
+        super().__init__()
+        self.instance_ids = instance_ids
+
+
+class SettingsSaved(Message):
+    """Fire when user saves settings from Settings modal."""
+
+    def __init__(self, theme: str, timezone: str) -> None:
+        super().__init__()
+        self.theme = theme
+        self.timezone = timezone

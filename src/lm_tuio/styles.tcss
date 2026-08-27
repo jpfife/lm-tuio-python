@@ -1,0 +1,682 @@
+/* =========================================
+   GLOBAL LAYOUT / CLASSES
+   ========================================= */
+Screen {
+    layout: vertical;
+    outline: double $primary;
+    padding: 0 1 1 1;
+}
+
+ModalScreen {
+    outline: none;
+    padding: 0;
+}
+
+Button {
+    border: none;
+    width: 16;
+    height: 1;
+}
+
+/* =========================================
+   CLASSES
+   ========================================= */
+.box {
+    border-top: round $secondary 60%;
+    border-right: round $secondary 60%;
+    content-align: center middle;
+    height: 100%;
+    border-title-align: left;
+    border-title-color: $primary;
+    border-title-background: rgba(0, 0, 0, 0);
+    border-title-style: italic;
+
+    &:focus-within {
+        border-top: round $accent;
+        border-right: round $accent;
+        border-title-align: left;
+        border-title-color: $accent;
+        border-title-background: rgba(0, 0, 0, 0);
+    }
+}
+
+.section-title {
+    text-style: bold;
+    color: $accent;
+    margin-top: 1;
+}
+
+.hidden {
+    display: none;
+}
+
+.ctx-titles {
+    text-style: bold;
+    color: $accent;
+    margin-top: 1;
+}
+
+.ctx-horizontal-group {
+    height: auto;
+}
+
+.input-field {
+    width: auto;
+    min-width: 32;
+    margin: 0 0 0 0;
+    height: 3;
+    border: round $secondary 80%;
+    border-subtitle-align: right;
+    border-subtitle-color: $primary;
+    border-subtitle-background: rgba(0, 0, 0, 0);
+    border-subtitle-style: italic;
+}
+
+.comments {
+    text-style: italic dim;
+}
+
+/* =========================================
+   HEADER ZONE
+   ========================================= */
+#header-zone {
+    height: 7;
+    margin: 1 1 1 1;
+}
+
+#conn-status {
+    text-style: bold;
+    border: none;
+    padding: 1;
+    content-align: left middle;
+    width: 20%;
+    min-width: 30;
+    max-width: 40;
+    margin-right: 2;
+}
+
+#logo-title {
+    border: round $secondary 2%;
+    /* background: rgba(0, 0, 0, 0.1); */
+    border-subtitle-align: right;
+    border-subtitle-color: $primary;
+    border-subtitle-background: rgba(0, 0, 0, 0);
+    border-subtitle-style: italic;
+    width: 25%;
+    min-width: 38;
+    margin-right: 4;
+    content-align: left top;
+    text-align: left;
+    color: $primary;
+}
+
+#action-log {
+    width: 1fr;
+    border-right: none;
+    margin: 1 2 0 3;
+    background: transparent;
+}
+
+/* =========================================
+   MAIN APP ZONE
+   ========================================= */
+#main-zone {
+    height: 1fr;
+    margin: 1 1 1 1;
+}
+
+#loaded-models,
+#downloaded-models {
+    width: 1fr;
+}
+
+/* =========================================
+   LOADED MODELS HEADER & MEMORY BAR
+   ========================================= */
+#loaded-models-total-mem-header {
+    width: 100%;
+    height: 1;
+    margin-bottom: 1;
+    background: rgba(0, 0, 0, 0.25);
+    color: $accent;
+    content-align: right middle;
+    text-align: right;
+}
+
+#loaded-models-total-mem {
+    color: $accent;
+    text-align: right;
+    text-style: bold;
+}
+
+#loaded-models-scroll {
+    width: 100%;
+    height: 1fr;
+    padding: 0;
+}
+
+#context-pane {
+    width: 1fr;
+    padding: 1 2;
+}
+
+#ctx-details-pane {
+    height: 100%;
+}
+
+.ctx-horizontal-group,
+.ctx-horizontal-group>Vertical,
+.ctx-horizontal-group>Vertical>Label {
+    height: auto;
+}
+
+#ctx-separator {
+    border-top: ascii $secondary;
+    border-title-align: center;
+    border-title-style: italic;
+    border-title-color: $accent;
+    height: 1;
+    margin: 1 0 0 0;
+}
+
+#ctx-placeholder {
+    text-style: bold italic;
+    color: $primary;
+}
+
+#ctx-insts-table {
+    height: auto;
+    min-height: 3;
+}
+
+/* DataTable List Styling */
+DataTable {
+    background: transparent;
+    border: none;
+    width: 100%;
+    height: 100%;
+}
+
+DataTable>.datatable--header {
+    background: $surface;
+    color: $primary;
+    text-style: bold;
+}
+
+DataTable>.datatable--cursor {
+    background: transparent;
+    color: $text;
+}
+
+DataTable:focus>.datatable--cursor {
+    background: $secondary;
+    color: $background;
+    text-style: bold;
+}
+
+/* SelectionList (Loaded Models collapsible) */
+SelectionList>.option-list--option-highlighted {
+    background: transparent;
+    color: $text;
+}
+
+SelectionList:focus>.option-list--option-highlighted {
+    background: $secondary;
+    color: $background;
+    text-style: bold;
+}
+
+Horizontal>Label {
+    height: auto;
+}
+
+Horizontal>DataTable {
+    height: 3;
+}
+
+/* =========================================
+   LOADED MODELS PANE
+   ========================================= */
+#loaded-models-scroll {
+    height: 100%;
+    width: 100%;
+    padding: 0;
+}
+
+Collapsible {
+    padding: 0;
+    margin-bottom: 1;
+    background: transparent;
+    border: none;
+}
+
+Collapsible>.collapsible--title {
+    background: $surface;
+    color: $accent;
+    text-style: bold;
+    padding: 0 1;
+}
+
+SelectionList {
+    background: transparent;
+    border: none;
+    height: auto;
+    max-height: 10;
+    padding-left: 2;
+    /* Indents instances under the Base Model title */
+}
+
+SelectionList:focus {
+    border: none;
+}
+
+/* =========================================
+   FOOTER / SEARCH BAR
+   ========================================= */
+
+#filter-label-zone {
+    height: 1;
+    content-align: left bottom;
+    margin: 0 0 1 2;
+}
+
+#filter-label {
+    color: $accent;
+    text-style: bold;
+}
+
+#download-progress-bar {
+    width: 2fr
+}
+
+#search-bar {
+    dock: bottom;
+    width: 100%;
+    border: round $primary;
+    background: $surface;
+    color: $text;
+}
+
+/* =========================================
+   SERVER SELECTION MODAL
+   ========================================= */
+ServerSelectionModal {
+    align: center middle;
+    background: $background 60%;
+    border: none;
+    outline: none;
+    padding: 0;
+}
+
+#modal-container {
+    width: 55%;
+    height: 75%;
+    background: $surface;
+    border: thick $primary;
+    padding: 0 1 0 1;
+}
+
+#sidebar {
+    width: 45%;
+    height: 100%;
+    border-right: solid $primary-background;
+    padding: 0 1 1 1;
+}
+
+#active-server-sidebar,
+#cached-ips-sidebar {
+    height: 1fr;
+}
+
+#active-servers-list,
+#cached-ips-list {
+    height: 1fr;
+    border: none;
+    padding: 1;
+    background: rgba(0, 0, 0, 0.30);
+}
+
+#active-servers-list:focus,
+#cached-ips-list:focus {
+    outline: round $secondary;
+    padding: 1 1 0 1;
+}
+
+#main-action-area {
+    width: 55%;
+    padding: 0 1 -1 4;
+}
+
+#server-section {
+    height: 1fr;
+}
+
+#scan-section {
+    height: 1fr;
+    padding-top: 1;
+}
+
+.input-group {
+    align: center middle;
+}
+
+.server-input-fields {
+    min-width: 42;
+}
+
+
+#connect-btn,
+#default-connect-btn,
+#scan-btn,
+#default-network-btn {
+    margin: 1 1 1 0;
+}
+
+#cancel-btn,
+#bottom-btn-group {
+    align: center middle;
+    margin: 1 2 1 0;
+}
+
+.button-group {
+    height: 3;
+    margin-top: 2;
+}
+
+/* ==========================================
+ * KEYBINDS MODAL
+ * ========================================== */
+
+KeybindsModal {
+    align: center middle;
+    background: $background 60%;
+    border: none;
+}
+
+#keybind-dialog {
+    width: 80%;
+    max-width: 120;
+    height: 80%;
+    max-height: 36;
+    background: $surface;
+    border: thick $primary;
+    padding: 1 2 0 2;
+}
+
+#keybind-title {
+    width: 100%;
+    text-align: center;
+    text-style: bold;
+    color: $accent;
+    margin-bottom: 1;
+}
+
+#keybind-explaner {
+    width: 100%;
+    border-bottom: solid $primary-muted;
+    margin-bottom: 1;
+    padding: 0 2 1 2;
+}
+
+#keybind-grid {
+    layout: grid;
+    grid-size: 2;
+    grid-gutter: 1 4;
+    width: 100%;
+    height: auto;
+    padding-right: 4;
+    padding-left: 4;
+}
+
+KeybindSection {
+    width: 100%;
+    height: auto;
+    margin-bottom: 0;
+}
+
+#keybinds-footer {
+    height: 1;
+    padding: 0 0 0 0;
+    margin: 0 0 0 0;
+}
+
+/* ==========================================
+ * LOAD MODEL MODAL
+ * ========================================== */
+
+LoadModelModal {
+    align: center middle;
+    background: $background 60%;
+    border: none;
+    outline: none;
+    padding: 0;
+}
+
+#load-modal-dialog {
+    width: 60%;
+    height: 85%;
+    background: $surface;
+    border: thick $primary;
+    padding: 0 2;
+}
+
+.checkbox {
+    border: none;
+    padding-top: 1;
+    background: transparent;
+}
+
+#load-modal-title {
+    width: 100%;
+    text-align: center;
+    text-style: bold;
+    color: $accent;
+    margin-bottom: 0;
+    padding-bottom: 1;
+}
+
+#model-type-badge {
+    content-align: left middle;
+    padding: 0 1;
+}
+
+#standard-options-group,
+#advanced-options-group {
+    border-top: round $accent;
+    border-title-style: italic;
+    margin-top: 0;
+    padding: 1 0 1 0;
+}
+
+#standard-options-group {
+    width: 55%;
+}
+
+#advanced-options-group {
+    width: 45%;
+}
+
+#load-model-defaults-explainer {
+    padding: 0 1 0 2;
+    width: 40%;
+    text-wrap: wrap;
+}
+
+#manual-params-section {
+    min-height: 16;
+    padding: 2 0 0 0;
+}
+
+#context-progress-bar {
+    width: 100%;
+    height: auto;
+    text-align: center;
+    margin-top: 1;
+    margin-bottom: 1;
+}
+
+#context-details-group {
+    padding: 0 0 0 0;
+    min-height: 3;
+    margin: 0 0 1 2;
+}
+
+#check-context-default {
+    width: 1fr;
+    margin-bottom: 1;
+}
+
+#input-context-length {
+    margin-left: 2;
+    min-width: 20;
+    max-width: 24;
+}
+
+#load-model-vert-rule {
+    color: $primary-muted;
+    margin: 0 2 0 2;
+}
+
+#input-eval-batch,
+#input-num-experts {
+    margin-top: 1;
+}
+
+#load-btn-group {
+    align: center middle;
+    height: 1;
+    margin: 1 0 1 0;
+}
+
+#btn-load-submit,
+#btn-load-cancel {
+    margin: 0 1;
+}
+
+/* ==========================================
+ * ACTION LOG MODAL
+ * ========================================== */
+
+ActionLogModal {
+    align: center middle;
+    background: $background 60%;
+    border: none;
+    outline: none;
+    padding: 0;
+}
+
+#action-log-modal-dialog {
+    width: 80%;
+    height: 85%;
+    background: $surface;
+    border: thick $primary;
+    padding: 1 2 0 2;
+}
+
+#action-log-modal-title {
+    width: 100%;
+    text-align: center;
+    text-style: bold;
+    color: $accent;
+    margin-bottom: 1;
+    border-bottom: solid $primary-muted;
+    padding-bottom: 1;
+}
+
+#action-log-viewer {
+    height: 1fr;
+    background: $surface-darken-1;
+    padding: 1;
+}
+
+/* ==========================================
+ * DOWNLOAD MODEL MODAL
+ * ========================================== */
+
+DownloadModelModal {
+    align: center middle;
+    background: $background 60%;
+    border: none;
+    outline: none;
+    padding: 0;
+}
+
+#download-modal-dialog {
+    width: 60%;
+    height: 60%;
+    max-height: 25;
+    background: $surface;
+    border: thick $primary;
+    padding: 1 2 0 2;
+}
+
+#download-modal-title {
+    width: 100%;
+    text-align: center;
+    text-style: bold;
+    color: $accent;
+    margin-bottom: 1;
+    border-bottom: solid $primary-muted;
+    padding-bottom: 1;
+}
+
+#download-modal-explainer {
+    margin: 1;
+}
+
+.dl-button-group {
+    align: center middle;
+}
+
+#btn-submit-dl,
+#btn-cancel-dl {
+    height: 3;
+    margin: 2 7 0 7;
+}
+
+/* ==========================================
+ * SETTINGS MODAL
+ * ========================================== */
+
+SettingsScreen {
+    align: center middle;
+    background: $background 60%;
+    border: none;
+    outline: none;
+    padding: 0;
+}
+
+#settings-modal {
+    width: 60%;
+    height: 70%;
+    max-height: 35;
+    background: $surface;
+    border: thick $primary;
+    padding: 1 2 0 2;
+}
+
+#settings-modal-title {
+    width: 100%;
+    text-align: center;
+    text-style: bold;
+    color: $accent;
+    margin-bottom: 1;
+    border-bottom: solid $primary-muted;
+    padding-bottom: 1;
+}
+
+#settings-theme-select,
+#settings-timezone-select {
+    width: 1fr;
+    margin: 0 0 1 0;
+}
+
+.settings-button-group {
+    align: center middle;
+}
+
+#settings-button-save,
+#settings-button-cancel {
+    height: 3;
+    margin: 2 7 0 7;
+}
