@@ -184,7 +184,10 @@ api_key = "sk-yyyyyyyyyyyyyy"
 #...
 ```
 
+> **Security Note:** The secrets file is stored unencrypted, but sets read/write permissions for the user only.
+
 ### Themes
+
 <img width="1920" height="1080" alt="themes" src="https://github.com/user-attachments/assets/3af482a2-62b7-45e5-aaab-7b8820b5be20" />
 
 Themes are included with Textual by default and come with many popular presets.
@@ -195,8 +198,6 @@ Alternatively, `config.toml` may be edited directly.
 
 >[!NOTE]
 >The ANSI Dark/Light themes are compatible with transparent terminal setups.
-
-> **Security Note:** The secrets file is stored unencrypted, but sets read/write permissions for the user only.
 
 ## Keybinds
 
