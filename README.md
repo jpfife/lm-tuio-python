@@ -22,7 +22,7 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
 ```
 
-**Run without intalling**
+**Run without installing**
 ```bash
 uvx lm-tuio
 ```
